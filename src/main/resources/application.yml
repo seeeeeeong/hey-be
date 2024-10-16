@@ -1,0 +1,141 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: ${profile}
+    group:
+      local:
+        - common
+      dev:
+        - common
+      prod:
+        - common
+
+  datasource:
+    hikari:
+      maximum-pool-size: 15
+
+---
+spring:
+  config:
+    activate:
+      on-profile: common
+
+logging:
+  level:
+    org.springframework.cache: DEBUG
+
+management:
+  endpoints:
+    web:
+      base-path: /health_check
+
+springdoc:
+  default-produces-media-type: application/json
+  writer-with-default-pretty-printer: true
+  model-and-view-allowed: true
+  swagger-ui:
+    syntax-highlight:
+      theme: tomorrow-night
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expire-time: 3600000
+  refresh-token-expire-time: 5184000000
+
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    token-uri: https://oauth2.googleapis.com/token
+    user-info-url: https://www.googleapis.com/oauth2/v3/userinfo
+    redirect-uri: http://localhost:8080/login/oauth2/code/google
+    delete-account-url: ${GOOGLE_DELETE_ACCOUNT_URL}
+
+  apple:
+    ios:
+      client-id: ${APPLE_IOS_CLIENT_ID}
+      team-id: ${APPLE_IOS_TEAM_ID}
+      key-id: ${APPLE_IOS_KEY_ID}
+      private-key: ${APPLE_IOS_PRIVATE_KEY}
+      token-url: ${APPLE_IOS_TOKEN_URL}
+      delete-account-url: ${APPLE_IOS_DELETE_ACCOUNT_URL}
+
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    token-uri: https://kauth.kakao.com/oauth/token
+    user-info-url: https://kapi.kakao.com/v2/user/me
+    redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://ec2-3-39-168-47.ap-northeast-2.compute.amazonaws.com:5432/hey
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://ec2-3-39-168-47.ap-northeast-2.compute.amazonaws.com:5432/hey
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+server:
+  port: 8090
+
+---
+#spring.config.active.on-profile: prod
+#
+#spring:
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/hey
+#    username: ${SPRING_DATASOURCE_USERNAME}
+#    password: ${SPRING_DATASOURCE_PASSWORD}
+#
+#  data:
+#    redis:
+#      host: redis
+#      port: 6379
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#      format_sql: true
+#    show-sql: true
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect

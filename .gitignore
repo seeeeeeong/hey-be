@@ -18,8 +18,8 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
-*.iws
+.ideagit push -f origin master
+
 *.iml
 *.ipr
 out/
