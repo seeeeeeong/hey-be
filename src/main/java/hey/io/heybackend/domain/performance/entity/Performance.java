@@ -15,39 +15,41 @@ public class Performance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "performance_id")
     private Long performanceId;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "performance_type", nullable = false, length = 20)
     private String performanceType;
 
-    @Column(nullable = false, length = 150)
+    @Column(name = "name", nullable = false, length = 150)
     private String name;
 
-    @Column(length = 150)
+    @Column(name = "eng_name", length = 150)
     private String engName;
 
-    @Column(nullable = false, length = 8)
+    @Column(name = "performance_uid", length = 8)
     private String performanceUid;
 
-    @Column(nullable = false)
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(nullable = false)
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column
-    private Long placeId;
+    @Column(name = "place_id")
+    private Long placeId; // FK
 
-    @Column(length = 20)
+    @Column(name = "running_time", length = 20)
     private String runningTime;
 
-    @Column(length = 20)
+    @Column(name = "viewing_age", length = 20)
     private String viewingAge;
 
-    @Column(nullable = false, length = 8)
+    @Column(name = "ticket_status", nullable = false, length = 8, columnDefinition = "varchar(8) default 'READY'")
     private String ticketStatus = "READY";
 
-    @Column(nullable = false, length = 8)
+    @Column(name = "performance_status", nullable = false, length = 8, columnDefinition = "varchar(8) default 'INIT'")
     private String performanceStatus = "INIT";
+
 
 }

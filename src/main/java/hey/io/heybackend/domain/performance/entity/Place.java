@@ -15,21 +15,22 @@ public class Place {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "place_id")
     private Long placeId;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 8)
+    @Column(name = "place_uid", length = 8)
     private String placeUid;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "address", length = 255)
     private String address;
 
-    @Column(nullable = false, precision = 9, scale = 7)
+    @Column(name = "latitude", precision = 9, scale = 7)
     private BigDecimal latitude;
 
-    @Column(nullable = false, precision = 17, scale = 14)
+    @Column(name = "longitude", precision = 17, scale = 14)
     private BigDecimal longitude;
 
 }

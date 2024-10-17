@@ -12,21 +12,22 @@ public class PerformanceTicketing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ticketing_id")
     private Long ticketingId;
 
-    @Column(nullable = false)
+    @Column(name = "performance_id", nullable = false)
     private Long performanceId;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "ticketing_booth", nullable = false, length = 20)
     private String ticketingBooth;
 
-    @Column(length = 40)
+    @Column(name = "ticketing_premium", length = 40)
     private String ticketingPremium;
 
-    @Column
+    @Column(name = "open_datetime")
     private LocalDateTime openDatetime;
 
-    @Column(length = 255)
+    @Column(name = "ticketing_url", length = 255)
     private String ticketingUrl;
 
 }

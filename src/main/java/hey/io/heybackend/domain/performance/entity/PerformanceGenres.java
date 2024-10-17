@@ -10,12 +10,13 @@ public class PerformanceGenres {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "performance_id", nullable = false)
     private Long performanceId;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "performance_genre", nullable = false, length = 20)
     private String performanceGenre;
 
 }

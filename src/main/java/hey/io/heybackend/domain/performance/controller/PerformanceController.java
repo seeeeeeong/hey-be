@@ -1,5 +1,6 @@
 package hey.io.heybackend.domain.performance.controller;
 
+import hey.io.heybackend.domain.performance.dto.PerformanceFilterRequest;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,10 @@ public class PerformanceController {
 
     private final PerformanceService performanceService;
 
-//    @GetMapping
-//    public ResponseEntity<List<PerformanceListResponse>> getPerformances() {
-//        List<PerformanceListResponse> performanceListResponse = performanceService.getPerformances();
-//        return ResponseEntity.status(HttpStatus.OK).body(performanceListResponse);
-//    }
+    @GetMapping
+    public ResponseEntity<List<PerformanceListResponse>> getPerformances(PerformanceFilterRequest filter) {
+        List<PerformanceListResponse> performanceListResponse = performanceService.getPerformances(filter);
+        return ResponseEntity.status(HttpStatus.OK).body(performanceListResponse);
+    }
 
 }
