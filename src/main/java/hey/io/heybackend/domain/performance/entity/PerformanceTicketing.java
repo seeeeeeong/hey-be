@@ -1,5 +1,6 @@
 package hey.io.heybackend.domain.performance.entity;
 
+import hey.io.heybackend.common.entity.BaseEntityWithUpdate;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "\"performance_ticketing\"")
-public class PerformanceTicketing {
+public class PerformanceTicketing extends BaseEntityWithUpdate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
