@@ -9,28 +9,23 @@ import java.math.BigDecimal;
 
 @Getter
 @Entity
-@Table(name = "\"place\"")
+@Table(schema = "performance")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "place_id")
-    private Long placeId;
+    private Long placeId; // 장소 ID
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false)
+    private String name; // 장소명
 
-    @Column(name = "place_uid", length = 8)
-    private String placeUid;
+    private String placeUid; // KOPIS 장소 ID
 
-    @Column(name = "address", length = 255)
-    private String address;
+    private String address; // 주소
 
-    @Column(name = "latitude", precision = 9, scale = 7)
-    private BigDecimal latitude;
+    private double latitude; // 위도
 
-    @Column(name = "longitude", precision = 17, scale = 14)
-    private BigDecimal longitude;
+    private double longitude; // 경도
 
 }
