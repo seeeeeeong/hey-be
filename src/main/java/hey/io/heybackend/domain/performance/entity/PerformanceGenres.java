@@ -1,22 +1,25 @@
 package hey.io.heybackend.domain.performance.entity;
 
+import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "\"performance_genres\"")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PerformanceGenres {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    private Long id; // 일련번호
 
-    @Column(name = "performance_id", nullable = false)
-    private Long performanceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "performance_id")
+    private Performance performance; // 공연 엔티티
 
-    @Column(name = "performance_genre", nullable = false, length = 20)
-    private String performanceGenre;
+    @Column(nullable = false)
+    private PerformanceGenre performanceGenre; // 공연 장르
 
 }

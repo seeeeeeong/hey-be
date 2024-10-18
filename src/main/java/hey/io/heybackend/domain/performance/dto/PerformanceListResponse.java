@@ -1,6 +1,7 @@
 package hey.io.heybackend.domain.performance.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
+import hey.io.heybackend.domain.performance.enums.TicketStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,13 +15,13 @@ public class PerformanceListResponse {
     private Long performanceId;
     private String performanceName;
     private LocalDateTime openDateTime;
-    private String ticketStatus;
+    private TicketStatus ticketStatus;
     private LocalDate startDate;
     private LocalDate endDate;
     private String placeName;
 
     @QueryProjection
-    public PerformanceListResponse(Long performanceId, String performanceName, LocalDateTime openDateTime, String ticketStatus, LocalDate startDate, LocalDate endDate, String placeName) {
+    public PerformanceListResponse(Long performanceId, String performanceName, LocalDateTime openDateTime, TicketStatus ticketStatus, LocalDate startDate, LocalDate endDate, String placeName) {
         this.performanceId = performanceId;
         this.performanceName = performanceName;
         this.openDateTime = openDateTime;

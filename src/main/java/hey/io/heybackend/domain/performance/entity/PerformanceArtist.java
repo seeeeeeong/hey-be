@@ -1,34 +1,26 @@
 package hey.io.heybackend.domain.performance.entity;
 
-import hey.io.heybackend.common.entity.BaseEntityWithUpdate;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Entity
 @Table(schema = "performance")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PerformanceTicketing extends BaseEntityWithUpdate {
+public class PerformanceArtist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ticketingId; // 예매 ID
+    private Long id; // 일련번호
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
     private Performance performance; // 공연 엔티티
 
-    @Column(nullable = false)
-    private String ticketingBooth; // 예매처
-
-    private String ticketingPremium; // 예매 프리미엄
-
-    private LocalDateTime openDatetime; // 티켓 오픈 시간
-
-    private String ticketingUrl; // 예매 링크
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "artist_id")
+//    private Artist artist; // 아티스트 엔티티
 
 }

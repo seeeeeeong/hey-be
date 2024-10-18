@@ -1,12 +1,18 @@
 package hey.io.heybackend.domain.performance.entity;
 
 import hey.io.heybackend.common.entity.BaseEntityWithUpdate;
+import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
+import hey.io.heybackend.domain.performance.enums.PerformanceType;
+import hey.io.heybackend.domain.performance.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -16,41 +22,51 @@ public class Performance extends BaseEntityWithUpdate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "performance_id")
-    private Long performanceId;
+    private Long performanceId; // 공연 ID
 
-    @Column(name = "performance_type", nullable = false, length = 20)
-    private String performanceType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PerformanceType performanceType; // 공연 유형
 
-    @Column(name = "name", nullable = false, length = 150)
-    private String name;
+    @Column(nullable = false)
+    private String name; // 공연명
 
-    @Column(name = "eng_name", length = 150)
-    private String engName;
+    private String engName; // 공연 영문명
 
-    @Column(name = "performance_uid", length = 8)
-    private String performanceUid;
+    private String performanceUid; // KOPIS 공연 ID
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
+    @Column(nullable = false)
+    private LocalDate startDate; // 공연 시작 일자
 
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
+    @Column(nullable = false)
+    private LocalDate endDate; // 공연 종료 일자
 
-    @Column(name = "place_id")
-    private Long placeId; // FK
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_id")
+    private Place place; // 장소 엔티티
 
-    @Column(name = "running_time", length = 20)
-    private String runningTime;
+    private String runningTime; // 공연 시간
 
-    @Column(name = "viewing_age", length = 20)
-    private String viewingAge;
+    private String viewingAge; // 관람 연령
 
-    @Column(name = "ticket_status", nullable = false, length = 8, columnDefinition = "varchar(8) default 'READY'")
-    private String ticketStatus = "READY";
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TicketStatus ticketStatus; // 티켓 상태
 
-    @Column(name = "performance_status", nullable = false, length = 8, columnDefinition = "varchar(8) default 'INIT'")
-    private String performanceStatus = "INIT";
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PerformanceStatus performanceStatus; // 공연 상태
 
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerformancePrice> prices = new ArrayList<>();
+
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerformanceTicketing> ticketings = new ArrayList<>();
+
+//    @Transient
+//    private List<File> files = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<PerformanceArtist> performanceArtists = new ArrayList<>();
 
 }
