@@ -1,6 +1,6 @@
 package hey.io.heybackend.domain.performance.entity;
 
-import hey.io.heybackend.common.entity.BaseEntityWithUpdate;
+import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import hey.io.heybackend.domain.performance.enums.TicketStatus;
@@ -16,9 +16,9 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "\"performance\"")
+@Table(schema = "performance")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Performance extends BaseEntityWithUpdate {
+public class Performance extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,10 +63,10 @@ public class Performance extends BaseEntityWithUpdate {
     @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformanceTicketing> ticketings = new ArrayList<>();
 
-//    @Transient
-//    private List<File> files = new ArrayList<>();
+    @Transient
+    private List<File> files = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<PerformanceArtist> performanceArtists = new ArrayList<>();
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerformanceArtist> performanceArtists = new ArrayList<>();
 
 }

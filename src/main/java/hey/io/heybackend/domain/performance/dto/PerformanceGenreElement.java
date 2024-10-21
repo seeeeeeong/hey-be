@@ -6,12 +6,12 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PerformanceGenreResponse {
+public class PerformanceGenreElement {
 
     private String performanceGenre;
 
-    public static PerformanceGenreResponse from(PerformanceGenres genre) {
-        return PerformanceGenreResponse.builder()
+    public static PerformanceGenreElement from(PerformanceGenres genre) {
+        return PerformanceGenreElement.builder()
                 .performanceGenre(genre.getPerformanceGenre().getDescription()) // 장르 설명만 추출
                 .build();
     }

@@ -6,15 +6,15 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PerformancePriceResponse {
+public class PerformancePriceElement {
 
     private String priceInfo;
     private Integer priceAmount;
 
-    public static PerformancePriceResponse from(PerformancePrice price) {
-        return PerformancePriceResponse.builder()
-                .priceInfo(price.getPriceInfo())
-                .priceAmount(price.getPriceAmount())
+    public static PerformancePriceElement from(String priceInfo, Integer priceAmount) {
+        return PerformancePriceElement.builder()
+                .priceInfo(priceInfo)
+                .priceAmount(priceAmount)
                 .build();
     }
 }
