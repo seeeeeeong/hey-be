@@ -31,8 +31,8 @@ public class PerformanceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GetPerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId) {
-        GetPerformanceDetailResponse gerPerformanceDetailResDto = performanceService.getPerformanceDetail(performanceId);
-        return ResponseEntity.status(HttpStatus.OK).body(gerPerformanceDetailResDto);
+        GetPerformanceDetailResponse getArtistDetailResponse = performanceService.getPerformanceDetail(performanceId);
+        return ResponseEntity.status(HttpStatus.OK).body(getArtistDetailResponse);
     }
 
     @GetMapping("/{id}/artists")
