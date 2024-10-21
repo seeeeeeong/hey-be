@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class PerformanceListResponse {
+public class GetPerformanceListResponse {
 
     private Long performanceId;
     private String performanceName;
@@ -21,7 +21,7 @@ public class PerformanceListResponse {
     private String placeName;
 
     @QueryProjection
-    public PerformanceListResponse(Long performanceId, String performanceName, LocalDateTime openDateTime, TicketStatus ticketStatus, LocalDate startDate, LocalDate endDate, String placeName) {
+    public GetPerformanceListResponse(Long performanceId, String performanceName, LocalDateTime openDateTime, TicketStatus ticketStatus, LocalDate startDate, LocalDate endDate, String placeName) {
         this.performanceId = performanceId;
         this.performanceName = performanceName;
         this.openDateTime = openDateTime;

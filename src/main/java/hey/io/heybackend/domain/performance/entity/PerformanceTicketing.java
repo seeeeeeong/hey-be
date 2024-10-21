@@ -1,6 +1,6 @@
 package hey.io.heybackend.domain.performance.entity;
 
-import hey.io.heybackend.common.entity.BaseEntityWithUpdate;
+import hey.io.heybackend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(schema = "performance")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PerformanceTicketing extends BaseEntityWithUpdate {
+public class PerformanceTicketing extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

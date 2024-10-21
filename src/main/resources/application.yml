@@ -11,15 +11,15 @@ spring:
       prod:
         - common
 
-  datasource:
-    hikari:
-      maximum-pool-size: 15
-
 ---
 spring:
   config:
     activate:
       on-profile: common
+  web:
+    locale: ko_KR
+  main:
+    allow-bean-definition-overriding: true
 
 logging:
   level:
@@ -30,43 +30,20 @@ management:
     web:
       base-path: /health_check
 
-springdoc:
-  default-produces-media-type: application/json
-  writer-with-default-pretty-printer: true
-  model-and-view-allowed: true
-  swagger-ui:
-    syntax-highlight:
-      theme: tomorrow-night
+kopis:
+  performance:
+    batch-count: 200
+    url: http://www.kopis.or.kr/openApi/restful
+  api:
+    key: ${KOPIS_API_KEY}
 
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-expire-time: 3600000
-  refresh-token-expire-time: 5184000000
+spotify:
+  client-id: ${SPOTIFY_CLIENT_ID}
+  client-secret: ${SPOTIFY_CLIENT_SECRET}
 
-oauth2:
-  google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    token-uri: https://oauth2.googleapis.com/token
-    user-info-url: https://www.googleapis.com/oauth2/v3/userinfo
-    redirect-uri: http://localhost:8080/login/oauth2/code/google
-    delete-account-url: ${GOOGLE_DELETE_ACCOUNT_URL}
-
-  apple:
-    ios:
-      client-id: ${APPLE_IOS_CLIENT_ID}
-      team-id: ${APPLE_IOS_TEAM_ID}
-      key-id: ${APPLE_IOS_KEY_ID}
-      private-key: ${APPLE_IOS_PRIVATE_KEY}
-      token-url: ${APPLE_IOS_TOKEN_URL}
-      delete-account-url: ${APPLE_IOS_DELETE_ACCOUNT_URL}
-
-  kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    client-secret: ${KAKAO_CLIENT_SECRET}
-    token-uri: https://kauth.kakao.com/oauth/token
-    user-info-url: https://kapi.kakao.com/v2/user/me
-    redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+fcm:
+  service-account-file: key/heyapplication-40e61-firebase-adminsdk-cd5mk-6b4dd26836.json
+  project-id: heyapplication-40e61
 
 ---
 spring:
@@ -80,8 +57,7 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
@@ -90,8 +66,23 @@ spring:
     redis:
       host: localhost
       port: 6379
+  task:
+    execution:
+      pool:
+        core-size: 10
 server:
-  port: 8080
+  port: 8180
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+    jdbc:
+      sqlonly: off
+      sqltiming: debug
+      audit: off
+      resultset: off
+      resultsettable: debug
+      connection: off
 
 ---
 spring:
@@ -106,7 +97,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
     open-in-view: false
     properties:
       hibernate:
@@ -115,8 +105,23 @@ spring:
     redis:
       host: localhost
       port: 6379
+  task:
+    execution:
+      pool:
+        core-size: 2
 server:
-  port: 8090
+  port: 8190
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+    jdbc:
+      sqlonly: off
+      sqltiming: debug
+      audit: off
+      resultset: off
+      resultsettable: debug
+      connection: off
 
 ---
 #spring.config.active.on-profile: prod
