@@ -57,7 +57,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
                 .on(performanceTicketing.performance.eq(performance))
                 .leftJoin(place)
                 .on(performance.place.placeId.eq(place.placeId))
-                .where(eqFilter(request))
+                .where(builder.and(eqFilter(request)))
                 .groupBy(performance.performanceId, performance.name, performance.ticketStatus, performance.startDate, performance.endDate, place.name)
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
