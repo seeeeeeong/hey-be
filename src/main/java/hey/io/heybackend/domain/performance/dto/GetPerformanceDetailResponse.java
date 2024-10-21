@@ -19,7 +19,7 @@ public class GetPerformanceDetailResponse {
     private Long performanceId;
     private String performanceName;
     private PerformanceType performanceType;
-//    private PerformanceGenre genres;
+    private List<PerformanceGenre> genres;
     private TicketStatus ticketStatus;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -34,6 +34,7 @@ public class GetPerformanceDetailResponse {
 
     public static GetPerformanceDetailResponse from(Performance performance) {
 
+        List<PerformanceGenre> genres = findGenres(performance);
         List<PerformancePriceElement> prices = findPrices(performance);
         List<PerformanceTicketingElement> ticketings = findTicketings(performance);
 
@@ -41,6 +42,7 @@ public class GetPerformanceDetailResponse {
         return GetPerformanceDetailResponse.builder()
                 .performanceId(performance.getPerformanceId())
                 .performanceName(performance.getName())
+                .genres(genres)
                 .ticketStatus(performance.getTicketStatus())
                 .startDate(performance.getStartDate())
                 .endDate(performance.getEndDate())
@@ -49,6 +51,12 @@ public class GetPerformanceDetailResponse {
                 .prices(prices)
                 .ticketings(ticketings)
                 .build();
+    }
+
+    private static List<PerformanceGenre> findGenres(Performance performance) {
+        return performance.getGenres().stream()
+                .map(genre -> genre.getPerformanceGenre())
+                .collect(Collectors.toList());
     }
 
     private static List<PerformancePriceElement> findPrices(Performance performance) {

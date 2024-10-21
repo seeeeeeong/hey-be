@@ -1,6 +1,6 @@
-package hey.io.heybackend.domain.performance.entity;
+package hey.io.heybackend.domain.artist.entity;
 
-import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,19 +8,19 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(schema = "performance")
+@Table(schema = "artist")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PerformanceGenres {
+public class ArtistGenre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 일련번호
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "performance_id")
-    private Performance performance; // 공연 엔티티
+    @JoinColumn(name = "artist_id")
+    private Artist artist;
 
     @Column(nullable = false)
-    private PerformanceGenre performanceGenre; // 공연 장르
+    private hey.io.heybackend.domain.artist.enums.ArtistGenre artistGenre; // 공연 장르
 
 }

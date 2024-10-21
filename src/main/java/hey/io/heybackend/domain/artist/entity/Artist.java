@@ -38,6 +38,9 @@ public class Artist extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ArtistStatus artistStatus; // 아티스트 상태
 
+    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ArtistGenre> genres = new ArrayList<>();
+
     @Transient
     private List<File> files = new ArrayList<>();
 

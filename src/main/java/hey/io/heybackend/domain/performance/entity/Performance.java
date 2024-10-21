@@ -58,6 +58,9 @@ public class Performance extends BaseTimeEntity {
     private PerformanceStatus performanceStatus; // 공연 상태
 
     @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerformanceGenres> genres = new ArrayList<>();
+
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformancePrice> prices = new ArrayList<>();
 
     @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
