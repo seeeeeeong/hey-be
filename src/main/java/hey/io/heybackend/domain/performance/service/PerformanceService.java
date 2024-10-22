@@ -1,6 +1,8 @@
 package hey.io.heybackend.domain.performance.service;
 
 import hey.io.heybackend.common.dto.SliceResponse;
+import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.domain.performance.dto.PerformanceArtistResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
@@ -30,7 +32,8 @@ public class PerformanceService {
 
     public PerformanceDetailResponse getPerformanceDetail(Long performanceId) {
 
-        Performance performance = performanceRepository.getPerformanceDetail(performanceId);
+        Performance performance = performanceRepository.getPerformanceDetail(performanceId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
         return PerformanceDetailResponse.from(performance);
     }

@@ -15,7 +15,7 @@ public interface PerformanceRepository extends JpaRepository<Performance, Long>,
             "LEFT JOIN FETCH p.place " +
             "LEFT JOIN FETCH p.ticketings " +
             "WHERE p.performanceId = :performanceId")
-    Performance getPerformanceDetail(@Param("performanceId") Long performanceId);
+    Optional<Performance> getPerformanceDetail(@Param("performanceId") Long performanceId);
 
 }
 
