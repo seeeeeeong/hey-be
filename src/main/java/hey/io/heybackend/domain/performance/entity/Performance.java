@@ -73,3 +73,4 @@ public class Performance extends BaseTimeEntity {
     private List<PerformanceArtist> performanceArtists = new ArrayList<>();
 
 }
+

@@ -3,7 +3,10 @@ package hey.io.heybackend.domain.performance.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.domain.performance.dto.*;
+import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
@@ -32,7 +35,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<GetPerformanceListResponse> getPerformanceList(PerformanceFilterRequest request, Pageable pageable, Sort.Direction direction) {
+    public Slice<PerformanceListResponse> getPerformanceList(PerformanceFilterRequest request, Pageable pageable, Sort.Direction direction) {
         BooleanBuilder builder = new BooleanBuilder();
         int pageSize = pageable.getPageSize();
 
@@ -40,8 +43,8 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
             builder.and(performance.performanceType.in(request.getPerformanceType()));
         }
 
-        List<GetPerformanceListResponse> content = queryFactory.select(
-                        new QGetPerformanceListResponse(
+        List<PerformanceListResponse> content = queryFactory.select(
+                        new QPerformanceListResponse(
                                 performance.performanceId,
                                 performance.name,
                                 performanceTicketing.openDatetime.min(),
@@ -73,12 +76,12 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     }
 
     @Override
-    public Slice<GetPerformanceArtistListResponse> getPerformanceArtistList(Long performanceId, Pageable pageable, Sort.Direction direction) {
+    public Slice<PerformanceArtistResponse> getPerformanceArtistList(Long performanceId, Pageable pageable, Sort.Direction direction) {
 
         int pageSize = pageable.getPageSize();
 
-        List<GetPerformanceArtistListResponse> content = queryFactory.select(
-                new QGetPerformanceArtistListResponse(artist.artistId, artist.name))
+        List<PerformanceArtistResponse> content = queryFactory.select(
+                new QPerformanceArtistResponse(artist.artistId, artist.name))
                 .from(performanceArtist)
                 .join(performanceArtist.artist, artist)
                 .where(performanceArtist.performance.performanceId.eq(performanceId))

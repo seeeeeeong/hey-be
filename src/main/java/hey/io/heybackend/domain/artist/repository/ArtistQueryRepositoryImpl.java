@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hey.io.heybackend.domain.artist.dto.GetArtistPerformanceListResponse;
 import hey.io.heybackend.domain.artist.dto.QGetArtistPerformanceListResponse;
-import hey.io.heybackend.domain.performance.dto.QGetPerformanceArtistListResponse;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

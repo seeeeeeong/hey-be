@@ -12,7 +12,7 @@ public class PerformanceGenreElement {
 
     public static PerformanceGenreElement from(PerformanceGenres genre) {
         return PerformanceGenreElement.builder()
-                .performanceGenre(genre.getPerformanceGenre().getDescription()) // 장르 설명만 추출
+                .performanceGenre(genre.getPerformanceGenre().getDescription())
                 .build();
     }
 }

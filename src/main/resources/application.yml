@@ -96,11 +96,18 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
+      default_batch_fetch_size: 100
       ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 100
+    show-sql: true
+
+
   data:
     redis:
       host: localhost
