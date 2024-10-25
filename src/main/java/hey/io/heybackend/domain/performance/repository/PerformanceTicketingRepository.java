@@ -11,6 +11,4 @@ import java.util.List;
 @Repository
 public interface PerformanceTicketingRepository extends JpaRepository<PerformanceTicketing, Long> {
 
-    List<PerformanceTicketing> findByPerformance(Performance performance);
-
 }

@@ -3,10 +3,12 @@ package hey.io.heybackend.domain.performance.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import hey.io.heybackend.common.exception.BusinessException;
-import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.domain.artist.entity.Artist;
+import hey.io.heybackend.domain.file.entity.File;
+import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.performance.dto.*;
 import hey.io.heybackend.domain.performance.entity.Performance;
+import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
@@ -19,15 +21,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
+import static hey.io.heybackend.domain.file.entity.QFile.file;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
 import static hey.io.heybackend.domain.performance.entity.QPlace.place;
+
 
 @RequiredArgsConstructor
 public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepository {
@@ -76,19 +83,67 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     }
 
     @Override
+    public Optional<PerformanceDetailResponse> getPerformanceDetail(Long performanceId) {
+
+        Performance optionalPerformance = queryFactory
+                .selectFrom(performance)
+                .leftJoin(performance.place, place).fetchJoin()
+                .leftJoin(performance.performanceArtists, performanceArtist).fetchJoin()
+                .leftJoin(performanceArtist.artist, artist)
+                .where(performance.performanceId.eq(performanceId))
+//                        .and(artist.artistStatus.eq(ArtistStatus.ENABLE)))
+                .distinct()
+                .fetchOne();
+
+        if (optionalPerformance == null) {
+            return Optional.empty();
+        }
+
+        List<File> files = queryFactory
+                .selectFrom(file)
+                .where(file.entityId.eq(optionalPerformance.getPerformanceId())
+                        .and(file.entityType.eq(EntityType.PERFORMANCE)))
+                .fetch();
+
+        optionalPerformance.getFiles().addAll(files);
+
+        List<Artist> sortedArtists = optionalPerformance.getPerformanceArtists().stream()
+                .map(PerformanceArtist::getArtist)
+                .sorted(Comparator.comparing(Artist::getName))
+                .limit(5)
+                .collect(Collectors.toList());
+
+        sortedArtists.forEach(artist -> {
+            List<File> artistFiles = queryFactory
+                    .selectFrom(file)
+                    .where(file.entityId.eq(artist.getArtistId())
+                            .and(file.entityType.eq(EntityType.ARTIST)))
+                    .fetch();
+            artist.getFiles().addAll(artistFiles);
+        });
+
+
+        return Optional.of(PerformanceDetailResponse.from(optionalPerformance, sortedArtists));
+
+    }
+
+
+    @Override
     public Slice<PerformanceArtistResponse> getPerformanceArtistList(Long performanceId, Pageable pageable, Sort.Direction direction) {
 
         int pageSize = pageable.getPageSize();
 
         List<PerformanceArtistResponse> content = queryFactory.select(
-                new QPerformanceArtistResponse(artist.artistId, artist.name))
+                new QPerformanceArtistResponse(artist.artistId, artist.name, artist.engName, artist.artistType))
                 .from(performanceArtist)
                 .join(performanceArtist.artist, artist)
                 .where(performanceArtist.performance.performanceId.eq(performanceId))
+//                        .and(artist.artistStatus.eq(ArtistStatus.ENABLE)))
                 .orderBy(artist.name.asc())
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
                 .fetch();
+
 
         boolean hasNext = false;
         if (content.size() > pageSize) {

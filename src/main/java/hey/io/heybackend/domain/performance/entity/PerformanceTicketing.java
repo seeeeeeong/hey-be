@@ -3,6 +3,7 @@ package hey.io.heybackend.domain.performance.entity;
 import hey.io.heybackend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,5 +31,19 @@ public class PerformanceTicketing extends BaseTimeEntity {
     private LocalDateTime openDatetime; // 티켓 오픈 시간
 
     private String ticketingUrl; // 예매 링크
+
+    @Builder
+    public PerformanceTicketing(Performance performance, String ticketingBooth, String ticketingPremium,
+                                LocalDateTime openDatetime, String ticketingUrl) {
+        this.performance = performance;
+        this.ticketingBooth = ticketingBooth;
+        this.ticketingPremium = ticketingPremium;
+        this.openDatetime = openDatetime;
+        this.ticketingUrl = ticketingUrl;
+    }
+
+    void updatePerformance(Performance performance) {
+        this.performance = performance;
+    }
 
 }

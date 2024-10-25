@@ -3,15 +3,14 @@ package hey.io.heybackend.domain.artist.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import hey.io.heybackend.domain.artist.dto.GetArtistPerformanceListResponse;
-import hey.io.heybackend.domain.artist.dto.QGetArtistPerformanceListResponse;
+import hey.io.heybackend.domain.artist.dto.ArtistPerformanceResponse;
+import hey.io.heybackend.domain.artist.dto.QArtistPerformanceResponse;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
 
 
     @Override
-    public Slice<GetArtistPerformanceListResponse> getArtistPerformanceList(Long artistId, String exceptClosed, Pageable pageable, Sort.Direction direction) {
+    public Slice<ArtistPerformanceResponse> getArtistPerformanceList(Long artistId, String exceptClosed, Pageable pageable, Sort.Direction direction) {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(performanceArtist.artist.artistId.eq(artistId));
 
@@ -37,8 +36,8 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
 
         int pageSize = pageable.getPageSize();
 
-        List<GetArtistPerformanceListResponse> content = queryFactory.select(
-                new QGetArtistPerformanceListResponse(
+        List<ArtistPerformanceResponse> content = queryFactory.select(
+                new QArtistPerformanceResponse(
                         performance.performanceId,
                         performance.name,
                         performanceTicketing.openDatetime.min(),

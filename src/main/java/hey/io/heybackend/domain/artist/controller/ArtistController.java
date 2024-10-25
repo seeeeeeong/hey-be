@@ -1,8 +1,10 @@
 package hey.io.heybackend.domain.artist.controller;
 
 import hey.io.heybackend.common.dto.SliceResponse;
-import hey.io.heybackend.domain.artist.dto.GetArtistDetailResponse;
-import hey.io.heybackend.domain.artist.dto.GetArtistPerformanceListResponse;
+import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.resolver.AuthUser;
+import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
+import hey.io.heybackend.domain.artist.dto.ArtistPerformanceResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -18,18 +20,19 @@ public class ArtistController {
     private final ArtistService artistService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId) {
-        GetArtistDetailResponse getArtistDetailResponse = artistService.getArtistDetail(artistId);
-        return ResponseEntity.status(HttpStatus.OK).body(getArtistDetailResponse);
+    public ResponseEntity<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
+                                                                @AuthUser JwtTokenInfo jwtTokenInfo) {
+        ArtistDetailResponse artistDetailResponse = artistService.getArtistDetail(artistId, jwtTokenInfo);
+        return ResponseEntity.status(HttpStatus.OK).body(artistDetailResponse);
     }
 
     @GetMapping("/{id}/performances")
-    public ResponseEntity<SliceResponse<GetArtistPerformanceListResponse>> getArtistPerformanceList(@PathVariable("id") Long artistId,
-                                                                                                @RequestParam(value = "except_closed", required = false) String exceptClosed,
-                                                                                                @RequestParam(value = "size", required = false, defaultValue = "20") int size,
-                                                                                                @RequestParam(value = "page", required = false, defaultValue = "0") int page,
-                                                                                                @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction direction) {
-        SliceResponse<GetArtistPerformanceListResponse> getArtistPerformanceListResponse
+    public ResponseEntity<SliceResponse<ArtistPerformanceResponse>> getArtistPerformanceList(@PathVariable("id") Long artistId,
+                                                                                             @RequestParam(value = "except_closed", required = false) String exceptClosed,
+                                                                                             @RequestParam(value = "size", required = false, defaultValue = "20") int size,
+                                                                                             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                                                                                             @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction direction) {
+        SliceResponse<ArtistPerformanceResponse> getArtistPerformanceListResponse
                 = artistService.getArtistPerformanceList(artistId, exceptClosed, size, page, direction);
 
         return ResponseEntity.status(HttpStatus.OK).body(getArtistPerformanceListResponse);

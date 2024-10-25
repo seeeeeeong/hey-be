@@ -1,9 +1,11 @@
 package hey.io.heybackend.domain.performance.controller;
 
 import hey.io.heybackend.common.dto.SliceResponse;
+import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.domain.performance.dto.PerformanceArtistResponse;
-import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse;
+import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceFilterRequest;
 import hey.io.heybackend.domain.performance.service.PerformanceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,8 +37,9 @@ public class PerformanceController {
 
     @GetMapping("/{id}")
     @Operation(summary = "공연 상세", description = "공연 상세를 조회합니다.")
-    public ResponseEntity<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId) {
-        PerformanceDetailResponse getArtistDetailResponse = performanceService.getPerformanceDetail(performanceId);
+    public ResponseEntity<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId,
+                                                                          @AuthUser JwtTokenInfo jwtTokenInfo) {
+        PerformanceDetailResponse getArtistDetailResponse = performanceService.getPerformanceDetail(performanceId, jwtTokenInfo);
         return ResponseEntity.status(HttpStatus.OK).body(getArtistDetailResponse);
     }
 

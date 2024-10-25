@@ -11,6 +11,5 @@ import java.util.List;
 @Repository
 public interface PerformancePriceRepository extends JpaRepository<PerformancePrice, Long> {
 
-    List<PerformancePrice> findByPerformance(Performance performance);
 
 }

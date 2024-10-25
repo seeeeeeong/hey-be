@@ -1,16 +1,19 @@
 package hey.io.heybackend.domain.performance.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
+import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.performance.enums.TicketStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PerformanceListResponse {
 
     @Schema(description = "공연 ID", example = "1")
@@ -34,6 +37,9 @@ public class PerformanceListResponse {
     @Schema(description = "장소 명", example = "과천시민회관")
     private String placeName;
 
+    private List<FileDTO> files;
+
+
     @QueryProjection
     public PerformanceListResponse(Long performanceId, String performanceName, LocalDateTime openDateTime, TicketStatus ticketStatus, LocalDate startDate, LocalDate endDate, String placeName) {
         this.performanceId = performanceId;
@@ -43,6 +49,10 @@ public class PerformanceListResponse {
         this.startDate = startDate;
         this.endDate = endDate;
         this.placeName = placeName;
+    }
+
+    public void setFiles(List<FileDTO> files) {
+        this.files = files;
     }
 
 }
