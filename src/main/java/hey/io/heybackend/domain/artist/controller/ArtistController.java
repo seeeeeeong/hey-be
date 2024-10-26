@@ -7,6 +7,7 @@ import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.dto.ArtistPerformanceResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,13 @@ public class ArtistController {
 
     private final ArtistService artistService;
 
+    /**
+     * <p>특정 아티스트의 상세 정보를 조회합니다.</p>
+     *
+     * @param artistId 아티스트의 ID
+     * @param jwtTokenInfo JWT 토큰 정보 (인증용)
+     * @return {@link ResponseEntity} 객체, 아티스트 상세 정보를 포함
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
                                                                 @AuthUser JwtTokenInfo jwtTokenInfo) {
@@ -26,15 +34,20 @@ public class ArtistController {
         return ResponseEntity.status(HttpStatus.OK).body(artistDetailResponse);
     }
 
+    /**
+     * <p>특정 아티스트의 공연 목록을 조회합니다.</p>
+     *
+     * @param artistId 아티스트의 ID
+     * @param exceptClosed 종료된 공연을 제외할지 여부 (optional)
+     * @param pageable 페이징 정보
+     * @return {@link ResponseEntity} 객체, 아티스트의 공연 목록을 포함
+     */
     @GetMapping("/{id}/performances")
     public ResponseEntity<SliceResponse<ArtistPerformanceResponse>> getArtistPerformanceList(@PathVariable("id") Long artistId,
                                                                                              @RequestParam(value = "except_closed", required = false) String exceptClosed,
-                                                                                             @RequestParam(value = "size", required = false, defaultValue = "20") int size,
-                                                                                             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
-                                                                                             @RequestParam(name = "direction", required = false, defaultValue = "DESC") Sort.Direction direction) {
+                                                                                             Pageable pageable) {
         SliceResponse<ArtistPerformanceResponse> getArtistPerformanceListResponse
-                = artistService.getArtistPerformanceList(artistId, exceptClosed, size, page, direction);
-
+                = artistService.getArtistPerformanceList(artistId, exceptClosed, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(getArtistPerformanceListResponse);
     }
 

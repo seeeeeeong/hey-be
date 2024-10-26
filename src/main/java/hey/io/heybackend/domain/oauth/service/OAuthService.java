@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.jwt.JwtTokenInfo;
 import hey.io.heybackend.common.jwt.dto.JwtTokenDto;
 import hey.io.heybackend.common.jwt.service.TokenManager;
 import hey.io.heybackend.common.util.HeaderUtils;
 import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.enums.Provider;
 import hey.io.heybackend.domain.member.service.MemberService;
 import hey.io.heybackend.domain.oauth.dto.OAuthAccessToken;
 import hey.io.heybackend.domain.oauth.dto.OAuthUserProfile;
@@ -40,7 +42,6 @@ public class OAuthService {
     private final ObjectMapper objectMapper;
     private final MemberService memberService;
     private final TokenManager tokenManager;
-    private final TokenService tokenService;
 
 
     @Transactional
@@ -48,21 +49,14 @@ public class OAuthService {
         OAuthAccessToken accessToken = getAccessToken(request);
         OAuthUserProfile oAuthUserProfile = getUserProfile(accessToken);
 
-        JwtTokenDto jwtTokenDto = null;
+        Member member = memberService.findMemberByEmail(oAuthUserProfile.getEmail());
 
-        Optional<Member> optionalMember = memberService.findMemberByEmail(oAuthUserProfile.getEmail());
+//        if (member == null) {
+//            member = memberService.registerMember(oAuthUserProfile.getEmail(), Provider.GOOGLE, accessToken.getRefreshToken());
+//        }
 
-        if (optionalMember.isEmpty()) {
-//
-        } else {
-            Member oauthMember = optionalMember.get();
-            jwtTokenDto = tokenManager.createJwtTokenDto(oauthMember.getMemberId());
+        JwtTokenDto jwtTokenDto = tokenManager.createJwtTokenDto(member.getMemberId());
 
-            Token token = tokenService.findTokenByMember(oauthMember)
-                            .orElseThrow(() -> new BusinessException(ErrorCode.JWT_TOKEN_NOT_FOUND));
-
-            token.updateRefreshToken(jwtTokenDto);
-        }
         return OauthLoginResponse.of(jwtTokenDto);
     }
 

@@ -4,11 +4,14 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hey.io.heybackend.domain.artist.entity.Artist;
+import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.file.entity.File;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.performance.dto.*;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
+import hey.io.heybackend.domain.performance.entity.PerformanceGenres;
+import hey.io.heybackend.domain.performance.entity.PerformanceTicketing;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
@@ -32,6 +35,7 @@ import static hey.io.heybackend.domain.file.entity.QFile.file;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
+import static hey.io.heybackend.domain.performance.entity.QPerformancePrice.performancePrice;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
 import static hey.io.heybackend.domain.performance.entity.QPlace.place;
 
@@ -42,155 +46,51 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<PerformanceListResponse> getPerformanceList(PerformanceFilterRequest request, Pageable pageable, Sort.Direction direction) {
-        BooleanBuilder builder = new BooleanBuilder();
+    public Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
         int pageSize = pageable.getPageSize();
 
-        if (!StringUtils.isEmpty(request.getPerformanceType())) {
-            builder.and(performance.performanceType.in(request.getPerformanceType()));
-        }
-
-        List<PerformanceListResponse> content = queryFactory.select(
-                        new QPerformanceListResponse(
-                                performance.performanceId,
-                                performance.name,
-                                performanceTicketing.openDatetime.min(),
-                                performance.ticketStatus,
-                                performance.startDate,
-                                performance.endDate,
-                                place.name
-                        )
+        List<Performance> performanceList = queryFactory.selectFrom(performance)
+                .where(
+//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        inType(request.getType()),
+                        inGenres(request.getGenres()),
+                        inStatuses(request.getStatuses()),
+                        inTickets(request.getTickets())
                 )
-                .distinct()
-                .from(performance)
+                .leftJoin(performanceGenres)
+                .on(performanceGenres.performance.eq(performance))
+                .leftJoin(performancePrice)
+                .on(performancePrice.performance.eq(performance))
                 .leftJoin(performanceTicketing)
                 .on(performanceTicketing.performance.eq(performance))
-                .leftJoin(place)
-                .on(performance.place.placeId.eq(place.placeId))
-                .where(builder.and(eqFilter(request)))
-                .groupBy(performance.performanceId, performance.name, performance.ticketStatus, performance.startDate, performance.endDate, place.name)
+                .orderBy(performance.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
                 .fetch();
 
         boolean hasNext = false;
-        if (content.size() > pageSize) {
-            content.remove(pageSize);
+        if (performanceList.size() > pageSize) {
+            performanceList.remove(pageSize);
             hasNext = true;
         }
 
-        return new SliceImpl<>(content, pageable, hasNext);
+        return new SliceImpl<>(performanceList, pageable, hasNext);
     }
 
-    @Override
-    public Optional<PerformanceDetailResponse> getPerformanceDetail(Long performanceId) {
-
-        Performance optionalPerformance = queryFactory
-                .selectFrom(performance)
-                .leftJoin(performance.place, place).fetchJoin()
-                .leftJoin(performance.performanceArtists, performanceArtist).fetchJoin()
-                .leftJoin(performanceArtist.artist, artist)
-                .where(performance.performanceId.eq(performanceId))
-//                        .and(artist.artistStatus.eq(ArtistStatus.ENABLE)))
-                .distinct()
-                .fetchOne();
-
-        if (optionalPerformance == null) {
-            return Optional.empty();
-        }
-
-        List<File> files = queryFactory
-                .selectFrom(file)
-                .where(file.entityId.eq(optionalPerformance.getPerformanceId())
-                        .and(file.entityType.eq(EntityType.PERFORMANCE)))
-                .fetch();
-
-        optionalPerformance.getFiles().addAll(files);
-
-        List<Artist> sortedArtists = optionalPerformance.getPerformanceArtists().stream()
-                .map(PerformanceArtist::getArtist)
-                .sorted(Comparator.comparing(Artist::getName))
-                .limit(5)
-                .collect(Collectors.toList());
-
-        sortedArtists.forEach(artist -> {
-            List<File> artistFiles = queryFactory
-                    .selectFrom(file)
-                    .where(file.entityId.eq(artist.getArtistId())
-                            .and(file.entityType.eq(EntityType.ARTIST)))
-                    .fetch();
-            artist.getFiles().addAll(artistFiles);
-        });
-
-
-        return Optional.of(PerformanceDetailResponse.from(optionalPerformance, sortedArtists));
-
+    private BooleanExpression inType(PerformanceType type) {
+        return ObjectUtils.isEmpty(type) ? null : performance.performanceType.in(type);
     }
 
-
-    @Override
-    public Slice<PerformanceArtistResponse> getPerformanceArtistList(Long performanceId, Pageable pageable, Sort.Direction direction) {
-
-        int pageSize = pageable.getPageSize();
-
-        List<PerformanceArtistResponse> content = queryFactory.select(
-                new QPerformanceArtistResponse(artist.artistId, artist.name, artist.engName, artist.artistType))
-                .from(performanceArtist)
-                .join(performanceArtist.artist, artist)
-                .where(performanceArtist.performance.performanceId.eq(performanceId))
-//                        .and(artist.artistStatus.eq(ArtistStatus.ENABLE)))
-                .orderBy(artist.name.asc())
-                .offset(pageable.getOffset())
-                .limit(pageSize + 1)
-                .fetch();
-
-
-        boolean hasNext = false;
-        if (content.size() > pageSize) {
-            content.remove(pageSize);
-            hasNext = true;
-        }
-
-        return new SliceImpl<>(content, pageable, hasNext);
+    private BooleanExpression inGenres(List<PerformanceGenre> genres) {
+        return ObjectUtils.isEmpty(genres) ? null : performanceGenres.performanceGenre.in(genres);
     }
 
-    public BooleanBuilder eqFilter(PerformanceFilterRequest filter) {
-        return eqPerformanceType(filter.getPerformanceType())
-                .and(eqPerformanceGenre(filter.getPerformanceGenre()))
-                .and(eqPerformanceStatus(filter.getPerformanceStatus()))
-                .and(eqTicketStatus(filter.getTicketStatus()));
+    private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
+        return ObjectUtils.isEmpty(statuses) ? null : performance.performanceStatus.in(statuses);
     }
 
-    private BooleanBuilder eqPerformanceType(PerformanceType performanceType) {
-        return nullSafeBooleanBuilder(() ->
-                ObjectUtils.isEmpty(performanceType) ? null : performance.performanceType.in(performanceType)
-        );
+    private BooleanExpression inTickets(List<TicketStatus> tickets) {
+        return ObjectUtils.isEmpty(tickets) ? null : performance.ticketStatus.in(tickets);
     }
 
-    private BooleanBuilder eqPerformanceGenre(List<PerformanceGenre> performanceGenre) {
-        return nullSafeBooleanBuilder(() ->
-                ObjectUtils.isEmpty(performanceGenre) ? null : performanceGenres.performanceGenre.in(performanceGenre)
-        );
-    }
-
-    private BooleanBuilder eqPerformanceStatus(List<PerformanceStatus> performanceStatus) {
-        return nullSafeBooleanBuilder(() ->
-                ObjectUtils.isEmpty(performanceStatus) ? null : performance.performanceStatus.in(performanceStatus)
-        );
-    }
-
-    private BooleanBuilder eqTicketStatus(List<TicketStatus> ticketStatus) {
-        return nullSafeBooleanBuilder(() ->
-                ObjectUtils.isEmpty(ticketStatus) ? null : performance.ticketStatus.in(ticketStatus)
-        );
-    }
-
-    private BooleanBuilder nullSafeBooleanBuilder(Supplier<BooleanExpression> supplier) {
-        try {
-            BooleanExpression expression = supplier.get();
-            return expression != null ? new BooleanBuilder(expression) : new BooleanBuilder();
-        } catch (IllegalArgumentException e) {
-            return new BooleanBuilder();
-        }
-    }
 }

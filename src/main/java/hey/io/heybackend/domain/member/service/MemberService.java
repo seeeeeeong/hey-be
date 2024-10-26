@@ -1,5 +1,7 @@
 package hey.io.heybackend.domain.member.service;
 
+import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.domain.member.entity.Follow;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.enums.FollowType;
@@ -18,8 +20,9 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public Optional<Member> findMemberByEmail(String email) {
-        return memberRepository.findByEmail(email);
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
 }

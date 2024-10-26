@@ -37,7 +37,9 @@ public enum ErrorCode {
     PERFORMANCE_NOT_FOUND(404, "P001", "공연을 찾을 수 없습니다."),
 
 
-    ARTIST_NOT_FOUND(404, "A001", "아티스트를 찾을 수 없습니다.");
+    ARTIST_NOT_FOUND(404, "A001", "아티스트를 찾을 수 없습니다."),
+
+    MEMBER_NOT_FOUND(404, "M001", "유저를 찾을 수 없습니다.");
 
 
     private final int status;

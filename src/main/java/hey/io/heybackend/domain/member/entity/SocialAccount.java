@@ -1,6 +1,7 @@
 package hey.io.heybackend.domain.member.entity;
 
 import hey.io.heybackend.common.entity.BaseTimeEntity;
+import hey.io.heybackend.domain.member.enums.Provider;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class SocialAccount extends BaseTimeEntity {
     private Member member;
 
     @Column(name = "provider", nullable = false)
-    private String provider;
+    private Provider provider;
 
     @Column(name = "provider_uid", nullable = false)
     private String providerUid;

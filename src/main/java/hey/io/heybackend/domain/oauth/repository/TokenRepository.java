@@ -10,6 +10,4 @@ import java.util.Optional;
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Long> {
 
-    Optional<Token> findByMember(Member member);
-
 }

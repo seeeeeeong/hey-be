@@ -3,6 +3,7 @@ package hey.io.heybackend.common.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 import java.util.List;
@@ -36,6 +37,14 @@ public class SliceResponse<T> {
         this.size = size;
         this.first = first;
         this.last = last;
+    }
+
+    public SliceResponse(List<T> content, Pageable pageable, boolean hasNext) {
+        this.content = content;
+        this.currentPage = pageable.getPageNumber();
+        this.size = pageable.getPageSize();
+        this.first = pageable.getPageNumber() == 0;
+        this.last = !hasNext;
     }
 
 }
