@@ -2,6 +2,7 @@ package hey.io.heybackend.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import hey.io.heybackend.common.exception.ErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,19 +12,16 @@ import java.util.List;
 
 @Getter
 @Builder
-@RequiredArgsConstructor
 public class ErrorResponse {
 
-    private final boolean status = false;
-    private final String code;
-    private final String message;
+    private String code;
+    private String message;
 
-    @JsonInclude(Include.NON_EMPTY)
-    private final List<ValidationError> errors;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<ValidationError> errors;
 
     @Getter
     @Builder
-    @RequiredArgsConstructor
     public static class ValidationError {
 
         private final String field;
@@ -36,4 +34,29 @@ public class ErrorResponse {
                     .build();
         }
     }
+
+    private static ErrorResponse get(String code, String message, List<ValidationError> errors) {
+        return ErrorResponse.builder()
+                .code(code)
+                .message(message)
+                .errors(errors)
+                .build();
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode) {
+        return get(errorCode.toString(), errorCode.getMessage(), null);
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode, Exception e) {
+        return get(errorCode.toString(), errorCode.getMessage(e), null);
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode, String message) {
+        return get(errorCode.toString(), errorCode.getMessage() + " - " + message, null);
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode, List<ValidationError> errors) {
+        return get(errorCode.toString(), errorCode.getMessage(), errors);
+    }
+
 }

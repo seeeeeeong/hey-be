@@ -1,108 +1,108 @@
-
-
 package hey.io.heybackend.common.exception;
 
 import hey.io.heybackend.common.dto.ErrorResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.sql.SQLException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-@ControllerAdvice
-@RestController
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    public GlobalExceptionHandler() {
+    // 비즈니스 예외 처리
+    @ExceptionHandler(BusinessException.class)
+    protected ResponseEntity<Object> handleBusinessException(BusinessException e) {
+        log.error(e.toString(), e);
+        return handleExceptionInternal(e.getErrorCode());
     }
 
-    @ExceptionHandler({BusinessException.class})
-    public ResponseEntity<Object> handleBusinessException(BusinessException e) {
-        if (e.getErrorCode().getStatus() == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
-            log.error("handleBusinessException", e);
-        } else {
-            log.warn("handleBusinessException", e);
-        }
-
-        ErrorCode errorCode = e.getErrorCode();
-        return this.handleExceptionInternal(errorCode);
+    // 지원하지 않는 HTTP method를 호출할 경우
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupportedException(
+        HttpRequestMethodNotSupportedException e) {
+        log.error("HttpRequestMethodNotSupportedException : {}", e.getMessage());
+        return handleExceptionInternal(ErrorCode.METHOD_NOT_ALLOWED);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e) {
-        log.warn("handleIllegalArgument", e);
-        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
-        return this.handleExceptionInternal(errorCode, e.getMessage());
+    // 존재하지 않는 URI에 접근할 경우
+    @ExceptionHandler(NoResourceFoundException.class)
+    protected ResponseEntity<Object> handleNoResourceFoundException() {
+        return handleExceptionInternal(ErrorCode.API_NOT_FOUND);
     }
 
-    @ExceptionHandler({NoSuchElementException.class})
-    public ResponseEntity<Object> handleNoSuchElement(NoSuchElementException e) {
-        log.warn("handleNoSuchElement", e);
-        ErrorCode errorCode = ErrorCode.ENTITY_NOT_FOUND;
-        return this.handleExceptionInternal(errorCode, e.getMessage());
+    // 쿼리 파라미터 없이 요청할 경우
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    protected ResponseEntity<Object> handleMissingServletRequestParameterException() {
+        return handleExceptionInternal(ErrorCode.QUERY_PARAMETER_REQUIRED);
     }
 
-    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers,
-        HttpStatusCode status, WebRequest request) {
-        log.warn("handleIllegalArgument", e);
-        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
-        return this.handleExceptionInternal(e, errorCode);
+    // 매개변수 유효성 검증에 실패할 경우
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
+        log.error(e.toString(), e);
+        return handleExceptionInternal(e);
     }
 
-    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers,
-        HttpStatusCode status, WebRequest request) {
-        log.warn("handleHttpMessageNotReadable", e);
-        return this.handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE);
+    // @Valid 유효성 검증에 실패할 경우
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error(e.toString(), e);
+        return handleExceptionInternal(e);
     }
 
-    @ExceptionHandler({Exception.class})
-    public ResponseEntity<Object> handleAllException(Exception ex) {
-        log.error("handleAllException", ex);
-        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-        return this.handleExceptionInternal(errorCode);
+    // 그 밖에 발생하는 모든 예외 처리
+    @ExceptionHandler(value = {Exception.class, RuntimeException.class, SQLException.class,
+        DataIntegrityViolationException.class})
+    protected ResponseEntity<Object> handleException(Exception e) {
+        log.error(e.toString(), e);
+        return handleExceptionInternal(e);
     }
-
 
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
-        return ResponseEntity.status(errorCode.getStatus()).body(this.makeErrorResponse(errorCode));
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(ErrorResponse.of(errorCode));
     }
 
-    private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode, String message) {
-        return ResponseEntity.status(errorCode.getStatus()).body(this.makeErrorResponse(errorCode, message));
+    private ResponseEntity<Object> handleExceptionInternal(HandlerMethodValidationException e) {
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(validErrorResponse(errorCode, e));
     }
 
-    private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
-        return ResponseEntity.status(errorCode.getStatus()).body(this.makeErrorResponse(e, errorCode));
+    private ResponseEntity<Object> handleExceptionInternal(BindException e) {
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(validErrorResponse(errorCode, e));
     }
 
-    private ErrorResponse makeErrorResponse(ErrorCode errorCode) {
-        return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage()).build();
+    private ResponseEntity<Object> handleExceptionInternal(Exception e) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_ERROR;
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(ErrorResponse.of(errorCode, e));
     }
 
-    private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
-        return ErrorResponse.builder().code(errorCode.getCode()).message(message).build();
+    private ErrorResponse validErrorResponse(ErrorCode errorCode, HandlerMethodValidationException e) {
+        String message = e.getAllValidationResults().stream()
+            .map(ParameterValidationResult::getResolvableErrors)
+            .flatMap(List::stream)
+            .map(MessageSourceResolvable::getDefaultMessage)
+            .collect(Collectors.joining(", "));
+        return ErrorResponse.of(errorCode, message);
     }
 
-    private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {
+    private ErrorResponse validErrorResponse(ErrorCode errorCode, BindException e) {
         List<ErrorResponse.ValidationError> validationErrorList = e.getBindingResult().getFieldErrors().stream()
             .map(ErrorResponse.ValidationError::of).collect(Collectors.toList());
-        return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage())
-            .errors(validationErrorList).build();
+        return ErrorResponse.of(errorCode, validationErrorList);
     }
 }

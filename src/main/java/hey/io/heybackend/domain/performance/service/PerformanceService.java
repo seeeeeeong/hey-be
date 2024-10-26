@@ -3,6 +3,7 @@ package hey.io.heybackend.domain.performance.service;
 import hey.io.heybackend.common.dto.SliceResponse;
 import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.common.jwt.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
@@ -67,12 +68,12 @@ public class PerformanceService {
      * @param performanceId 공연의 ID
      * @param jwtTokenInfo JWT 토큰 정보 (인증용)
      * @return {@link PerformanceDetailResponse} 객체, 공연 상세 정보를 포함
-     * @throws BusinessException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
+     * @throws EntityNotFoundException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
      */
     public PerformanceDetailResponse getPerformanceDetail(Long performanceId, JwtTokenInfo jwtTokenInfo) {
         // 1. 공연 정보 조회
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
         // 2. 로그인 한 경우, 팔로우 여부 조회
         boolean isFollowed = false;
@@ -158,7 +159,7 @@ public class PerformanceService {
      * @return 공연을 팔로우하고 있으면 true, 아니면 false
      */
     private boolean checkIfFollowed(Long performanceId, Long memberId) {
-        return followRepository.existsByFollowTypeAndFollowTargetIdAndMember_MemberId(FollowType.PERFORMANCE, performanceId, memberId);
+        return followRepository.existsFollow(FollowType.PERFORMANCE, performanceId, memberId);
     }
 
 
