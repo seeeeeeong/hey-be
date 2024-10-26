@@ -21,6 +21,7 @@ public class PerformanceGenres {
     private Performance performance; // 공연 엔티티
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PerformanceGenre performanceGenre; // 공연 장르
 
 }

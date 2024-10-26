@@ -1,20 +1,24 @@
 package hey.io.heybackend.domain.artist.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import hey.io.heybackend.domain.artist.dto.GetArtistPerformanceListResponse;
-import hey.io.heybackend.domain.artist.dto.QGetArtistPerformanceListResponse;
+
+import hey.io.heybackend.domain.artist.enums.ArtistStatus;
+import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
+import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
+import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
@@ -25,34 +29,21 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-
     @Override
-    public Slice<GetArtistPerformanceListResponse> getArtistPerformanceList(Long artistId, String exceptClosed, Pageable pageable, Sort.Direction direction) {
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(performanceArtist.artist.artistId.eq(artistId));
-
-        if ("y".equals(exceptClosed)) {
-            builder.and(performance.performanceStatus.in(PerformanceStatus.READY, PerformanceStatus.ONGOING));
-        }
-
+    public Slice<Performance> getArtistPerformanceList(Long artistId, String exceptClosed, Pageable pageable) {
         int pageSize = pageable.getPageSize();
 
-        List<GetArtistPerformanceListResponse> content = queryFactory.select(
-                new QGetArtistPerformanceListResponse(
-                        performance.performanceId,
-                        performance.name,
-                        performanceTicketing.openDatetime.min(),
-                        performance.ticketStatus,
-                        performance.startDate,
-                        performance.endDate,
-                        place.name))
-                .from(performanceArtist)
-                .join(performanceArtist.performance, performance)
+        List<Performance> performanceList = queryFactory.selectFrom(performance)
+                .where(
+                        performance.performanceArtists.any().artist.artistId.eq(artistId),
+//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+//                        performance.performanceArtists.any().artist.artistStatus.ne(ArtistStatus.INIT),
+                        inExcept(exceptClosed)
+                )
+                .leftJoin(performance.performanceArtists, performanceArtist)
+                .leftJoin(performanceArtist.artist, artist)
                 .leftJoin(performanceTicketing)
                 .on(performanceTicketing.performance.eq(performance))
-                .leftJoin(place)
-                .on(performance.place.placeId.eq(place.placeId))
-                .where(builder)
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
@@ -60,17 +51,22 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
                                 .otherwise(3)
                                 .asc()
                 )
-                .groupBy(performance.performanceId, performance.name, performance.ticketStatus, performance.startDate, performance.endDate, place.name)
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
                 .fetch();
 
         boolean hasNext = false;
-        if (content.size() > pageSize) {
-            content.remove(pageSize);
+        if (performanceList.size() > pageSize) {
+            performanceList.remove(pageSize);
             hasNext = true;
         }
 
-        return new SliceImpl<>(content, pageable, hasNext);
+        return new SliceImpl<>(performanceList, pageable, hasNext);
     }
+
+
+    private BooleanExpression inExcept(String exceptClosed) {
+        return ObjectUtils.isEmpty(exceptClosed) ? null : performance.performanceStatus.in(PerformanceStatus.READY, PerformanceStatus.ONGOING);
+    }
+
 }

@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface PerformanceGenresRepository extends JpaRepository<PerformanceGenres, Long> {
 
-    List<PerformanceGenres> findByPerformance(Performance performance);
-
 }

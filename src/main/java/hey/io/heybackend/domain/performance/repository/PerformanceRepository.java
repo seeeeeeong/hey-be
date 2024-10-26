@@ -11,11 +11,6 @@ import java.util.Optional;
 @Repository
 public interface PerformanceRepository extends JpaRepository<Performance, Long>, PerformanceQueryRepository {
 
-    @Query("SELECT p FROM Performance p " +
-            "LEFT JOIN FETCH p.place " +
-            "LEFT JOIN FETCH p.ticketings " +
-            "WHERE p.performanceId = :performanceId")
-    Optional<Performance> getPerformanceDetail(@Param("performanceId") Long performanceId);
 
 }
 
