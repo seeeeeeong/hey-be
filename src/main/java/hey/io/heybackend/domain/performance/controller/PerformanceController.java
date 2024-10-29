@@ -1,10 +1,12 @@
 package hey.io.heybackend.domain.performance.controller;
 
-import hey.io.heybackend.common.dto.SliceResponse;
+import hey.io.heybackend.common.response.ApiResponse;
+import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.jwt.JwtTokenInfo;
 import hey.io.heybackend.common.resolver.AuthUser;
+import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.performance.dto.*;
 import hey.io.heybackend.domain.performance.service.PerformanceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,9 +34,10 @@ public class PerformanceController {
      */
     @GetMapping
     @Operation(summary = "공연 목록", description = "공연 목록을 조회합니다.")
-    public ResponseEntity<SliceResponse<PerformanceListResponse>> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
-        SliceResponse<PerformanceListResponse> performanceListResponse = performanceService.getPerformanceList(request, pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(performanceListResponse);
+    public ApiResponse<SliceResponse<PerformanceListResponse>> getPerformanceList(@AuthUser JwtTokenInfo jwtTokenInfo,
+                                                                                  PerformanceFilterRequest request,
+                                                                                  Pageable pageable) {
+        return ApiResponse.success(performanceService.getPerformanceList(jwtTokenInfo, request, pageable));
     }
 
     /**
@@ -46,11 +49,12 @@ public class PerformanceController {
      * @throws BusinessException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
      */
     @GetMapping("/{id}")
+    @ApiErrorCode(ErrorCode.PERFORMANCE_NOT_FOUND)
     @Operation(summary = "공연 상세", description = "공연 상세를 조회합니다.")
-    public ResponseEntity<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId,
+    public ApiResponse<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId,
                                                                           @AuthUser JwtTokenInfo jwtTokenInfo) {
-        PerformanceDetailResponse getArtistDetailResponse = performanceService.getPerformanceDetail(performanceId, jwtTokenInfo);
-        return ResponseEntity.status(HttpStatus.OK).body(getArtistDetailResponse);
+
+        return ApiResponse.success(performanceService.getPerformanceDetail(performanceId, jwtTokenInfo));
     }
 
 }
