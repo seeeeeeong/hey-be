@@ -51,7 +51,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 
         List<Performance> performanceList = queryFactory.selectFrom(performance)
                 .where(
-//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        performance.performanceStatus.ne(PerformanceStatus.INIT),
                         inType(request.getType()),
                         inGenres(request.getGenres()),
                         inStatuses(request.getStatuses()),

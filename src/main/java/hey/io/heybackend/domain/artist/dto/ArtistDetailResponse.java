@@ -24,7 +24,7 @@ public class ArtistDetailResponse {
 
     @Schema(description = "아티스트 유형", example = "SOLO",
             allowableValues = {"GROUP", "SOLO"})
-    private ArtistType artistType; // 아티스트 유형 (그룹 또는 솔로)
+    private String artistType; // 아티스트 유형 (그룹 또는 솔로)
 
     @Schema(description = "아티스트 URL", example = "http://example.com/artist/yoonjiyoung")
     private String artistUrl; // 아티스트의 웹사이트 URL
@@ -35,10 +35,21 @@ public class ArtistDetailResponse {
     @Schema(description = "장르 리스트", example = "[\"발라드\", \"힙합\"]")
     private List<String> genres; // 아티스트의 장르
 
-    @Schema(description = "팔로우 여부", example = "true")
-    private Boolean isFollow; // 사용자가 아티스트를 팔로우하고 있는지 여부
-
-    @Schema(description = "파일 정보", example = "[{\"fileId\": 1, \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\"}]")
+    @Schema(description = "파일 정보 리스트",
+            example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
     private List<FileDTO> files; // 아티스트의 파일 정보
+
+    public static ArtistDetailResponse of(Artist artist, List<String> genreList, List<FileDTO> fileList) {
+        return ArtistDetailResponse.builder()
+                .artistId(artist.getArtistId())
+                .name(artist.getName())
+                .engName(artist.getEngName())
+                .artistType(artist.getArtistType().getDescription())
+                .artistUrl(artist.getArtistUrl())
+                .popularity(artist.getPopularity())
+                .genres(genreList)
+                .files(fileList)
+                .build();
+    }
 
 }

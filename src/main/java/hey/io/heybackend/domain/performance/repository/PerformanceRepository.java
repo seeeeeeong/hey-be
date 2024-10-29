@@ -11,6 +11,8 @@ import java.util.Optional;
 @Repository
 public interface PerformanceRepository extends JpaRepository<Performance, Long>, PerformanceQueryRepository {
 
+    @Query("SELECT p FROM Performance p WHERE p.performanceId = :performanceId AND p.performanceStatus <> 'INIT'")
+    Optional<Performance> findByIdAndNotInit(Long performanceId);
 
 }
 

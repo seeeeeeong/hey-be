@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.oauth.entity;
+package hey.io.heybackend.domain.auth.entity;
 
 import hey.io.heybackend.common.jwt.dto.JwtTokenDto;
 import hey.io.heybackend.common.util.DateTimeUtils;
@@ -26,7 +26,7 @@ public class Token {
     private Member member;
 
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
 
     @Column(name = "access_token", nullable = false)
     private String accessToken;

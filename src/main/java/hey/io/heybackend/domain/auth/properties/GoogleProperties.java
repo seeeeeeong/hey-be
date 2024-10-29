@@ -1,14 +1,12 @@
-package hey.io.heybackend.domain.oauth.properties;
+package hey.io.heybackend.domain.auth.properties;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-@Component
 @Getter
-@NoArgsConstructor
+@Component
 @PropertySource("classpath:application-oauth.yml")
 public class GoogleProperties {
 
@@ -22,6 +20,5 @@ public class GoogleProperties {
     private String userInfoUrl;
     @Value("${oauth2.google.redirect-uri}")
     private String redirectUri;
-
 
 }

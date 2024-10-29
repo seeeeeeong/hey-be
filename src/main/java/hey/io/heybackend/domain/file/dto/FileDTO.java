@@ -23,12 +23,18 @@ public class FileDTO {
     @Schema(description = "파일 URL", example = "http://example.com/image.png")
     private String fileUrl; // 파일에 접근할 수 있는 URL
 
-    public static FileDTO from(File file) {
+    private Integer width; // 파일 너비
+
+    private Integer height; // 파일 높이
+
+    public static FileDTO of(File file) {
         return FileDTO.builder()
                 .fileId(file.getFileId())
                 .fileCategory(file.getFileCategory())
                 .fileName(file.getFileName())
                 .fileUrl(file.getFileUrl())
+                .width(file.getWidth())
+                .height(file.getHeight())
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package hey.io.heybackend.common.dto;
+package hey.io.heybackend.common.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

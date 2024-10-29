@@ -1,7 +1,6 @@
 package hey.io.heybackend.common.jwt.service;
 
-
-import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.AuthenticationException;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.jwt.constant.GrantType;
 import hey.io.heybackend.common.jwt.constant.TokenType;
@@ -11,13 +10,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.PropertySource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-@Slf4j
 @RequiredArgsConstructor
+@PropertySource("classpath:application-oauth.yml")
 public class TokenManager {
 
     private final String accessTokenExpiredTime;
@@ -74,29 +73,5 @@ public class TokenManager {
         return refreshToken;
     }
 
-    public void validateToken(String token) {
-        try {
-            Jwts.parser().setSigningKey(tokenSecret.getBytes(StandardCharsets.UTF_8))
-                    .parseClaimsJws(token);
-        } catch (ExpiredJwtException e) {
-            log.info("token 만료", e);
-            throw new BusinessException(ErrorCode.TOKEN_EXPIRED);
-        } catch (Exception e) {
-            log.info("유효하지 않은 token", e);
-            throw new BusinessException(ErrorCode.NOT_VALID_TOKEN);
-        }
-    }
-
-    public Claims getTokenClaims(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser().setSigningKey(tokenSecret.getBytes(StandardCharsets.UTF_8))
-                    .parseClaimsJws(token).getBody();
-        } catch (Exception e) {
-            log.info("유효하지 않은 token", e);
-            throw new BusinessException(ErrorCode.NOT_VALID_TOKEN);
-        }
-        return claims;
-    }
 
 }

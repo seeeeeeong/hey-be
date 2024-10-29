@@ -1,20 +1,16 @@
-package hey.io.heybackend.domain.oauth.dto;
+package hey.io.heybackend.domain.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import hey.io.heybackend.common.jwt.dto.JwtTokenDto;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class OauthLoginResponse {
+public class LoginResponse {
 
     @Schema(description = "grantType", example = "Bearer", required = true)
     private String grantType;
@@ -33,9 +29,8 @@ public class OauthLoginResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private Date refreshTokenExpireTime;
 
-
-    public static OauthLoginResponse of(JwtTokenDto jwtTokenDto) {
-        return OauthLoginResponse.builder()
+    public static LoginResponse of(JwtTokenDto jwtTokenDto) {
+        return LoginResponse.builder()
                 .grantType(jwtTokenDto.getGrantType())
                 .accessToken(jwtTokenDto.getAccessToken())
                 .accessTokenExpireTime(jwtTokenDto.getAccessTokenExpireTime())
@@ -43,4 +38,5 @@ public class OauthLoginResponse {
                 .refreshTokenExpireTime(jwtTokenDto.getRefreshTokenExpireTime())
                 .build();
     }
+
 }

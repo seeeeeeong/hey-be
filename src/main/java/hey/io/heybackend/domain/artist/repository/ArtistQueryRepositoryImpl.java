@@ -30,26 +30,21 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Performance> getArtistPerformanceList(Long artistId, String exceptClosed, Pageable pageable) {
+    public Slice<Performance> getArtistPerformanceList(Long artistId, List<PerformanceStatus> statuses, Pageable pageable) {
         int pageSize = pageable.getPageSize();
 
         List<Performance> performanceList = queryFactory.selectFrom(performance)
                 .where(
                         performance.performanceArtists.any().artist.artistId.eq(artistId),
-//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
-//                        performance.performanceArtists.any().artist.artistStatus.ne(ArtistStatus.INIT),
-                        inExcept(exceptClosed)
+                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        inStatuses(statuses)
                 )
-                .leftJoin(performance.performanceArtists, performanceArtist)
-                .leftJoin(performanceArtist.artist, artist)
-                .leftJoin(performanceTicketing)
-                .on(performanceTicketing.performance.eq(performance))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
                                 .when(performance.performanceStatus.eq(PerformanceStatus.READY)).then(2)
-                                .otherwise(3)
-                                .asc()
+                                .otherwise(3).asc(),
+                        performance.createdAt.desc()
                 )
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
@@ -64,6 +59,9 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
         return new SliceImpl<>(performanceList, pageable, hasNext);
     }
 
+    private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
+        return ObjectUtils.isEmpty(statuses) ? null : performance.performanceStatus.in(statuses);
+    }
 
     private BooleanExpression inExcept(String exceptClosed) {
         return ObjectUtils.isEmpty(exceptClosed) ? null : performance.performanceStatus.in(PerformanceStatus.READY, PerformanceStatus.ONGOING);

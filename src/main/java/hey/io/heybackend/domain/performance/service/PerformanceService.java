@@ -1,11 +1,10 @@
 package hey.io.heybackend.domain.performance.service;
 
-import hey.io.heybackend.common.dto.SliceResponse;
-import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.common.jwt.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.entity.Artist;
-import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.file.entity.File;
 import hey.io.heybackend.domain.file.enums.EntityType;
@@ -46,19 +45,26 @@ public class PerformanceService {
      * @param pageable 페이지 정보
      * @return {@link SliceResponse} 객체, 공연 목록과 페이지 정보를 포함
      */
-    public SliceResponse<PerformanceListResponse> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
+    public SliceResponse<PerformanceListResponse> getPerformanceList(JwtTokenInfo jwtTokenInfo, PerformanceFilterRequest request, Pageable pageable) {
         // 1. 공연 목록 조회
-        Slice<Performance> performanceSlice = performanceRepository.getPerformanceList(request, pageable);
+        Slice<Performance> performanceSliceList = performanceRepository.getPerformanceList(request, pageable);
 
         // 2. 공연 파일 ID 매핑
-        Map<Long, List<File>> filesByPerformanceId = loadFilesByPerformanceId(performanceSlice);
+        Map<Long, List<File>> filesByPerformanceId = getFilesByPerformanceId(performanceSliceList);
 
         // 3. 각 공연에 대한 응답을 생성
-        List<PerformanceListResponse> performanceListResponse = performanceSlice.stream()
-                .map(performance -> createPerformanceListResponse(performance, filesByPerformanceId))
+        List<PerformanceListResponse> performanceListResponse = performanceSliceList.stream()
+                .map(performance -> {
+
+                    List<FileDTO> fileList = createFileDtoList(filesByPerformanceId, performance.getPerformanceId());
+
+                    boolean isFollow = checkExistFollow(jwtTokenInfo, performance.getPerformanceId());
+
+                    return PerformanceListResponse.of(performance, fileList, isFollow);
+                })
                 .collect(Collectors.toList());
 
-        return new SliceResponse<>(performanceListResponse, pageable, performanceSlice.hasNext());
+        return new SliceResponse<>(performanceListResponse, pageable, performanceSliceList.hasNext());
     }
 
     /**
@@ -67,54 +73,33 @@ public class PerformanceService {
      * @param performanceId 공연의 ID
      * @param jwtTokenInfo JWT 토큰 정보 (인증용)
      * @return {@link PerformanceDetailResponse} 객체, 공연 상세 정보를 포함
-     * @throws BusinessException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
+     * @throws EntityNotFoundException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
      */
     public PerformanceDetailResponse getPerformanceDetail(Long performanceId, JwtTokenInfo jwtTokenInfo) {
         // 1. 공연 정보 조회
-        Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND));
+        Performance performance = performanceRepository.findByIdAndNotInit(performanceId)
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
-        // 2. 로그인 한 경우, 팔로우 여부 조회
-        boolean isFollowed = false;
-        if (jwtTokenInfo != null && jwtTokenInfo.getMemberId() != null) {
-            isFollowed = checkIfFollowed(performanceId, jwtTokenInfo.getMemberId());
-        }
+        // 2. 팔로우 여부 조회
+        boolean isFollow = checkExistFollow(jwtTokenInfo, performanceId);
 
-        // 3. 관련 파일, 장르, 가격, 티켓 정보 및 아티스트 목록 로드
-        List<FileDTO> files = loadPerformanceFiles(performance);
-        List<String> genres = loadGenres(performance);
-        List<PerformancePriceDTO> prices = loadPrices(performance);
-        List<PerformanceTicketingDTO> ticketings = loadTicketings(performance);
-        List<ArtistDTO> artistList = loadArtists(performance);
+        // 3. 관련 파일, 가격, 티켓 정보 및 아티스트 목록 로드
+        List<FileDTO> fileList = getFileList(performance);
+        List<PerformancePriceDTO> priceList = getPriceList(performance);
+        List<PerformanceTicketingDTO> ticketingList = getTicketingList(performance);
+        List<ArtistDTO> artistList = getArtistList(performance);
 
-        return PerformanceDetailResponse.builder()
-                .performanceId(performance.getPerformanceId())
-                .performanceType(performance.getPerformanceType())
-                .genres(genres)
-                .performanceStatus(performance.getPerformanceStatus())
-                .name(performance.getName())
-                .engName(performance.getEngName())
-                .startDate(performance.getStartDate())
-                .endDate(performance.getEndDate())
-                .runningTime(performance.getRunningTime())
-                .viewingAge(performance.getViewingAge())
-                .isFollow(isFollowed)
-                .files(files)
-                .place(PlaceDTO.from(performance.getPlace()))
-                .prices(prices)
-                .ticketings(ticketings)
-                .artists(artistList)
-                .build();
+        return PerformanceDetailResponse.of(performance, isFollow, fileList, priceList, ticketingList, artistList);
     }
 
     /**
      * <p>공연 ID 리스트를 기반으로 파일을 로드합니다.</p>
      *
-     * @param performanceSlice 공연 목록의 슬라이스
+     * @param performanceSliceList 공연 목록의 슬라이스
      * @return 공연 ID와 관련된 파일 목록을 맵으로 반환
      */
-    private Map<Long, List<File>> loadFilesByPerformanceId(Slice<Performance> performanceSlice) {
-        List<Long> performanceIds = performanceSlice.stream()
+    private Map<Long, List<File>> getFilesByPerformanceId(Slice<Performance> performanceSliceList) {
+        List<Long> performanceIds = performanceSliceList.stream()
                 .map(Performance::getPerformanceId)
                 .collect(Collectors.toList());
 
@@ -125,42 +110,35 @@ public class PerformanceService {
     }
 
     /**
-     * <p>주어진 공연 정보를 바탕으로 공연 목록 응답을 생성합니다.</p>
+     * <p>주어진 JWT 토큰 정보로 사용자가 공연을 팔로우하고 있는지 확인합니다.</p>
      *
-     * @param performance 공연 객체
-     * @param filesByPerformanceId 공연 ID와 관련된 파일 목록을 담고 있는 맵
-     * @return {@link PerformanceListResponse} 객체
+     * @param jwtTokenInfo JWT 토큰 정보
+     * @param performanceId 공연 ID
+     * @return 팔로우하고 있으면 true, 아니면 false
      */
-    private PerformanceListResponse createPerformanceListResponse(Performance performance, Map<Long, List<File>> filesByPerformanceId) {
-        List<FileDTO> files = filesByPerformanceId.getOrDefault(performance.getPerformanceId(), List.of())
-                .stream()
-                .map(FileDTO::from)
-                .collect(Collectors.toList());
+    private boolean checkExistFollow(JwtTokenInfo jwtTokenInfo, Long performanceId) {
 
-        return PerformanceListResponse.builder()
-                .performanceId(performance.getPerformanceId())
-                .performanceName(performance.getName())
-                .openDateTime(performance.getTicketings().getFirst().getOpenDatetime())
-                .ticketStatus(performance.getTicketStatus())
-                .startDate(performance.getStartDate())
-                .endDate(performance.getEndDate())
-                .placeName(performance.getPlace().getName())
-                .files(files)
-                .build();
+        if (jwtTokenInfo == null || jwtTokenInfo.getMemberId() == null) {
+            return false;
+        }
+
+        return followRepository.existsFollow(FollowType.PERFORMANCE, performanceId, jwtTokenInfo.getMemberId());
     }
 
 
     /**
-     * <p>특정 공연 ID에 대해 사용자가 팔로우하고 있는지 확인합니다.</p>
+     * <p>주어진 공연의 파일을 DTO로 변환합니다.</p>
      *
+     * @param filesByPerformanceId 공연 ID와 관련된 파일 목록
      * @param performanceId 공연 ID
-     * @param memberId 사용자 ID
-     * @return 공연을 팔로우하고 있으면 true, 아니면 false
+     * @return {@link List}<{@link FileDTO}> 공연 관련 파일 DTO 목록
      */
-    private boolean checkIfFollowed(Long performanceId, Long memberId) {
-        return followRepository.existsByFollowTypeAndFollowTargetIdAndMember_MemberId(FollowType.PERFORMANCE, performanceId, memberId);
+    private List<FileDTO> createFileDtoList(Map<Long, List<File>> filesByPerformanceId, Long performanceId) {
+        return filesByPerformanceId.getOrDefault(performanceId, List.of())
+                .stream()
+                .map(FileDTO::of)
+                .collect(Collectors.toList());
     }
-
 
     /**
      * <p>주어진 공연의 파일을 로드합니다.</p>
@@ -168,25 +146,12 @@ public class PerformanceService {
      * @param performance 공연 객체
      * @return {@link List}<{@link FileDTO}> 공연 관련 파일 DTO 목록
      */
-    private List<FileDTO> loadPerformanceFiles(Performance performance) {
-        List<File> performanceFiles = fileRepository.findByEntityTypeAndEntityId(EntityType.PERFORMANCE, performance.getPerformanceId());
+    private List<FileDTO> getFileList(Performance performance) {
+        List<File> performanceFiles = fileRepository.findByEntityTypeAndEntityIdAndFileCategory(EntityType.PERFORMANCE, performance.getPerformanceId(), FileCategory.DETAIL);
         performance.getFiles().addAll(performanceFiles);
 
         return performance.getFiles().stream()
-                .map(FileDTO::from)
-                .collect(Collectors.toList());
-    }
-
-
-    /**
-     * <p>주어진 공연의 장르를 로드합니다.</p>
-     *
-     * @param performance 공연 객체
-     * @return {@link List} 장르 이름 목록
-     */
-    private List<String> loadGenres(Performance performance) {
-        return performance.getGenres().stream()
-                .map(genre -> genre.getPerformanceGenre().name())
+                .map(FileDTO::of)
                 .collect(Collectors.toList());
     }
 
@@ -196,9 +161,9 @@ public class PerformanceService {
      * @param performance 공연 객체
      * @return {@link List}<{@link PerformancePriceDTO}> 가격 DTO 목록
      */
-    private List<PerformancePriceDTO> loadPrices(Performance performance) {
+    private List<PerformancePriceDTO> getPriceList(Performance performance) {
         return performance.getPrices().stream()
-                .map(PerformancePriceDTO::from)
+                .map(PerformancePriceDTO::of)
                 .collect(Collectors.toList());
     }
 
@@ -208,9 +173,9 @@ public class PerformanceService {
      * @param performance 공연 객체
      * @return {@link List}<{@link PerformanceTicketingDTO}> 티켓 DTO 목록
      */
-    private List<PerformanceTicketingDTO> loadTicketings(Performance performance) {
+    private List<PerformanceTicketingDTO> getTicketingList(Performance performance) {
         return performance.getTicketings().stream()
-                .map(PerformanceTicketingDTO::from)
+                .map(PerformanceTicketingDTO::of)
                 .collect(Collectors.toList());
     }
 
@@ -220,19 +185,20 @@ public class PerformanceService {
      * @param performance 공연 객체
      * @return {@link List}<{@link ArtistDTO}> 아티스트 DTO 목록
      */
-    private List<ArtistDTO> loadArtists(Performance performance) {
+    private List<ArtistDTO> getArtistList(Performance performance) {
         List<Artist> artists = performance.getPerformanceArtists().stream()
                 .map(PerformanceArtist::getArtist)
+                .filter(artist -> !artist.getArtistStatus().getCode().equals("INIT"))
                 .sorted(Comparator.comparing(Artist::getName))
                 .collect(Collectors.toList());
 
         artists.forEach(artist -> {
-            List<File> artistsFiles = fileRepository.findByEntityTypeAndEntityId(EntityType.ARTIST, artist.getArtistId());
+            List<File> artistsFiles = fileRepository.findByEntityTypeAndEntityIdAndFileCategory(EntityType.ARTIST, artist.getArtistId(), FileCategory.THUMBNAIL);
             artist.getFiles().addAll(artistsFiles);
         });
 
         return artists.stream()
-                .map(ArtistDTO::from)
+                .map(ArtistDTO::of)
                 .collect(Collectors.toList());
     }
 }
