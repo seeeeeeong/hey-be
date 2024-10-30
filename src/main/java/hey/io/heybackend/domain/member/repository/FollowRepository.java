@@ -10,12 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface FollowRepository extends JpaRepository<Follow, Long> {
-
-    @Query("SELECT f FROM Follow f WHERE f.followType = :followType AND f.followTargetId = :followTargetId AND f.member.memberId = :memberId")
-    boolean existsFollow(@Param("followType") FollowType followType,
-                                             @Param("followTargetId") Long followTargetId,
-                                             @Param("memberId") Long memberId);
-
+public interface FollowRepository extends JpaRepository<Follow, Long>, FollowQueryRepository {
 
 }

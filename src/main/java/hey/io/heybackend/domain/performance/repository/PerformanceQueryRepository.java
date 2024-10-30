@@ -16,4 +16,5 @@ public interface PerformanceQueryRepository {
 
     Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable);
 
+    Performance getPerformanceDetail(Long performanceId);
 }

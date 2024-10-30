@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.auth;
+package hey.io.heybackend.domain.auth.service;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;

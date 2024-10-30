@@ -1,9 +1,8 @@
 package hey.io.heybackend.domain.auth.controller;
 
 
-import hey.io.heybackend.domain.auth.AuthService;
+import hey.io.heybackend.domain.auth.service.AuthService;
 import hey.io.heybackend.domain.auth.dto.LoginResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

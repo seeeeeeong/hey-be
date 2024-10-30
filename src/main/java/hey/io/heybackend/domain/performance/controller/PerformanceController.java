@@ -26,11 +26,12 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     /**
-     * <p>공연 목록을 조회합니다.</p>
+     * <p>공연 목록</p>
      *
-     * @param request 공연 목록 필터
+     * @param jwtTokenInfo JWT 토큰 정보
+     * @param request 필터
      * @param pageable 페이지 정보
-     * @return {@link SliceResponse} 객체, 공연 목록과 페이지 정보를 포함
+     * @return 공연 목록
      */
     @GetMapping
     @Operation(summary = "공연 목록", description = "공연 목록을 조회합니다.")
@@ -41,16 +42,15 @@ public class PerformanceController {
     }
 
     /**
-     * <p>특정 공연의 상세 정보를 조회합니다.</p>
+     * <p>공연 상세</p>
      *
      * @param performanceId 공연의 ID
-     * @param jwtTokenInfo JWT 토큰 정보 (인증용)
-     * @return {@link PerformanceDetailResponse} 객체, 공연 상세 정보를 포함
-     * @throws BusinessException 공연을 찾을 수 없는 경우 {@link ErrorCode#PERFORMANCE_NOT_FOUND} 예외 발생
+     * @param jwtTokenInfo JWT 토큰 정보
+     * @return 공연 상세 정보
      */
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.PERFORMANCE_NOT_FOUND)
-    @Operation(summary = "공연 상세", description = "공연 상세를 조회합니다.")
+    @Operation(summary = "공연 상세", description = "공연 상세 정보를 조회합니다.")
     public ApiResponse<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId,
                                                                           @AuthUser JwtTokenInfo jwtTokenInfo) {
 

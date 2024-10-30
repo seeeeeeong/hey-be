@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
@@ -29,16 +31,17 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    @Override
-    public Slice<Performance> getArtistPerformanceList(Long artistId, List<PerformanceStatus> statuses, Pageable pageable) {
-        int pageSize = pageable.getPageSize();
 
-        List<Performance> performanceList = queryFactory.selectFrom(performance)
-                .where(
-                        performance.performanceArtists.any().artist.artistId.eq(artistId),
-                        performance.performanceStatus.ne(PerformanceStatus.INIT),
-                        inStatuses(statuses)
-                )
+    @Override
+    public Optional<Artist> getArtistDetail(Long artistId, List<PerformanceStatus> statuses) {
+
+        Artist artistDetail = queryFactory.selectFrom(artist)
+                .leftJoin(artist.performanceArtists, performanceArtist)
+                .fetchJoin()
+                .where(artist.artistId.eq(artistId),
+                        artist.artistStatus.ne(ArtistStatus.INIT),
+                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        inStatuses(statuses))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
@@ -46,25 +49,14 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
                                 .otherwise(3).asc(),
                         performance.createdAt.desc()
                 )
-                .offset(pageable.getOffset())
-                .limit(pageSize + 1)
-                .fetch();
+                .fetchOne();
 
-        boolean hasNext = false;
-        if (performanceList.size() > pageSize) {
-            performanceList.remove(pageSize);
-            hasNext = true;
-        }
-
-        return new SliceImpl<>(performanceList, pageable, hasNext);
+        return Optional.ofNullable(artistDetail);
     }
+
 
     private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
         return ObjectUtils.isEmpty(statuses) ? null : performance.performanceStatus.in(statuses);
-    }
-
-    private BooleanExpression inExcept(String exceptClosed) {
-        return ObjectUtils.isEmpty(exceptClosed) ? null : performance.performanceStatus.in(PerformanceStatus.READY, PerformanceStatus.ONGOING);
     }
 
 }

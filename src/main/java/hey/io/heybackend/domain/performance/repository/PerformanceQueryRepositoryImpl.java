@@ -57,12 +57,6 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
                         inStatuses(request.getStatuses()),
                         inTickets(request.getTickets())
                 )
-                .leftJoin(performanceGenres)
-                .on(performanceGenres.performance.eq(performance))
-                .leftJoin(performancePrice)
-                .on(performancePrice.performance.eq(performance))
-                .leftJoin(performanceTicketing)
-                .on(performanceTicketing.performance.eq(performance))
                 .orderBy(performance.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageSize + 1)
@@ -76,6 +70,23 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 
         return new SliceImpl<>(performanceList, pageable, hasNext);
     }
+
+    @Override
+    public Performance getPerformanceDetail(Long performanceId) {
+
+        Performance performanceDetail = queryFactory.selectFrom(performance)
+                .leftJoin(performance.performanceArtists, performanceArtist)
+                .fetchJoin()
+                .where(performance.performanceId.eq(performanceId),
+                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
+                )
+                .orderBy(performanceArtist.artist.name.asc())
+                .fetchOne();
+
+        return performanceDetail;
+    }
+
 
     private BooleanExpression inType(PerformanceType type) {
         return ObjectUtils.isEmpty(type) ? null : performance.performanceType.in(type);

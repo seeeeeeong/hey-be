@@ -14,11 +14,33 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Schema(description = "공연 목록 필터")
 public class PerformanceFilterRequest {
 
+    @Schema(
+            description = "공연 유형", example = "CONCERT_IN",
+            allowableValues = {"CONCERT_IN", "CONCERT_EX", "FESTIVAL_IN", "FESTIVAL_EX"})
+    private PerformanceType type;
 
-    private PerformanceType type; // 공연 유형
-    private List<PerformanceGenre> genres = new ArrayList<>(); // 공연 장르
-    private List<PerformanceStatus> statuses = new ArrayList<>(); // 공연 상태
-    private List<TicketStatus> tickets = new ArrayList<>(); // 티켓 상태
+    @Schema(
+            description = "공연 장르",
+            example = "[\"BALLAD\", \"HIPHOP\", \"EDM\"]",
+            allowableValues = {"BALLAD", "HIPHOP", "RNB", "EDM", "INDIE", "ROCK", "JAZZ", "IDOL", "ETC"}
+    )
+    private List<PerformanceGenre> genres = new ArrayList<>();
+
+    @Schema(
+            description = "공연 상테",
+            example = "[\"INIT\", \"READY\"]",
+            allowableValues = {"INIT", "READY", "ONGOING", "CLOSED", "CANCEL"}
+    )
+    private List<PerformanceStatus> statuses = new ArrayList<>();
+
+    @Schema(
+            description = "티켓 상태",
+            example = "[\"READY\", \"ONGOING\"]",
+            allowableValues = {"READY", "ONGOING", "CLOSED"}
+    )
+    private List<TicketStatus> tickets = new ArrayList<>();
+
 }
