@@ -11,26 +11,28 @@ import lombok.Getter;
 public class FileDTO {
 
     @Schema(description = "파일 ID", example = "1")
-    private Long fileId; // 파일의 고유 ID
+    private Long fileId;
 
-    @Schema(description = "파일 카테고리", example = "THUMBNAIL",
-            allowableValues = {"THUMBNAIL", "DETAIL"})
-    private FileCategory fileCategory; // 파일의 카테고리 (썸네일, 상세 등)
+    @Schema(description = "파일 카테고리", example = "썸네일",
+            allowableValues = {"썸네일", "상세"})
+    private String fileCategory;
 
-    @Schema(description = "파일 이름", example = "example.png")
-    private String fileName; // 파일의 이름
+    @Schema(description = "파일명", example = "example.png")
+    private String fileName;
 
     @Schema(description = "파일 URL", example = "http://example.com/image.png")
-    private String fileUrl; // 파일에 접근할 수 있는 URL
+    private String fileUrl;
 
-    private Integer width; // 파일 너비
+    @Schema(description = "파일 너비", example = "640")
+    private Integer width;
 
-    private Integer height; // 파일 높이
+    @Schema(description = "파일 높이", example = "640")
+    private Integer height;
 
     public static FileDTO of(File file) {
         return FileDTO.builder()
                 .fileId(file.getFileId())
-                .fileCategory(file.getFileCategory())
+                .fileCategory(file.getFileCategory().getDescription())
                 .fileName(file.getFileName())
                 .fileUrl(file.getFileUrl())
                 .width(file.getWidth())

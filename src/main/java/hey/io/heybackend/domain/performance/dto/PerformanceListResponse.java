@@ -16,22 +16,23 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
+@Schema(description = "공연 목록")
 public class PerformanceListResponse {
 
     @Schema(description = "공연 ID", example = "1")
     private Long performanceId;
 
-    @Schema(description = "공연 명", example = "문학 콘서트 [과천]")
+    @Schema(description = "공연명", example = "문학 콘서트 [과천]")
     private String performanceName;
 
-    @Schema(description = "티켓 오픈 시간", example = "2024.10.01 00:00:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm:ss")
-    private LocalDateTime openDateTime;
+    @Schema(description = "티켓 오픈 시간", example = "2024.10.01 00:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
+    private LocalDateTime openDatetime;
 
     @Schema(description = "티켓 상태", nullable = true,
-            example = "READY",
-            allowableValues = {"READY", "ONGOING", "CLOSED"})
-    private TicketStatus ticketStatus;
+            example = "판매 예정",
+            allowableValues = {"판매 예정", "판매 중", "판매 종료"})
+    private String ticketStatus;
 
     @Schema(description = "공연 시작 일자", example = "2024.10.05")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
@@ -47,16 +48,17 @@ public class PerformanceListResponse {
     @Schema(description = "팔로우 여부", example = "true")
     private boolean isFollow = false;
 
-    @Schema(description = "파일 정보", example = "[{\"fileId\": 1, \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\"}]")
+    @Schema(description = "파일 정보",
+            example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
     private List<FileDTO> files;
 
 
-    public static PerformanceListResponse of(Performance performance, List<FileDTO> fileList, boolean isFollow) {
+    public static PerformanceListResponse of(Performance performance, boolean isFollow, List<FileDTO> fileList) {
         return PerformanceListResponse.builder()
                 .performanceId(performance.getPerformanceId())
                 .performanceName(performance.getName())
-                .openDateTime(performance.getTicketings().getFirst().getOpenDatetime())
-                .ticketStatus(performance.getTicketStatus())
+                .openDatetime(performance.getTicketings().getFirst().getOpenDatetime())
+                .ticketStatus(performance.getTicketStatus().getDescription())
                 .startDate(performance.getStartDate())
                 .endDate(performance.getEndDate())
                 .placeName(performance.getPlace().getName())
@@ -64,6 +66,4 @@ public class PerformanceListResponse {
                 .files(fileList)
                 .build();
     }
-
-
 }
