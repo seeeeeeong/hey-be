@@ -65,7 +65,8 @@ public class PerformanceService {
      */
     public PerformanceDetailResponse getPerformanceDetail(Long performanceId, JwtTokenInfo jwtTokenInfo) {
         // 1. 공연 조회
-        Performance performance = performanceRepository.getPerformanceDetail(performanceId);
+        Performance performance = performanceRepository.getPerformanceDetail(performanceId)
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
         // 2. 팔로우 여부 조회
         boolean isFollow = followService.checkExistFollow(jwtTokenInfo, performanceId, FollowType.PERFORMANCE);

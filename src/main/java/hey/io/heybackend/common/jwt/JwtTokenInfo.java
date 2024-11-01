@@ -1,19 +1,21 @@
 package hey.io.heybackend.common.jwt;
 
-import hey.io.heybackend.domain.member.enums.MemberStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class JwtTokenInfo {
 
-    private final Long memberId;
-//    private final MemberStatus memberStatus;
+    private Long memberId;
+//    private String email;
+//    private String provider;
 
-    @Builder
-    public JwtTokenInfo(Long memberId, MemberStatus memberStatus) {
-        this.memberId = memberId;
-//        this.memberStatus = memberStatus;
+    public static JwtTokenInfo of(Long memberId) {
+        return JwtTokenInfo.builder()
+                .memberId(memberId)
+                .build();
     }
 
 }

@@ -1,4 +1,4 @@
-package hey.io.heybackend.common.jwt.dto;
+package hey.io.heybackend.common.jwt;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -8,7 +8,8 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class JwtTokenDto {
 
     private String grantType;

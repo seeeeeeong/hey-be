@@ -72,7 +72,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     }
 
     @Override
-    public Performance getPerformanceDetail(Long performanceId) {
+    public Optional<Performance> getPerformanceDetail(Long performanceId) {
 
         Performance performanceDetail = queryFactory.selectFrom(performance)
                 .leftJoin(performance.performanceArtists, performanceArtist)
@@ -84,7 +84,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
                 .orderBy(performanceArtist.artist.name.asc())
                 .fetchOne();
 
-        return performanceDetail;
+        return Optional.ofNullable(performanceDetail);
     }
 
 

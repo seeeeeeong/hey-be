@@ -1,8 +1,8 @@
 package hey.io.heybackend.common.resolver;
 
-import hey.io.heybackend.common.jwt.JwtProperties;
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
 
+
+import hey.io.heybackend.common.jwt.JwtTokenInfo;
 import io.jsonwebtoken.Claims;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -26,7 +26,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Claims claims = (Claims) authentication.getPrincipal();
-        Long memberId = Long.parseLong((String) claims.get(JwtProperties.MEMBER_ID));
+        Long memberId = Long.parseLong((String) claims.get("memberId"));
 
         return JwtTokenInfo.builder()
                 .memberId(memberId)

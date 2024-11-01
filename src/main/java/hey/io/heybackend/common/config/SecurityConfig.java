@@ -29,12 +29,13 @@ public class SecurityConfig {
         // 세션을 사용하지 않음
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // 요청 인증 설정
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health_check").permitAll() // Swagger 경로 허용
-            .requestMatchers("/performances/**").permitAll()
-            .requestMatchers("/artists/**").permitAll()
-                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health_check").permitAll() // Swagger 경로 허용
+                .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
+                .requestMatchers("/performances/**").permitAll()
+                .requestMatchers("/artists/**").permitAll()
+                .requestMatchers("/auth/login/**").permitAll()
+                .anyRequest().authenticated() // 그 외 요청은 인증 필요
         );
 
 

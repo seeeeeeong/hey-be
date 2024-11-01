@@ -33,9 +33,8 @@ public class ArtistController {
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.ARTIST_NOT_FOUND)
     public ApiResponse<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
-                                                             @RequestParam(value = "status", required = false) List<PerformanceStatus> statuses,
                                                              @AuthUser JwtTokenInfo jwtTokenInfo) {
-        return ApiResponse.success(artistService.getArtistDetail(artistId, statuses, jwtTokenInfo));
+        return ApiResponse.success(artistService.getArtistDetail(artistId, jwtTokenInfo));
     }
 
 }
