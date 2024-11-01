@@ -51,7 +51,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 
         List<Performance> performanceList = queryFactory.selectFrom(performance)
                 .where(
-//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        performance.performanceStatus.ne(PerformanceStatus.INIT),
                         inType(request.getType()),
                         inGenres(request.getGenres()),
                         inStatuses(request.getStatuses()),
@@ -77,9 +77,9 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
         Performance performanceDetail = queryFactory.selectFrom(performance)
                 .leftJoin(performance.performanceArtists, performanceArtist)
                 .fetchJoin()
-                .where(performance.performanceId.eq(performanceId)
-//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
-//                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
+                .where(performance.performanceId.eq(performanceId),
+                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
                 )
                 .orderBy(performanceArtist.artist.name.asc())
                 .fetchOne();

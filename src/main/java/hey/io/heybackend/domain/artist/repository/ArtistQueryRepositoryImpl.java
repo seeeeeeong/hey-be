@@ -25,9 +25,9 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
         Artist artistDetail = queryFactory.selectFrom(artist)
                 .leftJoin(artist.performanceArtists, performanceArtist)
                 .fetchJoin()
-                .where(artist.artistId.eq(artistId))
-//                        artist.artistStatus.ne(ArtistStatus.INIT),
-//                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .where(artist.artistId.eq(artistId),
+                        artist.artistStatus.ne(ArtistStatus.INIT),
+                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
