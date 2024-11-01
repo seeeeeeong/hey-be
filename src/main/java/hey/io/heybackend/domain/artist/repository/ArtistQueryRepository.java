@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface ArtistQueryRepository {
 
-    Optional<Artist> getArtistDetail(Long artistId, List<PerformanceStatus> statuses);
+    Optional<Artist> getArtistDetail(Long artistId);
 
 }

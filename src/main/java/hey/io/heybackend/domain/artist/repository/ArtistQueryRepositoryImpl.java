@@ -33,7 +33,7 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
 
 
     @Override
-    public Optional<Artist> getArtistDetail(Long artistId, List<PerformanceStatus> statuses) {
+    public Optional<Artist> getArtistDetail(Long artistId) {
 
         Artist artistDetail = queryFactory.selectFrom(artist)
                 .leftJoin(artist.performanceArtists, performanceArtist)
@@ -41,7 +41,6 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
                 .where(artist.artistId.eq(artistId),
                         artist.artistStatus.ne(ArtistStatus.INIT),
                         performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT),
-                        inStatuses(statuses))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
@@ -54,9 +53,5 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
         return Optional.ofNullable(artistDetail);
     }
 
-
-    private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
-        return ObjectUtils.isEmpty(statuses) ? null : performance.performanceStatus.in(statuses);
-    }
 
 }

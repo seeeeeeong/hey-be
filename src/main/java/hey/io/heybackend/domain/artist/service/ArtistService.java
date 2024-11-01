@@ -40,9 +40,9 @@ public class ArtistService {
      * @param jwtTokenInfo JWT 토큰 정보
      * @return 아티스트 상세 정보
      */
-    public ArtistDetailResponse getArtistDetail(Long artistId, List<PerformanceStatus> statuses, JwtTokenInfo jwtTokenInfo) {
+    public ArtistDetailResponse getArtistDetail(Long artistId, JwtTokenInfo jwtTokenInfo) {
         // 1. 아티스트 조회
-        Artist artist = artistRepository.getArtistDetail(artistId, statuses)
+        Artist artist = artistRepository.getArtistDetail(artistId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ARTIST_NOT_FOUND));
 
         // 2. 아티스트 파일 조회
