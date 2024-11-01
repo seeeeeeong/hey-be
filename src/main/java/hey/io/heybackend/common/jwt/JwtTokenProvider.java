@@ -1,12 +1,6 @@
-package hey.io.heybackend.common.jwt.service;
+package hey.io.heybackend.common.jwt;
 
-import hey.io.heybackend.common.exception.AuthenticationException;
-import hey.io.heybackend.common.exception.ErrorCode;
-import hey.io.heybackend.common.jwt.constant.GrantType;
-import hey.io.heybackend.common.jwt.constant.TokenType;
-import hey.io.heybackend.common.jwt.dto.JwtTokenDto;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +8,12 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @PropertySource("classpath:application-oauth.yml")
-public class TokenManager {
+public class JwtTokenProvider {
 
     private final String accessTokenExpiredTime;
     private final String refreshTokenExpiredTime;
@@ -31,7 +27,7 @@ public class TokenManager {
         String refreshToken = createRefreshToken(memberId, refreshTokenExpiredTime);
 
         return JwtTokenDto.builder()
-                .grantType(GrantType.BEARER.getType())
+                .grantType(GrantType.BEARER.getDescription())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .accessTokenExpireTime(accessTokenExpiredTime)
@@ -47,30 +43,41 @@ public class TokenManager {
         return new Date(System.currentTimeMillis() + Long.parseLong(refreshTokenExpiredTime));
     }
 
+
     public String createAccessToken(Long memberId, Date expirationTime) {
-        String accessToken = Jwts.builder()
+
+        Map<String, Object> header = new HashMap<>();
+        header.put("typ", "JWT");
+
+        Claims claims = Jwts.claims();
+        claims.put("memberId", memberId);
+
+        return Jwts.builder()
+                .setHeader(header)
                 .setSubject(TokenType.ACCESS.name())
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(expirationTime)
-                .claim("memberId", memberId)
                 .signWith(SignatureAlgorithm.HS512, tokenSecret.getBytes(StandardCharsets.UTF_8))
-                .setHeaderParam("typ", "JWT")
                 .compact();
-
-        return accessToken;
     }
 
     public String createRefreshToken(Long memberId, Date expirationTime) {
-        String refreshToken = Jwts.builder()
+
+        Map<String, Object> header = new HashMap<>();
+        header.put("typ", "JWT");
+
+        Claims claims = Jwts.claims();
+        claims.put("memberId", memberId);
+
+        return Jwts.builder()
+                .setHeader(header)
                 .setSubject(TokenType.REFRESH.name())
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(expirationTime)
-                .claim("memberId", memberId)
                 .signWith(SignatureAlgorithm.HS512, tokenSecret.getBytes(StandardCharsets.UTF_8))
-                .setHeaderParam("typ", "JWT")
                 .compact();
-
-        return refreshToken;
     }
 
 

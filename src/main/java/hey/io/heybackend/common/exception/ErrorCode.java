@@ -45,6 +45,7 @@ public enum ErrorCode {
     ARTIST_NOT_FOUND(HttpStatus.NOT_FOUND, "아티스트 정보를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저 정보를 찾을 수 없습니다."),
     TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "토큰 정보를 찾을 수 없습니다."),
+    JWT_REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh 토큰 정보를 찾을 수 없습니다."),
 
 
     // Unsupported

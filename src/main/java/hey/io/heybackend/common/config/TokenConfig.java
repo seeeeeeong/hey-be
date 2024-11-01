@@ -1,6 +1,6 @@
 package hey.io.heybackend.common.config;
 
-import hey.io.heybackend.common.jwt.service.TokenManager;
+import hey.io.heybackend.common.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +18,8 @@ public class TokenConfig {
     private String tokenSecret;
 
     @Bean
-    public TokenManager tokenManager() {
-        return new TokenManager(accessTokenExpirationTime, refreshTokenExpirationTime, tokenSecret);
+    public JwtTokenProvider tokenManager() {
+        return new JwtTokenProvider(accessTokenExpirationTime, refreshTokenExpirationTime, tokenSecret);
     }
 
 }

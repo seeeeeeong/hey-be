@@ -36,7 +36,6 @@ public class ArtistService {
      * <p>아티스트 상세 조회</p>
      *
      * @param artistId 아티스트 ID
-     * @param statuses 공연 상태
      * @param jwtTokenInfo JWT 토큰 정보
      * @return 아티스트 상세 정보
      */

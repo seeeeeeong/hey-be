@@ -51,7 +51,7 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 
         List<Performance> performanceList = queryFactory.selectFrom(performance)
                 .where(
-                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
                         inType(request.getType()),
                         inGenres(request.getGenres()),
                         inStatuses(request.getStatuses()),
@@ -72,19 +72,19 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
     }
 
     @Override
-    public Performance getPerformanceDetail(Long performanceId) {
+    public Optional<Performance> getPerformanceDetail(Long performanceId) {
 
         Performance performanceDetail = queryFactory.selectFrom(performance)
                 .leftJoin(performance.performanceArtists, performanceArtist)
                 .fetchJoin()
-                .where(performance.performanceId.eq(performanceId),
-                        performance.performanceStatus.ne(PerformanceStatus.INIT),
-                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
+                .where(performance.performanceId.eq(performanceId)
+//                        performance.performanceStatus.ne(PerformanceStatus.INIT),
+//                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
                 )
                 .orderBy(performanceArtist.artist.name.asc())
                 .fetchOne();
 
-        return performanceDetail;
+        return Optional.ofNullable(performanceDetail);
     }
 
 

@@ -4,6 +4,7 @@ import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -53,4 +54,17 @@ public class Member extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> follows;
+
+    @Builder
+    private Member(String email, String nickname) {
+        this.email = email;
+        this.nickname = nickname;
+    }
+
+    public static Member create(String email, String nickname) {
+        return Member.builder()
+                .email(email)
+                .nickname(nickname)
+                .build();
+    }
 }

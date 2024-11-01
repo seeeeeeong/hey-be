@@ -1,14 +1,15 @@
 package hey.io.heybackend.domain.auth.entity;
 
-import hey.io.heybackend.common.jwt.dto.JwtTokenDto;
-import hey.io.heybackend.common.util.DateTimeUtils;
+import hey.io.heybackend.common.jwt.JwtTokenDto;
 import hey.io.heybackend.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(schema = "auth")
@@ -40,8 +41,23 @@ public class Token {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Builder
+    private Token(Member member, String accessToken, String refreshToken) {
+        this.member = member;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
+
+    public static Token create(Member member, String accessToken, String refreshToken) {
+        return Token.builder()
+                .member(member)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
     public void updateRefreshToken(JwtTokenDto jwtTokenDto) {
         this.refreshToken = jwtTokenDto.getRefreshToken();
-        this.expiresAt = DateTimeUtils.convertToLocalDateTime(jwtTokenDto.getRefreshTokenExpireTime());
+        this.expiresAt = jwtTokenDto.getRefreshTokenExpireTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 }
