@@ -40,7 +40,7 @@ public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
                 .fetchJoin()
                 .where(artist.artistId.eq(artistId),
                         artist.artistStatus.ne(ArtistStatus.INIT),
-                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT),
+                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)
