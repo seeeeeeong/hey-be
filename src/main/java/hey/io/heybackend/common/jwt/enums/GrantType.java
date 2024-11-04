@@ -1,4 +1,4 @@
-package hey.io.heybackend.common.jwt;
+package hey.io.heybackend.common.jwt.enums;
 
 import hey.io.heybackend.common.mapper.EnumMapperType;
 import lombok.Getter;

@@ -2,6 +2,7 @@ package hey.io.heybackend.domain.artist.repository;
 
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
@@ -13,16 +14,16 @@ import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 
-@RequiredArgsConstructor
-public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
+public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implements ArtistQueryRepository {
 
-    private final JPAQueryFactory queryFactory;
-
+    public ArtistQueryRepositoryImpl(){
+        super(Artist.class);
+    }
 
     @Override
     public Optional<Artist> getArtistDetail(Long artistId) {
 
-        Artist artistDetail = queryFactory.selectFrom(artist)
+        Artist artistDetail = selectFrom(artist)
                 .leftJoin(artist.performanceArtists, performanceArtist)
                 .fetchJoin()
                 .where(artist.artistId.eq(artistId),

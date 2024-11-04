@@ -1,21 +1,17 @@
 package hey.io.heybackend.domain.performance.mapper;
 
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
-import hey.io.heybackend.domain.artist.entity.Artist;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.enums.FileCategory;
 import hey.io.heybackend.domain.file.service.FileService;
 import hey.io.heybackend.domain.member.enums.FollowType;
 import hey.io.heybackend.domain.member.service.FollowService;
-import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse.ArtistDTO;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.entity.Performance;
-import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

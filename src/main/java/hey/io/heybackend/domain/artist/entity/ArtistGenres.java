@@ -1,6 +1,7 @@
 package hey.io.heybackend.domain.artist.entity;
 
 
+import hey.io.heybackend.domain.artist.enums.ArtistGenre;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(schema = "artist")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ArtistGenre {
+public class ArtistGenres {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +22,6 @@ public class ArtistGenre {
     private Artist artist;
 
     @Column(nullable = false)
-    private hey.io.heybackend.domain.artist.enums.ArtistGenre artistGenre; // 공연 장르
+    private ArtistGenre artistGenre; // 공연 장르
 
 }

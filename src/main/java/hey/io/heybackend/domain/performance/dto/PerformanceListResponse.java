@@ -46,14 +46,14 @@ public class PerformanceListResponse {
     private String placeName;
 
     @Schema(description = "팔로우 여부", example = "true")
-    private Boolean isFollow = false;
+    private boolean isFollow = false;
 
     @Schema(description = "파일 정보",
             example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
     private List<FileDTO> files;
 
 
-    public static PerformanceListResponse of(Performance performance, Boolean isFollow, List<FileDTO> fileList) {
+    public static PerformanceListResponse of(Performance performance, boolean isFollow, List<FileDTO> fileList) {
         return PerformanceListResponse.builder()
                 .performanceId(performance.getPerformanceId())
                 .performanceName(performance.getName())

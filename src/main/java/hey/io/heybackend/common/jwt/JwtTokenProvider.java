@@ -1,5 +1,8 @@
 package hey.io.heybackend.common.jwt;
 
+import hey.io.heybackend.common.jwt.dto.JwtTokenDTO;
+import hey.io.heybackend.common.jwt.enums.GrantType;
+import hey.io.heybackend.common.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,14 +22,14 @@ public class JwtTokenProvider {
     private final String refreshTokenExpiredTime;
     private final String tokenSecret;
 
-    public JwtTokenDto createJwtTokenDto(Long memberId) {
+    public JwtTokenDTO createJwtTokenDto(Long memberId) {
         Date accessTokenExpiredTime = createAccessTokenExpiredTime();
         Date refreshTokenExpiredTime = createRefreshTokenExpiredTime();
 
         String accessToken = createAccessToken(memberId, accessTokenExpiredTime);
         String refreshToken = createRefreshToken(memberId, refreshTokenExpiredTime);
 
-        return JwtTokenDto.builder()
+        return JwtTokenDTO.builder()
                 .grantType(GrantType.BEARER.getDescription())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

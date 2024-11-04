@@ -1,4 +1,4 @@
-package hey.io.heybackend.common.jwt;
+package hey.io.heybackend.common.jwt.enums;
 
 public enum TokenType {
 

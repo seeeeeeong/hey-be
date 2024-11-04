@@ -2,18 +2,15 @@ package hey.io.heybackend.domain.artist.controller;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.response.ApiResponse;
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
-import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PerformanceGenre implements EnumMapperType {
+
     BALLAD("발라드"),
     HIPHOP("힙합"),
     RNB("R&B"),

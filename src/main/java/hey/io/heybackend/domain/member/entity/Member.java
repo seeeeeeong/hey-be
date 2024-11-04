@@ -52,19 +52,23 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Follow> follows;
 
     @Builder
-    private Member(String email, String nickname) {
+    public Member(String email, String name, String nickname,
+                   MemberStatus memberStatus, boolean optionalTermsAgreed, LocalDateTime accessedAt) {
         this.email = email;
+        this.name = name;
         this.nickname = nickname;
+        this.memberStatus = memberStatus;
+        this.optionalTermsAgreed = optionalTermsAgreed;
+        this.accessedAt = accessedAt;
     }
 
-    public static Member create(String email, String nickname) {
-        return Member.builder()
-                .email(email)
-                .nickname(nickname)
-                .build();
+    public void updateMember(String email, String name) {
+        this.email = email;
+        this.name = name;
+        this.memberStatus = MemberStatus.ACTIVE;
+        this.optionalTermsAgreed = true;
+        this.accessedAt = LocalDateTime.now();
     }
 }

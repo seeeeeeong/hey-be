@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.auth.properties;
+package hey.io.heybackend.domain.oauth.properties;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

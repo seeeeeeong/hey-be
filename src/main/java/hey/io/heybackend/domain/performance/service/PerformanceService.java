@@ -3,7 +3,7 @@ package hey.io.heybackend.domain.performance.service;
 import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.file.enums.EntityType;

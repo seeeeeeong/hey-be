@@ -2,9 +2,8 @@ package hey.io.heybackend.domain.performance.controller;
 
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.response.SliceResponse;
-import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.performance.dto.*;
@@ -13,8 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

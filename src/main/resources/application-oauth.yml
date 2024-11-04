@@ -13,6 +13,15 @@ oauth2:
     user-info-url: ${KAKAO_USER_INFO_URL}
     redirect-uri: ${KAKAO_REDIRECT_URI}
 
+  apple:
+    client-id: ${APPLE_CLIENT_ID}
+    key-id: ${APPLE_KEY_ID}
+    team-id: ${APPLE_TEAM_ID}
+    private-key: ${APPLE_PRIVATE_KEY}
+    public-key-url: ${APPLE_PUBLIC_KEY_URL}
+    token-url: ${APPLE_TOKEN_URL}
+    redirect-uri : ${APPLE_REDIRECT_URI}
+
 token:
   secret: ${TOKEN_SECRET}
   access-token-expiration-time: 900000

@@ -2,6 +2,7 @@ package hey.io.heybackend.domain.performance.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import hey.io.heybackend.domain.artist.entity.Artist;
+import hey.io.heybackend.domain.artist.enums.ArtistType;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.performance.entity.*;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
@@ -29,7 +30,7 @@ public class PerformanceDetailResponse {
             example = "국내 콘서트",
             allowableValues = {"국내 콘서트", "내한 콘서트", "페스티벌", "해외 페스티벌"}
     )
-    private String performanceType;
+    private PerformanceType performanceType;
 
     @Schema(
             description = "공연 장르", example = "힙합/R&B",
@@ -41,7 +42,7 @@ public class PerformanceDetailResponse {
             example = "공연 예정",
             allowableValues = {"공연 등록", "공연 예정", "공연 중", "공연 종료", "공연 취소"}
     )
-    private String performanceStatus;
+    private PerformanceStatus performanceStatus;
 
     @Schema(description = "공연명", example = "현대카드 Curated 95, 한로로 X 윤마치 X QWER")
     private String name;
@@ -64,7 +65,7 @@ public class PerformanceDetailResponse {
     private String viewingAge;
 
     @Schema(description = "팔로우 여부", example = "false")
-    private Boolean isFollow;
+    private boolean isFollow;
 
     @Schema(description = "파일 정보",
             example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
@@ -88,9 +89,9 @@ public class PerformanceDetailResponse {
 
         return PerformanceDetailResponse.builder()
                 .performanceId(performance.getPerformanceId())
-                .performanceType(performance.getPerformanceType().getDescription())
+                .performanceType(performance.getPerformanceType())
                 .genres(convertGenres(performance.getGenres()))
-                .performanceStatus(performance.getPerformanceStatus().getDescription())
+                .performanceStatus(performance.getPerformanceStatus())
                 .name(performance.getName())
                 .engName(performance.getEngName())
                 .startDate(performance.getStartDate())
@@ -218,7 +219,7 @@ public class PerformanceDetailResponse {
 
         @Schema(description = "아티스트 유형", example = "솔로",
                 allowableValues = {"그룹", "솔로"})
-        private String artistType;
+        private ArtistType artistType;
 
         @Schema(description = "파일 정보",
                 example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
@@ -229,7 +230,7 @@ public class PerformanceDetailResponse {
                     .artistId(artist.getArtistId())
                     .name(artist.getName())
                     .engName(artist.getEngName())
-                    .artistType(artist.getArtistType().getDescription())
+                    .artistType(artist.getArtistType())
                     .files(fileList)
                     .build();
         }

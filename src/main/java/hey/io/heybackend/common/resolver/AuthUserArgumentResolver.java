@@ -2,7 +2,7 @@ package hey.io.heybackend.common.resolver;
 
 
 
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import io.jsonwebtoken.Claims;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;

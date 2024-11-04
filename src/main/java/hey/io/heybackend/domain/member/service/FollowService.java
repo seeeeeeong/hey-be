@@ -1,6 +1,6 @@
 package hey.io.heybackend.domain.member.service;
 
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.member.enums.FollowType;
 import hey.io.heybackend.domain.member.repository.FollowRepository;
 import lombok.RequiredArgsConstructor;

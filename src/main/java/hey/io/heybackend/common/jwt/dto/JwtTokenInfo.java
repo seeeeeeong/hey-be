@@ -1,6 +1,5 @@
-package hey.io.heybackend.common.jwt;
+package hey.io.heybackend.common.jwt.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 

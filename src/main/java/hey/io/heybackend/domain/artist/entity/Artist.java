@@ -5,7 +5,6 @@ import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.artist.enums.ArtistType;
 import hey.io.heybackend.domain.file.entity.File;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
-import hey.io.heybackend.domain.performance.entity.PerformanceGenres;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -50,7 +49,7 @@ public class Artist extends BaseTimeEntity {
     private List<File> files = new ArrayList<>();
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ArtistGenre> genres = new ArrayList<>();
+    private List<ArtistGenres> genres = new ArrayList<>();
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformanceArtist> performanceArtists = new ArrayList<>();
