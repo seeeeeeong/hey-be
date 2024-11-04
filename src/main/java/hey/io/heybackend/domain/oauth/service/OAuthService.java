@@ -25,7 +25,9 @@ import hey.io.heybackend.domain.oauth.client.AuthProviderClient;
 import hey.io.heybackend.domain.oauth.dto.LoginResponse;
 import hey.io.heybackend.domain.oauth.properties.AppleProperties;
 import hey.io.heybackend.domain.user.entity.Token;
+import hey.io.heybackend.domain.user.entity.UserAuth;
 import hey.io.heybackend.domain.user.repository.TokenRepository;
+import hey.io.heybackend.domain.user.repository.UserAuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +53,7 @@ public class OAuthService {
     private final MemberRepository memberRepository;
     private final SocialAccountRepository socialAccountRepository;
     private final MemberPushRepository memberPushRepository;
+    private final UserAuthRepository userAuthRepository;
 
     /**
      * <p>구글 로그인</p>
@@ -197,6 +200,8 @@ public class OAuthService {
             Member newMember = insertMember(email, name);
             // 3.1. 신규 유저의 경우 memberPush insert
             insertMemberPush(newMember);
+            // 3.2 신규 유저의 경우 userAuth insert
+            insertUserAuth(String.valueOf(newMember.getMemberId()));
 
             return newMember;
         }
@@ -262,6 +267,21 @@ public class OAuthService {
                 .build();
 
         memberPushRepository.save(memberPush);
+    }
+
+    private void insertUserAuth(String userId) {
+        UserAuth userAuthSns = UserAuth.builder()
+                .userId(userId)
+                .authId("MEMBER_SNS")
+                .build();
+
+        UserAuth userAuthAuthenticated = UserAuth.builder()
+                .userId(userId)
+                .authId("IS_AUTHENTICATED_FULLY")
+                .build();
+
+        userAuthRepository.save(userAuthSns);
+        userAuthRepository.save(userAuthAuthenticated);
     }
 
     private SocialAccount insertSocialAccount(Member member, Provider provider, String providerUid) {
