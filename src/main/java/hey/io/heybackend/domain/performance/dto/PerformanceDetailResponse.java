@@ -65,7 +65,7 @@ public class PerformanceDetailResponse {
     private String viewingAge;
 
     @Schema(description = "팔로우 여부", example = "false")
-    private boolean isFollow;
+    private Boolean isFollow;
 
     @Schema(description = "파일 정보",
             example = "[{\"fileId\": 1, \"fileCategory\": \"THUMBNAIL\", \"fileName\": \"example.png\", \"fileUrl\": \"http://example.com/image.png\", \"width\": 640, \"height\": 640}]")
