@@ -65,7 +65,6 @@ public class Performance extends BaseTimeEntity {
     @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformancePrice> prices = new ArrayList<>();
 
-    @OrderBy("openDatetime ASC")
     @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformanceTicketing> ticketings = new ArrayList<>();
 
