@@ -8,6 +8,7 @@ import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class ArtistController {
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.ARTIST_NOT_FOUND)
     public ApiResponse<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
-                                                             @AuthUser JwtTokenInfo jwtTokenInfo) {
+                                                             @AuthUser @Parameter(hidden = true) JwtTokenInfo jwtTokenInfo) {
         return ApiResponse.success(artistService.getArtistDetail(artistId, jwtTokenInfo));
     }
 

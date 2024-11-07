@@ -22,29 +22,20 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-logging:
-  level:
-    org.springframework.cache: DEBUG
+springdoc:
+  default-produces-media-type: application/json
+  writer-with-default-pretty-printer: true
+  model-and-view-allowed: true
+  swagger-ui:
+    syntax-highlight:
+      theme: tomorrow-night
+    tags-sorter: alpha
+    operations-sorter: method
 
 management:
   endpoints:
     web:
       base-path: /health_check
-
-kopis:
-  performance:
-    batch-count: 200
-    url: http://www.kopis.or.kr/openApi/restful
-  api:
-    key: ${KOPIS_API_KEY}
-
-spotify:
-  client-id: ${SPOTIFY_CLIENT_ID}
-  client-secret: ${SPOTIFY_CLIENT_SECRET}
-
-fcm:
-  service-account-file: key/heyapplication-40e61-firebase-adminsdk-cd5mk-6b4dd26836.json
-  project-id: heyapplication-40e61
 
 ---
 spring:
@@ -58,11 +49,16 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
+      default_batch_fetch_size: 100
       ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 100
+    show-sql: true
   data:
     redis:
       host: localhost
@@ -107,8 +103,6 @@ spring:
         use_sql_comments: true
         default_batch_fetch_size: 100
     show-sql: true
-
-
   data:
     redis:
       host: localhost

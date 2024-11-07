@@ -65,7 +65,7 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
     }
 
     private BooleanExpression inGenres(List<PerformanceGenre> genres) {
-        return ObjectUtils.isEmpty(genres) ? null : performanceGenres.performanceGenre.in(genres);
+        return ObjectUtils.isEmpty(genres) ? null : performance.genres.any().performanceGenre.in(genres);
     }
 
     private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
