@@ -17,9 +17,11 @@ import org.springframework.util.ObjectUtils;
 import java.util.List;
 import java.util.Optional;
 
+import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
+import static hey.io.heybackend.domain.performance.entity.QPlace.place;
 
 
 public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport implements PerformanceQueryRepository {
@@ -47,18 +49,16 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
     public Optional<Performance> getPerformanceDetail(Long performanceId) {
 
         Performance performanceDetail = selectFrom(performance)
-                .leftJoin(performance.performanceArtists, performanceArtist)
-                .fetchJoin()
+                .join(performance.place).fetchJoin()
+                .leftJoin(performance.performanceArtists, performanceArtist).fetchJoin()
+                .leftJoin(performanceArtist.artist, artist).fetchJoin()
                 .where(performance.performanceId.eq(performanceId),
-                        performance.performanceStatus.ne(PerformanceStatus.INIT),
-                        performanceArtist.artist.artistStatus.ne(ArtistStatus.INIT)
-                )
-                .orderBy(performanceArtist.artist.name.asc())
+                        performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .orderBy(artist.name.asc())
                 .fetchOne();
 
         return Optional.ofNullable(performanceDetail);
     }
-
 
     private BooleanExpression inType(PerformanceType type) {
         return ObjectUtils.isEmpty(type) ? null : performance.performanceType.in(type);

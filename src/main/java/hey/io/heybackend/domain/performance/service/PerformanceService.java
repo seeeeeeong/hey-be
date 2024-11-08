@@ -5,6 +5,7 @@ import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.entity.Artist;
+import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.enums.FileCategory;
@@ -115,6 +116,7 @@ public class PerformanceService {
     public List<ArtistDTO> getArtistList(List<PerformanceArtist> performanceArtists) {
         // 1. 아티스트 ID 목록
         List<Long> artistIds = performanceArtists.stream()
+                .filter(performanceArtist -> performanceArtist.getArtist().getArtistStatus() == ArtistStatus.ENABLE)
                 .map(performanceArtist -> performanceArtist.getArtist().getArtistId())
                 .collect(Collectors.toList());
 
@@ -123,6 +125,7 @@ public class PerformanceService {
 
         // 3. ArtistDTO 생성
         return performanceArtists.stream()
+                .filter(performanceArtist -> artistIds.contains(performanceArtist.getArtist().getArtistId()))
                 .map(performanceArtist -> {
                     Artist artist = performanceArtist.getArtist();
                     List<FileDTO> fileList = filesByArtistIds.getOrDefault(artist.getArtistId(), Collections.emptyList());
