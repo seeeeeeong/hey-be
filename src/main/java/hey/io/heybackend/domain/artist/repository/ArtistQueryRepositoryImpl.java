@@ -24,12 +24,10 @@ public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     public Optional<Artist> getArtistDetail(Long artistId) {
 
         Artist artistDetail = selectFrom(artist)
-                .leftJoin(artist.performanceArtists, performanceArtist)
-                .fetchJoin()
+                .leftJoin(artist.performanceArtists, performanceArtist).fetchJoin()
+                .leftJoin(performanceArtist.performance, performance).fetchJoin()
                 .where(artist.artistId.eq(artistId),
-                        artist.artistStatus.ne(ArtistStatus.INIT),
-                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT)
-                        )
+                        artist.artistStatus.eq(ArtistStatus.ENABLE))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)

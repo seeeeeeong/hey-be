@@ -13,6 +13,7 @@ import hey.io.heybackend.domain.file.service.FileService;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
+import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.mapper.PerformanceMapper; // ResponseBuilder import 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,7 @@ public class ArtistService {
         // 4. 아티스트 공연 목록 조회
         List<Performance> performanceList = artist.getPerformanceArtists().stream()
                 .map(PerformanceArtist::getPerformance)
+                .filter(performance -> !performance.getPerformanceStatus().equals(PerformanceStatus.INIT))
                 .collect(Collectors.toList());
 
         // 5. 아티스트 공연 목록 응답 생성

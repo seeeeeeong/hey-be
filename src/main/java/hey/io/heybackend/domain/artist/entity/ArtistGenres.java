@@ -22,6 +22,7 @@ public class ArtistGenres {
     private Artist artist;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ArtistGenre artistGenre; // 공연 장르
 
 }
