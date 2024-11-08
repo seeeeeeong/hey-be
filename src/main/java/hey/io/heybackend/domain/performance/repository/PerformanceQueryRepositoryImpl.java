@@ -21,6 +21,7 @@ import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
+import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
 import static hey.io.heybackend.domain.performance.entity.QPlace.place;
 
 
@@ -34,6 +35,8 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
     public Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
         return applySlicePagination(pageable, queryFactory ->
                 queryFactory.selectFrom(performance)
+                        .join(performance.place).fetchJoin()
+                        .leftJoin(performance.ticketings, performanceTicketing).fetchJoin()
                         .where(
                                 performance.performanceStatus.ne(PerformanceStatus.INIT),
                                 inType(request.getType()),
