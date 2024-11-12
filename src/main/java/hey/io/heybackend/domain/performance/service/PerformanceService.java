@@ -3,7 +3,6 @@ package hey.io.heybackend.domain.performance.service;
 import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
-import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.file.dto.FileDTO;
@@ -20,6 +19,7 @@ import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
 import hey.io.heybackend.domain.performance.repository.PerformanceRepository;
 import hey.io.heybackend.domain.performance.mapper.PerformanceMapper; // ResponseBuilder import 추가
+import hey.io.heybackend.domain.system.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -42,17 +42,17 @@ public class PerformanceService {
     /**
      * <p>공연 목록 조회</p>
      *
-     * @param jwtTokenInfo JWT 토큰 정보
+     * @param tokenDTO JWT 토큰 정보
      * @param request 공연 목록 필터
      * @param pageable 페이지 정보
      * @return 공연 목록
      */
-    public SliceResponse<PerformanceListResponse> getPerformanceList(JwtTokenInfo jwtTokenInfo, PerformanceFilterRequest request, Pageable pageable) {
+    public SliceResponse<PerformanceListResponse> getPerformanceList(TokenDTO tokenDTO, PerformanceFilterRequest request, Pageable pageable) {
         // 1. 공연 목록 조회
         Slice<Performance> performanceSliceList = performanceRepository.getPerformanceList(request, pageable);
 
         // 2. 공연 목록 응답 생성
-        List<PerformanceListResponse> performanceListResponse = performanceMapper.createPerformanceListResponse(performanceSliceList.getContent(), jwtTokenInfo);
+        List<PerformanceListResponse> performanceListResponse = performanceMapper.createPerformanceListResponse(performanceSliceList.getContent(), tokenDTO);
 
         return new SliceResponse<>(performanceListResponse, pageable, performanceSliceList.hasNext());
     }
@@ -61,16 +61,16 @@ public class PerformanceService {
      * <p>공연 상세 조회</p>
      *
      * @param performanceId 공연 ID
-     * @param jwtTokenInfo JWT 토큰 정보
+     * @param tokenDTO JWT 토큰 정보
      * @return 공연 상세 정보
      */
-    public PerformanceDetailResponse getPerformanceDetail(Long performanceId, JwtTokenInfo jwtTokenInfo) {
+    public PerformanceDetailResponse getPerformanceDetail(Long performanceId, TokenDTO tokenDTO) {
         // 1. 공연 조회
         Performance performance = performanceRepository.getPerformanceDetail(performanceId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
         // 2. 팔로우 여부 조회
-        boolean isFollow = followService.checkExistFollow(jwtTokenInfo, performanceId, FollowType.PERFORMANCE);
+        boolean isFollow = followService.checkExistFollow(tokenDTO, performanceId, FollowType.PERFORMANCE);
 
         // 3. 공연 파일, 가격, 티켓 조회
         List<FileDTO> fileList = fileService.getFileDtosByEntity(performanceId, EntityType.PERFORMANCE, FileCategory.DETAIL);

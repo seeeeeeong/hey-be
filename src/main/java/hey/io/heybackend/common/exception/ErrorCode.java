@@ -44,21 +44,30 @@ public enum ErrorCode {
     PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "장소 정보를 찾을 수 없습니다."),
     ARTIST_NOT_FOUND(HttpStatus.NOT_FOUND, "아티스트 정보를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저 정보를 찾을 수 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."),
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일 정보를 찾을 수 없습니다."),
     TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "토큰 정보를 찾을 수 없습니다."),
     JWT_REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh 토큰 정보를 찾을 수 없습니다."),
+    AUTH_NOT_FOUND(HttpStatus.NOT_FOUND, "권한 정보를 찾을 수 없습니다."),
 
 
     // Unsupported
     UNSUPPORTED_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다."),
 
+
     // Member
     MEMBER_ALREADY_EXIST(HttpStatus.CONFLICT, "이미 가입된 회원입니다."),
+    INCORRECT_USER(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
     INVALID_MEMBER(HttpStatus.UNAUTHORIZED, "유효하지 않은 회원입니다."),
 
 
     // Artist
     INVALID_ARTIST_ID(HttpStatus.BAD_REQUEST, "아티스트 ID 입력 값이 올바르지 않습니다."),
     TOO_MANY_ARTIST_ID(HttpStatus.BAD_REQUEST, "아티스트 ID는 최대 50개까지 입력 가능합니다."),
+
+    // OAuth2
+    LOGIN_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "소셜 로그인에 실패하였습니다."),
+
     ;
 
     private final HttpStatus httpStatus;

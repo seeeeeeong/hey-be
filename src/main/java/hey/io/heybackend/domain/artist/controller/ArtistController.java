@@ -2,11 +2,11 @@ package hey.io.heybackend.domain.artist.controller;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.response.ApiResponse;
-import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
+import hey.io.heybackend.domain.system.dto.TokenDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,8 +31,8 @@ public class ArtistController {
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.ARTIST_NOT_FOUND)
     public ApiResponse<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
-                                                             @AuthUser @Parameter(hidden = true) JwtTokenInfo jwtTokenInfo) {
-        return ApiResponse.success(artistService.getArtistDetail(artistId, jwtTokenInfo));
+                                                             @AuthUser @Parameter(hidden = true) TokenDTO tokenDTO) {
+        return ApiResponse.success(artistService.getArtistDetail(artistId, tokenDTO));
     }
 
 }

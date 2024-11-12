@@ -1,6 +1,5 @@
 package hey.io.heybackend.domain.performance.mapper;
 
-import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.file.dto.FileDTO;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.enums.FileCategory;
@@ -9,6 +8,7 @@ import hey.io.heybackend.domain.member.enums.FollowType;
 import hey.io.heybackend.domain.member.service.FollowService;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.entity.Performance;
+import hey.io.heybackend.domain.system.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ public class PerformanceMapper {
     private final FileService fileService;
     private final FollowService followService;
 
-    public List<PerformanceListResponse> createPerformanceListResponse(List<Performance> performanceList, JwtTokenInfo jwtTokenInfo) {
+    public List<PerformanceListResponse> createPerformanceListResponse(List<Performance> performanceList, TokenDTO tokenDTO) {
         List<Long> performanceIds = performanceList.stream()
                 .map(Performance::getPerformanceId)
                 .collect(Collectors.toList());
@@ -33,7 +33,7 @@ public class PerformanceMapper {
         return performanceList.stream()
                 .map(performance -> PerformanceListResponse.of(
                         performance,
-                        followService.checkExistFollow(jwtTokenInfo, performance.getPerformanceId(), FollowType.PERFORMANCE),
+                        followService.checkExistFollow(tokenDTO, performance.getPerformanceId(), FollowType.PERFORMANCE),
                         filesByPerformanceIds.getOrDefault(performance.getPerformanceId(), List.of())
                 ))
                 .collect(Collectors.toList());

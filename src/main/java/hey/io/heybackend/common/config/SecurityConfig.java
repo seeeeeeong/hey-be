@@ -1,5 +1,9 @@
 package hey.io.heybackend.common.config;
 
+import hey.io.heybackend.common.config.filter.JwtAuthenticationProcessingFilter;
+import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginFailureHandler;
+import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginSuccessHandler;
+import hey.io.heybackend.domain.oauth2.service.PrincipalOauth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,9 +13,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -19,10 +28,14 @@ import org.springframework.web.client.RestTemplate;
 public class SecurityConfig {
 
 
+    private final PrincipalOauth2UserService principalOauth2UserService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
+
     @Value("${spring.profiles.active}")
     private String profiles;
 
-//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 
     /**
@@ -47,8 +60,16 @@ public class SecurityConfig {
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
                         .requestMatchers("/auth/login/**").permitAll() // 소셜 로그인 기능 허용
+                        .requestMatchers("/main").permitAll()
+                        .requestMatchers("/failure").permitAll()
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
+
+                .oauth2Login(oauth2Login -> oauth2Login
+                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userService(principalOauth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler))
+
 
                 // 익명 권한 설정
                 .anonymous(anonymous -> anonymous
@@ -56,7 +77,7 @@ public class SecurityConfig {
                         .authorities("ANONYMOUS"))
 
                 // JWT 인증 필터 적용
-//                .addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(this.jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -73,6 +94,7 @@ public class SecurityConfig {
         return http;
     }
 
+
     /**
      * <p>인증 관리 bean 설정</p>
      *
@@ -83,7 +105,21 @@ public class SecurityConfig {
         return http.getSharedObject(AuthenticationManager.class);
     }
 
+    /**
+     * <p>BCryptPasswordEncoder bean 설정</p>
+     *
+     * @return PasswordEncoder
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
+    /**
+     * <p>RestTemplate bean 설정</p>
+     *
+     * @return RestTemplate
+     */
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

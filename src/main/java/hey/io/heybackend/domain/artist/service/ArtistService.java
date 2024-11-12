@@ -2,7 +2,6 @@ package hey.io.heybackend.domain.artist.service;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
-import hey.io.heybackend.common.jwt.dto.JwtTokenInfo;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.repository.ArtistRepository;
@@ -14,7 +13,8 @@ import hey.io.heybackend.domain.performance.dto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
-import hey.io.heybackend.domain.performance.mapper.PerformanceMapper; // ResponseBuilder import 추가
+import hey.io.heybackend.domain.performance.mapper.PerformanceMapper;
+import hey.io.heybackend.domain.system.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +35,10 @@ public class ArtistService {
      * <p>아티스트 상세 조회</p>
      *
      * @param artistId 아티스트 ID
-     * @param jwtTokenInfo JWT 토큰 정보
+     * @param tokenDTO JWT 토큰 정보
      * @return 아티스트 상세 정보
      */
-    public ArtistDetailResponse getArtistDetail(Long artistId, JwtTokenInfo jwtTokenInfo) {
+    public ArtistDetailResponse getArtistDetail(Long artistId, TokenDTO tokenDTO) {
         // 1. 아티스트 조회
         Artist artist = artistRepository.getArtistDetail(artistId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ARTIST_NOT_FOUND));
@@ -53,7 +53,7 @@ public class ArtistService {
                 .collect(Collectors.toList());
 
         // 5. 아티스트 공연 목록 응답 생성
-        List<PerformanceListResponse> performanceListResponse = performanceMapper.createPerformanceListResponse(performanceList, jwtTokenInfo);
+        List<PerformanceListResponse> performanceListResponse = performanceMapper.createPerformanceListResponse(performanceList, tokenDTO);
 
         return ArtistDetailResponse.of(artist, fileList, performanceListResponse);
     }
