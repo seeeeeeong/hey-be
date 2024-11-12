@@ -8,6 +8,7 @@ import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberPush;
 import hey.io.heybackend.domain.member.entity.SocialAccount;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
+import hey.io.heybackend.domain.member.enums.NicknameType;
 import hey.io.heybackend.domain.member.enums.Provider;
 import hey.io.heybackend.domain.member.enums.PushType;
 import hey.io.heybackend.domain.member.repository.MemberPushRepository;
@@ -89,12 +90,13 @@ public class MemberService implements UserDetailsService {
     private String getNickname() {
         String nickname;
         do {
-            String nicknameBase = "유저";
+            String nicknameBase = NicknameType.getRandomNickname();
             int randomNumber = new Random().nextInt(100000);
             nickname = String.format("%s_%05d", nicknameBase, randomNumber);
         } while (memberRepository.existsByNickname(nickname));
         return nickname;
     }
+
 
     private void insertMemberPush(Member member) {
         MemberPush memberPush = MemberPush.builder()
