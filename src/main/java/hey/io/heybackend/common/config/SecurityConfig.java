@@ -1,6 +1,8 @@
 package hey.io.heybackend.common.config;
 
 import hey.io.heybackend.common.config.filter.JwtAuthenticationProcessingFilter;
+import hey.io.heybackend.common.config.jwt.JwtAccessDeniedHandler;
+import hey.io.heybackend.common.config.jwt.JwtAuthenticationEntryPoint;
 import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginFailureHandler;
 import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginSuccessHandler;
 import hey.io.heybackend.domain.oauth2.service.PrincipalOauth2UserService;
@@ -32,6 +34,8 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Value("${spring.profiles.active}")
     private String profiles;
@@ -59,9 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
-                        .requestMatchers("/auth/login/**").permitAll() // 소셜 로그인 기능 허용
                         .requestMatchers("/main").permitAll()
-                        .requestMatchers("/failure").permitAll()
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
 
@@ -78,6 +80,13 @@ public class SecurityConfig {
 
                 // JWT 인증 필터 적용
                 .addFilterBefore(this.jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // 예외 처리 적용
+                .exceptionHandling((exceptionHandling) ->
+                    exceptionHandling
+                            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                            .accessDeniedHandler(jwtAccessDeniedHandler))
+
                 .build();
     }
 

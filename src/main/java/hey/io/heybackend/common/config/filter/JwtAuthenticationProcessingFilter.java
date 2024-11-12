@@ -1,31 +1,39 @@
 package hey.io.heybackend.common.config.filter;
 
 import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
+import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
+import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
 import hey.io.heybackend.domain.system.dto.TokenDTO;
 import hey.io.heybackend.domain.system.entity.Token;
 import hey.io.heybackend.domain.system.repository.TokenRepository;
+import hey.io.heybackend.domain.system.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
-    private final TokenRepository tokenRepository;
+
+    private final TokenService tokenService;
 
 
     /**
@@ -50,9 +58,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtTokenProvider::validateToken)
                 .orElse(null);
 
+        log.info("refreshToken: " + refreshToken);
+
+
         // 2.1 RefreshToken이 요청 헤더에 존재
         // 사용자의 AccessToken이 만료되어서, RefreshToken까지 보낸 경우
         if (refreshToken != null) {
+            log.info("RefreshToken 검증 후, 토큰 재발급");
             // RefreshToken 검증 후, 토큰 재발급
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
             return;
@@ -76,35 +88,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      *
      */
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        memberRepository.findByRefreshToken(refreshToken)
-                .ifPresent(member -> {
-                    TokenDTO tokenDTO = reIssueToken(member);
-                    jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDTO.getAccessToken(), tokenDTO.getRefreshToken());
-                });
+        Member member = memberRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new UnAuthorizedException(ErrorCode.INVALID_REFRESH_TOKEN));
 
+        TokenDTO tokenDTO = tokenService.reIssueToken(member);
+        jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDTO.getAccessToken(), tokenDTO.getRefreshToken());
     }
 
-    /**
-     * <p>Token 재발급 및 DB의 RefreshToken 업데이트</p>
-     * jwtTokenProvider.createToken()으로 토큰 재발급
-     * DB에 재발급한 RefreshToken 업데이트 후 Flush
-     *
-     */
-    private TokenDTO reIssueToken(Member member) {
-        TokenDTO tokenDTO = jwtTokenProvider.createToken(member);
-
-        tokenRepository.deleteByMemberId(member.getMemberId());
-
-        Token token = Token.builder()
-                        .memberId(member.getMemberId())
-                        .refreshToken(tokenDTO.getRefreshToken())
-                        .userId(null)
-                        .build();
-
-        tokenRepository.saveAndFlush(token);
-        return tokenDTO;
-
-    }
 
     /**
      * <p>AccessToken 체크 및 인증 처리</p>

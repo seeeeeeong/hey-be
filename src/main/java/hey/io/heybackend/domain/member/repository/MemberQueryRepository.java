@@ -13,7 +13,7 @@ public interface MemberQueryRepository {
     /**
      * <p>사용자 권한 정보</p>
      *
-     * @param userId 사용자 ID
+     * @param memberId 사용자 ID
      * @return 사용자 권한 목록
      */
     List<String> selectUserAuthList(Long memberId);

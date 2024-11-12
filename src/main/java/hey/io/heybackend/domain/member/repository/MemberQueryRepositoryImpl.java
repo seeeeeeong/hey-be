@@ -21,8 +21,9 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     @Override
     public Optional<Member> findByRefreshToken(String refreshToken) {
         Member optionalMember = select(member)
-                .from(token)
-                .join(member).on(member.memberId.eq(token.memberId))
+                .from(member)
+                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
+                .innerJoin(member.userAuth, userAuth).fetchJoin()
                 .where(token.refreshToken.eq(refreshToken))
                 .fetchFirst();
 

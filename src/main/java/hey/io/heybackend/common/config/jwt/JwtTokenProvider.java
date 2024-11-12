@@ -60,6 +60,8 @@ public class JwtTokenProvider {
         String memberId = claims.getSubject();
         MemberDTO memberDTO = memberService.loadUserByUsername(memberId);
 
+        log.info(memberDTO.getAuthorities().toString());
+
         // 권한 정보 조회 및 변환
         @SuppressWarnings("unchecked")
         List<LinkedHashMap<String, String>> authoritiesMap = (List<LinkedHashMap<String, String>>) claims.get("authorities");
@@ -157,15 +159,15 @@ public class JwtTokenProvider {
     // 헤더에서 AccessToken 추출
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(refreshToken -> refreshToken.startsWith("Bearer"))
-                .map(refreshToken -> refreshToken.replace("Bearer", ""));
+                .filter(refreshToken -> refreshToken.startsWith("Bearer "))
+                .map(refreshToken -> refreshToken.replace("Bearer ", ""));
     }
 
     // 헤더에서 RefreshToken 추출
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(refreshHeader))
-                .filter(refreshToken -> refreshToken.startsWith("Bearer"))
-                .map(refreshToken -> refreshToken.replace("Bearer", ""));
+                .filter(refreshToken -> refreshToken.startsWith("Bearer "))
+                .map(refreshToken -> refreshToken.replace("Bearer ", ""));
     }
 
     // AccessToken + RefreshToken 헤더 전송
@@ -174,7 +176,9 @@ public class JwtTokenProvider {
 
         setAccessTokenHeader(response, accessToken);
         setRefreshTokenHeader(response, refreshToken);
-        log.info("Access Token, Refresh Token Header Setting Success");
+        log.info("Access Token: " + accessToken);
+        log.info("Refresh Token: " + refreshToken);
+
     }
 
     // AccessToken 헤더 설정

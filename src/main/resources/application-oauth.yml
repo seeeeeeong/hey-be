@@ -23,6 +23,13 @@ spring:
             user-info-uri: ${KAKAO_USER_INFO_URL}
             user_name_attribute: id
 
+apple:
+  url: https://appleid.apple.com
+  path: static/apple/AuthKey_${APPLE_KEY_ID}.p8
+  cid: ${APPLE_CLIENT_ID}
+  tid: ${APPLE_TEAM_ID}
+  kid: ${APPLE_KEY_ID}
+
 jwt:
   secret: ${JWT_SECRET}
 

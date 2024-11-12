@@ -68,6 +68,9 @@ public enum ErrorCode {
     // OAuth2
     LOGIN_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "소셜 로그인에 실패하였습니다."),
 
+
+    FORBIDDEN_CLIENT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;

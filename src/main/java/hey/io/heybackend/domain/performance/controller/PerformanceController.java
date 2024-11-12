@@ -46,6 +46,7 @@ public class PerformanceController {
     public ApiResponse<SliceResponse<PerformanceListResponse>> getPerformanceList(@AuthUser @Parameter(hidden = true) TokenDTO tokenDTO,
                                                                                   PerformanceFilterRequest request,
                                                                                   @ParameterObject Pageable pageable) {
+
         return ApiResponse.success(performanceService.getPerformanceList(tokenDTO, request, pageable));
     }
 

@@ -154,9 +154,9 @@ public class MemberService implements UserDetailsService {
     public List<GrantedAuthority> loadUserAuthorities(String userId) {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-//        // 사용자별 권한 조회
-//        List<String> userAuthList = memberRepository.selectUserAuthList(Long.valueOf(userId));
-//        userAuthList.forEach(authId -> authorities.add(new SimpleGrantedAuthority(authId)));
+        // 사용자별 권한 조회
+        List<String> userAuthList = memberRepository.selectUserAuthList(Long.valueOf(userId));
+        userAuthList.forEach(authId -> authorities.add(new SimpleGrantedAuthority(authId)));
 
         // 연결된 모든 하위 계층 권한 포함
         return availableRoleHierarchy.getReachableAuthorities(authorities);
