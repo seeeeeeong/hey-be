@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
+                        .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/main").permitAll()
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
@@ -82,10 +83,9 @@ public class SecurityConfig {
                 .addFilterBefore(this.jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 예외 처리 적용
-                .exceptionHandling((exceptionHandling) ->
-                    exceptionHandling
-                            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                            .accessDeniedHandler(jwtAccessDeniedHandler))
+                .exceptionHandling((exceptions) -> exceptions
+//                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
 
                 .build();
     }

@@ -58,7 +58,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtTokenProvider::validateToken)
                 .orElse(null);
 
-        log.info("refreshToken: " + refreshToken);
 
 
         // 2.1 RefreshToken이 요청 헤더에 존재

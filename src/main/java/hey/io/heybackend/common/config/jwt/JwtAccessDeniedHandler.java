@@ -26,7 +26,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setCharacterEncoding("utf-8");
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE); // application/json
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(jsonErrorResponse);
     }
 }
