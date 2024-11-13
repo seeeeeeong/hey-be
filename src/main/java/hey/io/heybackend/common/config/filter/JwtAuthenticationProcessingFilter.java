@@ -39,13 +39,12 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     /**
      * <p>Jwt 인증 필터</p>
      *
-     * Request Header - AccessToken만 요청
-     * AccessToken 만료 시, Request Header - RefreshToken(AccessToken과 함께 요청)
+     * Request Header -> accessToken (accessToken 유효)
+     * Request Header -> accessToken, refreshToken (accessToken 만료)
      *
-     * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공 처리, RefreshToken 재발급 X
-     * 2. RefeshToken이 업고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리, 403 Error
-     * 3. RefreshToken이 있는 경우 -> DB의 RefreshToken과 일치하면 AccessToken, RefreshToken 재발급
-     *
+     * 1. refreshToken이 없고, accessToken이 유효한 경우 -> 인증 성공
+     * 2. refreshToken이 없고, accessToken이 유효하지 않은 경우 -> 인증 실패
+     * 3. refreshToken이 있고, 검증에 성공한 경우 -> accessToken, refreshToken 재발급
      *
      */
     @Override
@@ -53,37 +52,29 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. 사용자 요청 헤더에서 RefreshToken 추출
+        // 1. Request Header에서 refreshToken 추출
         String refreshToken = jwtTokenProvider.extractRefreshToken(request)
                 .filter(jwtTokenProvider::validateToken)
                 .orElse(null);
 
 
-
-        // 2.1 RefreshToken이 요청 헤더에 존재
-        // 사용자의 AccessToken이 만료되어서, RefreshToken까지 보낸 경우
+        // 2.1 refreshToken 존재할 경우
         if (refreshToken != null) {
-            log.info("RefreshToken 검증 후, 토큰 재발급");
-            // RefreshToken 검증 후, 토큰 재발급
+            // refreshToken 검증, 토큰 재발급
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
             return;
         }
 
-        // 2.2 RefreshToken이 요청 헤더에 존재하지 않음
-        // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 Error 발생
-        // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
+        // 2.2 refreshToken 존재하지 않을 경우
         if (refreshToken == null) {
+            // accessToken 검증, 인증 성공/실패 처리
             checkAccessTokenAndAuthentication(request, response, filterChain);
         }
     }
 
 
     /**
-     * <p>RefreshToken으로 유저 정보 조회 및 토큰 재발급</p>
-     *
-     * 헤더의 RefreshToken으로 DB에서 유저를 조회, 유저가 존재한다면
-     * Token 생성 및 DB의 RefreshToken 업데이트
-     * jwtTokenprovider.sendAccessAndRefreshToken()로 응답 해더에 전송
+     * <p>refreshToken 검증, 토큰 재발급</p>
      *
      */
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
@@ -96,10 +87,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
 
     /**
-     * <p>AccessToken 체크 및 인증 처리</p>
-     * request에서 extractAccessToken()으로 AccessToken 추출 및 검증
-     * AccessToken이 유효할 경우, saveAuthenticaation()으로 인증 처리
-     * 인증 허가 처리된 객체를 SecurityContextHolder에 담은 후, 다음 인증 필터로 진행
+     * <p>accessToken 검증, 인증 성공/실패 처리</p>
      *
      */
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
@@ -113,10 +101,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * <p>인증 허가</p>
-     *
-     * SecurityContextHolder.getContext()로 SecurityContext를 꺼낸 후,
-     * setAuthentication()을 이용하여 Authentication 객체에 대한 인증 허가 처리
+     * <p>인증 성공</p>
      *
      */
     public void saveAuthentication(Authentication authentication) {

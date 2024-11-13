@@ -31,6 +31,13 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
         super(Performance.class);
     }
 
+    /**
+     * <p>공연 목록 조회</p>
+     *
+     * @param request
+     * @param pageable
+     * @return Slice<Performance>
+     */
     @Override
     public Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
         return applySlicePagination(pageable, queryFactory ->
@@ -48,6 +55,12 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
         );
     }
 
+    /**
+     * <p>공연 상세 조회</p>
+     *
+     * @param performanceId 공연 ID
+     * @return Optional<Performance>
+     */
     @Override
     public Optional<Performance> getPerformanceDetail(Long performanceId) {
 

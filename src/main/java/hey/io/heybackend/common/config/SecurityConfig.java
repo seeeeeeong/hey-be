@@ -63,11 +63,12 @@ public class SecurityConfig {
                         .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .requestMatchers("/main").permitAll()
+                        .requestMatchers("/main").permitAll() // 메인
+                        .requestMatchers("/member/terms").permitAll() // 약간 동의
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
 
+                // oauth2 Login 설정
                 .oauth2Login(oauth2Login -> oauth2Login
                         .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userService(principalOauth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)

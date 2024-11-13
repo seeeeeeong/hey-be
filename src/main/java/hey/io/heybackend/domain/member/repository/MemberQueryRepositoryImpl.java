@@ -18,6 +18,13 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         super(Member.class);
     }
 
+
+    /**
+     * <p>refreshToken을 가지는 Member 조회</p>
+     *
+     * @param refreshToken
+     * @return Optional<Member>
+     */
     @Override
     public Optional<Member> findByRefreshToken(String refreshToken) {
         Member optionalMember = select(member)

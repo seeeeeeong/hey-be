@@ -20,6 +20,15 @@ public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         super(Artist.class);
     }
 
+
+    /**
+     * <p>아티스트 상세 정보</p>
+     *
+     * Artist의 Performance 데이터를 함께 조회
+     * 공연 상태에 따른 정렬 조건 적용하여 조회
+     *
+     * @return Artist
+     */
     @Override
     public Optional<Artist> getArtistDetail(Long artistId) {
 

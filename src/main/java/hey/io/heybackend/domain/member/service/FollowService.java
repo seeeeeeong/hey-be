@@ -16,6 +16,11 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
 
+    /**
+     * <p>팔로우 조회</p>
+     *
+     * @return 팔로우 관계가 존재할 경우 true, 존재하지 않을 경우 false
+     */
     public boolean checkExistFollow(TokenDTO tokenDTO, Long targetId, FollowType followType) {
         if (tokenDTO == null || tokenDTO.getMemberId() == null) return false;
 

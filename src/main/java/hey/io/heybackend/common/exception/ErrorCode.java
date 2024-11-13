@@ -29,6 +29,8 @@ public enum ErrorCode {
     ILLEGAL_JWT(HttpStatus.UNAUTHORIZED, "잘못된 JWT 토큰입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
     AUTH_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, "Security Context에 인증 정보가 없습니다."),
+    FORBIDDEN_CLIENT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+
 
     // DB
     DATABASE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DB 서버 연동에 오류가 발생했습니다."),
@@ -65,11 +67,6 @@ public enum ErrorCode {
     INVALID_ARTIST_ID(HttpStatus.BAD_REQUEST, "아티스트 ID 입력 값이 올바르지 않습니다."),
     TOO_MANY_ARTIST_ID(HttpStatus.BAD_REQUEST, "아티스트 ID는 최대 50개까지 입력 가능합니다."),
 
-    // OAuth2
-    LOGIN_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "소셜 로그인에 실패하였습니다."),
-
-
-    FORBIDDEN_CLIENT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     ;
 

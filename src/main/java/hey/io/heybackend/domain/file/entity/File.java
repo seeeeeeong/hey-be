@@ -73,7 +73,4 @@ public class File extends BaseTimeEntity {
         return url.substring(lastSlashIndex + 1);
     }
 
-    public void updatePerformanceFile(Performance performance) {
-        this.entityId = performance.getPerformanceId();
-    }
 }

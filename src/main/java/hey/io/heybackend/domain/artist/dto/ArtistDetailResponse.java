@@ -44,8 +44,8 @@ public class ArtistDetailResponse {
     private Integer popularity;
 
     @Schema(
-            description = "아티스트 장르", example = "[\"발라드\", \"힙합\"]",
-            allowableValues = {"발라드", "힙합", "R&B", "EDM", "인디", "락", "재즈", "아이돌", "기타"})
+            description = "아티스트 장르", example = "[\"힙합/R&B\", \"인디/락\"]",
+            allowableValues = {"발라드", "힙합/R&B", "EDM", "인디/락", "재즈", "아이돌", "기타"})
     private List<String> genres;
 
     @Schema(description = "파일 정보",
@@ -69,12 +69,16 @@ public class ArtistDetailResponse {
                 .build();
     }
 
+
+    // ArtistGenres 리스트 변환
     private static List<String> convertGenres(List<ArtistGenres> genreList) {
         return genreList.stream()
                 .map(artistGenre -> {
                     ArtistGenre genre = artistGenre.getArtistGenre();
+                    // HIPHOP과 RNB 장르를 힙합/R&B로 통합하여 표현
                     if (genre == ArtistGenre.HIPHOP || genre == ArtistGenre.RNB) {
                         return "힙합/R&B";
+                    // INDIE와 ROCK 장르를 인디/락으로 통합하여 표현
                     } else if (genre == ArtistGenre.INDIE || genre == ArtistGenre.ROCK) {
                         return "인디/락";
                     }

@@ -156,38 +156,35 @@ public class JwtTokenProvider {
             .getBody();
     }
 
-    // 헤더에서 AccessToken 추출
+    // accessToken 추출
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(accessHeader))
                 .filter(refreshToken -> refreshToken.startsWith("Bearer "))
                 .map(refreshToken -> refreshToken.replace("Bearer ", ""));
     }
 
-    // 헤더에서 RefreshToken 추출
+    // refreshToken 추출
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(refreshHeader))
                 .filter(refreshToken -> refreshToken.startsWith("Bearer "))
                 .map(refreshToken -> refreshToken.replace("Bearer ", ""));
     }
 
-    // AccessToken + RefreshToken 헤더 전송
+    // accessToken, refreshToken 전송
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
 
         setAccessTokenHeader(response, accessToken);
         setRefreshTokenHeader(response, refreshToken);
-        log.info("Access Token: " + accessToken);
-        log.info("Refresh Token: " + refreshToken);
-
     }
 
-    // AccessToken 헤더 설정
+    // accessToken 헤더 설정
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
         response.setHeader(accessHeader, accessToken);
     }
 
 
-    // RefreshToken 헤더 설정
+    // refreshToken 헤더 설정
     public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         response.setHeader(refreshHeader, refreshToken);
     }

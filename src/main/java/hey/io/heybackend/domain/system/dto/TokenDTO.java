@@ -10,7 +10,7 @@ import lombok.Getter;
 @Schema(description = "인증 토큰 정보")
 public class TokenDTO {
 
-    @Schema(description = "사용자 ID", defaultValue = "userId")
+    @Schema(description = "사용자 ID", example = "1")
     private Long memberId;
 
     @Schema(description = "권한 위임 유형", defaultValue = "Bearer")

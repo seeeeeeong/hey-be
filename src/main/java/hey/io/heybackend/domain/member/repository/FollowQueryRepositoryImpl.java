@@ -12,6 +12,11 @@ public class FollowQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         super(Follow.class);
     }
 
+    /**
+     * <p>팔로우 조회</p>
+     *
+     * @return 팔로우 관계가 존재할 경우 true, 존재하지 않을 경우 false
+     */
     @Override
     public boolean existsFollow(FollowType type, Long targetId, Long memberId) {
 

@@ -8,6 +8,12 @@ import java.util.Optional;
 
 public interface MemberQueryRepository {
 
+    /**
+     * <p>refreshToken을 가지는 Member 조회</p>
+     *
+     * @param refreshToken
+     * @return Optional<Member>
+     */
     Optional<Member> findByRefreshToken(String refreshToken);
 
     /**

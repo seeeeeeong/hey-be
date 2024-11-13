@@ -16,8 +16,8 @@ import java.util.*;
 @Builder
 public class MemberDTO implements UserDetails {
 
-    private String memberId;
-    private String email;
+    private String memberId; // 사용자 ID
+    private String email; // 이메일
     private Set<GrantedAuthority> authorities; // 권한 목록
 
     public static MemberDTO of(Member member, Collection<? extends GrantedAuthority> authorities) {

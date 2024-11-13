@@ -17,16 +17,14 @@ public class TokenService {
     private final TokenRepository tokenRepository;
 
     /**
-     * <p>RefreshToken으로 유저 정보 조회 및 토큰 재발급</p>
+     * <p>토큰 재발급</p>
      *
-     * 헤더의 RefreshToken으로 DB에서 유저를 조회, 유저가 존재한다면
-     * Token 생성 및 DB의 RefreshToken 업데이트
-     * jwtTokenprovider.sendAccessAndRefreshToken()로 응답 해더에 전송
+     * @return TokenDTO
      */
     @Transactional
     public TokenDTO reIssueToken(Member member) {
         TokenDTO tokenDTO = jwtTokenProvider.createToken(member);
-        tokenRepository.deleteByMemberId(member.getMemberId()); // 트랜잭션 내에서 delete 호출
+        tokenRepository.deleteByMemberId(member.getMemberId());
 
         Token token = Token.builder()
                 .memberId(member.getMemberId())
@@ -34,7 +32,7 @@ public class TokenService {
                 .userId(null)
                 .build();
 
-        tokenRepository.saveAndFlush(token); // 트랜잭션 내에서 save 호출
+        tokenRepository.saveAndFlush(token);
         return tokenDTO;
     }
 

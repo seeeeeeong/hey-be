@@ -35,6 +35,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final MemberService memberService;
 
 
+    /**
+     * <p>OAuth2 로그인 성공</p>
+     *
+     * 사용자가 OAuth2 로그인 성공시 호출
+     * 회원 정보 저장 및 JWT 토큰 생성
+     *
+     */
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -50,25 +57,27 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         // 2. 조회한 email, provider 정보로 Member saveOrUpdate
         Member member = memberService.saveOrUpdateMember(email, name, provider);
 
+        // 3. SocialAccount saveOrUpdate
         memberService.saveOrUpdateSocialAccount(member, provider, providerUid);
 
-        // 3. Token 발급
+        // 3. JWT 토큰 발급
         TokenDTO tokenDTO = jwtTokenProvider.createToken(member);
 
-        // 4. accessToken, refreshToken 응답
+        // 4. accessToken, refreshToken 헤더에 담아 응답
         response.addHeader(jwtTokenProvider.getAccessHeader(), "Bearer " + tokenDTO.getAccessToken());
         response.addHeader(jwtTokenProvider.getRefreshHeader(), "Bearer " + tokenDTO.getRefreshToken());
 
-        // TODO -> 첫 로그인 구분, 응답 ??
+        // 첫 로그인일 경우, 약관 동의 페이지 리다이렉트
         if (!member.getOptionalTermsAgreed()) {
             response.sendRedirect("/member/terms");
+        // 메인 페이지 리다이렉트
         } else {
             response.sendRedirect("/main");
         }
 
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDTO.getAccessToken(), tokenDTO.getRefreshToken());
 
-        // 4. RefreshToken 저장
+        // 4. refreshToken 저장
         insertToken(member, tokenDTO.getRefreshToken());
 
         log.info("accessToken: " + tokenDTO.getAccessToken());
@@ -77,6 +86,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
 
+    /**
+     * <p>refreshToken 저장</p>
+     *
+     * @param member
+     * @param refreshToken
+     */
     private void insertToken(Member member, String refreshToken) {
         tokenRepository.deleteByMemberId(member.getMemberId());
 

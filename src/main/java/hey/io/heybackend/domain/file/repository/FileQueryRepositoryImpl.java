@@ -19,6 +19,11 @@ public class FileQueryRepositoryImpl extends Querydsl5RepositorySupport implemen
     }
 
 
+    /**
+     * <p>특정 엔티티의 파일 목록 조회</p>
+     *
+     * @return List<File>
+     */
     @Override
     public List<File> findFilesByEntityAndId(Long entityId, EntityType entityType, FileCategory fileCategory) {
         return selectFrom(file)
@@ -29,6 +34,11 @@ public class FileQueryRepositoryImpl extends Querydsl5RepositorySupport implemen
                 .fetch();
     }
 
+    /**
+     * <p>여러 엔티티의 파일 목록 조회</p>
+     *
+     * @return List<File>
+     */
     @Override
     public List<File> findFilesByEntityAndIds(List<Long> entityIds, EntityType entityType, FileCategory fileCategory) {
         return selectFrom(file)

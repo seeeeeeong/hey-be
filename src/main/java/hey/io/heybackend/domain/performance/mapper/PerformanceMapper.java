@@ -23,11 +23,21 @@ public class PerformanceMapper {
     private final FileService fileService;
     private final FollowService followService;
 
+
+    /**
+     * <p>공연 목록 응답 생성</p>
+     *
+     * @param performanceList
+     * @param tokenDTO
+     * @return PerformanceListResponse
+     */
     public List<PerformanceListResponse> createPerformanceListResponse(List<Performance> performanceList, TokenDTO tokenDTO) {
+        // 공연 목록의 ID 리스트 생성
         List<Long> performanceIds = performanceList.stream()
                 .map(Performance::getPerformanceId)
                 .collect(Collectors.toList());
 
+        // 공연 ID를 기준으로 List<FileDTO> 조회
         Map<Long, List<FileDTO>> filesByPerformanceIds = getFileDtoList(EntityType.PERFORMANCE, performanceIds, FileCategory.THUMBNAIL);
 
         return performanceList.stream()

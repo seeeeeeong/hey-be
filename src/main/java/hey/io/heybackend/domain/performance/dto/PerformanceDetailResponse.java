@@ -107,13 +107,16 @@ public class PerformanceDetailResponse {
                 .build();
     }
 
+    // PerformanceGenres 리스트 변환
     private static List<String> convertGenres(List<PerformanceGenres> genreList) {
         return genreList.stream()
                 .map(performanceGenre -> {
                     PerformanceGenre genre = performanceGenre.getPerformanceGenre();
                     if (genre == PerformanceGenre.HIPHOP || genre == PerformanceGenre.RNB) {
+                        // HIPHOP과 RNB 장르를 힙합/R&B로 통합하여 표현
                         return "힙합/R&B";
                     } else if (genre == PerformanceGenre.INDIE || genre == PerformanceGenre.ROCK) {
+                        // INDIE와 ROCK 장르를 인디/락으로 통합하여 표현
                         return "인디/락";
                     }
                     return genre.getDescription();
@@ -176,14 +179,14 @@ public class PerformanceDetailResponse {
     @Getter
     @Builder
     public static class PerformanceTicketingDTO {
-        @Schema(description = "예매 ID", example = "116")
+        @Schema(description = "티케팅 ID", example = "116")
         private Long ticketingId;
 
-        @Schema(description = "예매체", example = "MELON")
+        @Schema(description = "예매처", example = "MELON")
         private String ticketingBooth;
 
         @Schema(description = "티켓 프리미엄",
-                example = "아티스트 선예매, 라이브네이션 선예매 등 (값이 비어있으면 일반)")
+                example = "아티스트 선예매")
         private String ticketingPremium;
 
         @Schema(description = "티켓 오픈 시간",
