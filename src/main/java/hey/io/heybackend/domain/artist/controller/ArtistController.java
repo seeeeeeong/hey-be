@@ -4,6 +4,7 @@ import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
+import hey.io.heybackend.common.swagger.ApiErrorCodes;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.service.ArtistService;
 import hey.io.heybackend.domain.system.dto.TokenDTO;
@@ -29,7 +30,7 @@ public class ArtistController {
      */
     @Operation(summary = "아티스트 상세", description = "아티스트 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
-    @ApiErrorCode(ErrorCode.ARTIST_NOT_FOUND)
+    @ApiErrorCodes({ErrorCode.MEMBER_NOT_FOUND, ErrorCode.ARTIST_NOT_FOUND})
     public ApiResponse<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
                                                              @AuthUser @Parameter(hidden = true) TokenDTO tokenDTO) {
         return ApiResponse.success(artistService.getArtistDetail(artistId, tokenDTO));
