@@ -2,7 +2,8 @@ package hey.io.heybackend.common.resolver;
 
 
 
-import hey.io.heybackend.common.jwt.JwtTokenInfo;
+import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
+import hey.io.heybackend.domain.system.dto.TokenDTO;
 import io.jsonwebtoken.Claims;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -18,7 +19,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterType().equals(JwtTokenInfo.class) &&
+        return parameter.getParameterType().equals(JwtTokenProvider.class) &&
                 parameter.hasParameterAnnotation(AuthUser.class);
     }
 
@@ -28,7 +29,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
         Claims claims = (Claims) authentication.getPrincipal();
         Long memberId = Long.parseLong((String) claims.get("memberId"));
 
-        return JwtTokenInfo.builder()
+        return TokenDTO.builder()
                 .memberId(memberId)
                 .build();
     }

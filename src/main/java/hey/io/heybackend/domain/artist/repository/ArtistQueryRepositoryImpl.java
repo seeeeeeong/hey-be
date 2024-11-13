@@ -2,6 +2,7 @@ package hey.io.heybackend.domain.artist.repository;
 
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.artist.entity.Artist;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
@@ -13,21 +14,29 @@ import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 
-@RequiredArgsConstructor
-public class ArtistQueryRepositoryImpl implements ArtistQueryRepository {
+public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implements ArtistQueryRepository {
 
-    private final JPAQueryFactory queryFactory;
+    public ArtistQueryRepositoryImpl(){
+        super(Artist.class);
+    }
 
 
+    /**
+     * <p>아티스트 상세 정보</p>
+     *
+     * Artist의 Performance 데이터를 함께 조회
+     * 공연 상태에 따른 정렬 조건 적용하여 조회
+     *
+     * @return Artist
+     */
     @Override
     public Optional<Artist> getArtistDetail(Long artistId) {
 
-        Artist artistDetail = queryFactory.selectFrom(artist)
-                .leftJoin(artist.performanceArtists, performanceArtist)
-                .fetchJoin()
+        Artist artistDetail = selectFrom(artist)
+                .leftJoin(artist.performanceArtists, performanceArtist).fetchJoin()
+                .leftJoin(performanceArtist.performance, performance).fetchJoin()
                 .where(artist.artistId.eq(artistId),
-                        artist.artistStatus.ne(ArtistStatus.INIT),
-                        performanceArtist.performance.performanceStatus.ne(PerformanceStatus.INIT))
+                        artist.artistStatus.eq(ArtistStatus.ENABLE))
                 .orderBy(
                         new CaseBuilder()
                                 .when(performance.performanceStatus.eq(PerformanceStatus.ONGOING)).then(1)

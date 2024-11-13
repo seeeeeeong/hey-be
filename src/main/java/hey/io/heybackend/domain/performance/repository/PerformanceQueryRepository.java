@@ -14,7 +14,20 @@ import java.util.Optional;
 
 public interface PerformanceQueryRepository {
 
+    /**
+     * <p>공연 목록 조회</p>
+     *
+     * @param request
+     * @param pageable
+     * @return Slice<Performance>
+     */
     Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable);
 
+    /**
+     * <p>공연 상세 조회</p>
+     *
+     * @param performanceId 공연 ID
+     * @return Optional<Performance>
+     */
     Optional<Performance> getPerformanceDetail(Long performanceId);
 }

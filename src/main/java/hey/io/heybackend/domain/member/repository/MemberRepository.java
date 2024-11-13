@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long> , MemberQueryRepository{
 
     List<Member> findAllByEmail(String email);
 
-    Optional<Member> findByNickname(String nickname);
+    boolean existsByNickname(String nickname);
 
 }

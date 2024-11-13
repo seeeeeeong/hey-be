@@ -2,11 +2,14 @@ package hey.io.heybackend.domain.member.entity;
 
 import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
+import hey.io.heybackend.domain.system.entity.UserAuth;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +19,7 @@ import java.util.List;
 @Table(schema = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseTimeEntity {
+public class Member extends BaseTimeEntity implements Persistable<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,23 +51,45 @@ public class Member extends BaseTimeEntity {
     @Column(name = "accessed_at")
     private LocalDateTime accessedAt;
 
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Follow> follows;
+    private List<UserAuth> userAuth = new ArrayList<>(); // 사용자 권한 매핑 엔티티
 
-    @Builder
-    private Member(String email, String nickname) {
-        this.email = email;
-        this.nickname = nickname;
+
+    @Override
+    public Long getId() {
+        return null;
     }
 
-    public static Member create(String email, String nickname) {
-        return Member.builder()
-                .email(email)
-                .nickname(nickname)
-                .build();
+    @Override
+    public boolean isNew() {
+        return false;
+    }
+
+    public List<SimpleGrantedAuthority> getAuthorities() {
+        return this.getUserAuth().stream()
+                .map(userAuth -> new SimpleGrantedAuthority(userAuth.getAuth().getAuthId()))
+                .toList();
+    }
+
+    @Builder
+    public Member(String email, String name, String nickname,
+                   MemberStatus memberStatus, boolean optionalTermsAgreed, LocalDateTime accessedAt) {
+        this.email = email;
+        this.name = name;
+        this.nickname = nickname;
+        this.memberStatus = memberStatus;
+        this.optionalTermsAgreed = optionalTermsAgreed;
+        this.accessedAt = accessedAt;
+    }
+
+    public void updateMember(String email, String name) {
+        this.email = email;
+        this.name = name;
+        this.memberStatus = MemberStatus.ACTIVE;
+        this.optionalTermsAgreed = true;
+        this.accessedAt = LocalDateTime.now();
     }
 }

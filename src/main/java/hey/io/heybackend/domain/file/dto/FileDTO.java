@@ -13,9 +13,9 @@ public class FileDTO {
     @Schema(description = "파일 ID", example = "1")
     private Long fileId;
 
-    @Schema(description = "파일 카테고리", example = "썸네일",
-            allowableValues = {"썸네일", "상세"})
-    private String fileCategory;
+    @Schema(description = "파일 카테고리", example = "THUMBNAIL",
+            allowableValues = {"THUMBNAIL", "DETAIL"})
+    private FileCategory fileCategory;
 
     @Schema(description = "파일명", example = "example.png")
     private String fileName;
@@ -32,7 +32,7 @@ public class FileDTO {
     public static FileDTO of(File file) {
         return FileDTO.builder()
                 .fileId(file.getFileId())
-                .fileCategory(file.getFileCategory().getDescription())
+                .fileCategory(file.getFileCategory())
                 .fileName(file.getFileName())
                 .fileUrl(file.getFileUrl())
                 .width(file.getWidth())

@@ -23,6 +23,7 @@ public class SocialAccount extends BaseTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false)
     private Provider provider;
 
@@ -30,17 +31,14 @@ public class SocialAccount extends BaseTimeEntity {
     private String providerUid;
 
     @Builder
-    private SocialAccount(Member member, Provider provider, String providerUid) {
+    public SocialAccount(Member member, Provider provider, String providerUid) {
         this.member = member;
         this.provider = provider;
         this.providerUid = providerUid;
     }
 
-    public static SocialAccount create(Member member, Provider provider ,String providerUid) {
-        return SocialAccount.builder()
-                .member(member)
-                .provider(provider)
-                .providerUid(providerUid)
-                .build();
+    public void updateProviderUid(String providerUid) {
+        this.providerUid = providerUid;
     }
+
 }

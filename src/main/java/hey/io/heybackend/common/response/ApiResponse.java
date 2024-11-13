@@ -2,6 +2,7 @@ package hey.io.heybackend.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import hey.io.heybackend.common.exception.ErrorCode;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -13,13 +14,18 @@ import java.util.List;
 @Builder
 public class ApiResponse<T> {
 
-    private final int code;      // HTTP 상태 코드
-    private final String message; // 응답 메시지 ("요청 성공" 또는 "요청 실패")
-    private final T data; // 성공 시 리턴되는 데이터
+    @Schema(description = "HTTP 상태 코드", example = "200")
+    private final int code;
 
+    @Schema(description = "응답 메시지", example = "요청 성공")
+    private final String message;
+
+    @Schema(description = "응답 데이터")
+    private final T data;
+
+    @Schema(hidden = true)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ValidationError> errors; // 실패 시 유효성 검증 오류 목록
-
     @Getter
     @Builder
     public static class ValidationError {
