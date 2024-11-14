@@ -54,8 +54,8 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserAuth> userAuth = new ArrayList<>(); // 사용자 권한 매핑 엔티티
+//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UserAuth> userAuth = new ArrayList<>();
 
 
     @Override
@@ -68,11 +68,6 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
         return false;
     }
 
-    public List<SimpleGrantedAuthority> getAuthorities() {
-        return this.getUserAuth().stream()
-                .map(userAuth -> new SimpleGrantedAuthority(userAuth.getAuth().getAuthId()))
-                .toList();
-    }
 
     @Builder
     public Member(String email, String name, String nickname,

@@ -16,9 +16,9 @@ public class UserAuth {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 일련번호
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member; // 사용자 엔티티
+
+    @Column(name = "user_id")
+    private String userId; // 사용자 엔티티
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auth_id")
@@ -26,8 +26,8 @@ public class UserAuth {
 
 
     @Builder
-    public UserAuth(Member member, Auth auth) {
-        this.member = member;
+    public UserAuth(String userId, Auth auth) {
+        this.userId = userId;
         this.auth = auth;
     }
 }

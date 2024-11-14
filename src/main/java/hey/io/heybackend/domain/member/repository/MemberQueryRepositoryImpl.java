@@ -30,7 +30,6 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         Member optionalMember = select(member)
                 .from(member)
                 .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
-                .innerJoin(member.userAuth, userAuth).fetchJoin()
                 .where(token.refreshToken.eq(refreshToken))
                 .fetchFirst();
 
@@ -47,7 +46,7 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     public List<String> selectUserAuthList(Long memberId) {
         return select(userAuth.auth.authId)
             .from(userAuth)
-            .where(userAuth.member.memberId.eq(memberId))
+            .where(userAuth.userId.eq(String.valueOf(memberId)))
             .fetch();
     }
 

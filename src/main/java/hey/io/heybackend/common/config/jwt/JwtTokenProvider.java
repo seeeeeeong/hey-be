@@ -126,7 +126,7 @@ public class JwtTokenProvider {
 
     // 인증 정보로 claims 생성
     private Claims getClaims(Member member) {
-        List<SimpleGrantedAuthority> authorities = member.getAuthorities();
+        List<SimpleGrantedAuthority> authorities = memberService.getAuthorities(member);
 
         Claims claims = Jwts.claims();
         claims.put("userInfo", MemberDTO.of(member, authorities));

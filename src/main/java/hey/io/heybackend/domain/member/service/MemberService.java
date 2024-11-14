@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +60,15 @@ public class MemberService implements UserDetailsService {
         List<GrantedAuthority> authorities = loadUserAuthorities(userId);
 
         return MemberDTO.of(member, authorities);
+    }
+
+    public List<SimpleGrantedAuthority> getAuthorities(Member member) {
+        String userId = String.valueOf(member.getMemberId());
+        List<UserAuth> userAuthList = userAuthRepository.findByUserId(userId);
+
+        return userAuthList.stream()
+                .map(userAuth -> new SimpleGrantedAuthority(userAuth.getAuth().getAuthId()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -171,13 +181,15 @@ public class MemberService implements UserDetailsService {
         Auth authAuthenticated = authRepository.findById("IS_AUTHENTICATED_FULLY")
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
 
+        String userId = String.valueOf(member.getMemberId());
+
         UserAuth userAuthSns = UserAuth.builder()
-                .member(member)
+                .userId(userId)
                 .auth(authSns)
                 .build();
 
         UserAuth userAuthAuthenticated = UserAuth.builder()
-                .member(member)
+                .userId(userId)
                 .auth(authAuthenticated)
                 .build();
 
