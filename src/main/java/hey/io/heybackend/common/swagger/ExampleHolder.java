@@ -11,4 +11,5 @@ public class ExampleHolder {
     private Example holder; // API Operation Example 클래스
     private String name; // ErrorCode 에러명
     private int code; // HttpStatus 코드
+
 }

@@ -2,14 +2,12 @@ package hey.io.heybackend.domain.member.entity;
 
 import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
-import hey.io.heybackend.domain.system.entity.UserAuth;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -70,7 +68,7 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
 
 
     @Builder
-    public Member(String email, String name, String nickname,
+    private Member(String email, String name, String nickname,
                    MemberStatus memberStatus, boolean optionalTermsAgreed, LocalDateTime accessedAt) {
         this.email = email;
         this.name = name;
@@ -86,5 +84,13 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
         this.memberStatus = MemberStatus.ACTIVE;
         this.optionalTermsAgreed = true;
         this.accessedAt = LocalDateTime.now();
+    }
+
+    public void updateOptionalTermsAgreed(Boolean optionalTermsAgreed) {
+        this.optionalTermsAgreed = optionalTermsAgreed;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

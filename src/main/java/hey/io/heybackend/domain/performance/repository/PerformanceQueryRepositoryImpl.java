@@ -1,9 +1,16 @@
 package hey.io.heybackend.domain.performance.repository;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
-import hey.io.heybackend.domain.artist.enums.ArtistStatus;
-import hey.io.heybackend.domain.performance.dto.PerformanceFilterRequest;
+import hey.io.heybackend.domain.artist.dto.ArtistDetailResDto;
+import hey.io.heybackend.domain.follow.enums.FollowType;
+import hey.io.heybackend.domain.main.dto.HomeResDto;
+import hey.io.heybackend.domain.main.dto.HomeResDto.NewPerformanceDto;
+import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedPerformanceDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceListReqDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceListResDto;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
@@ -11,18 +18,17 @@ import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import hey.io.heybackend.domain.performance.enums.TicketStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
+import static hey.io.heybackend.domain.follow.entity.QFollow.follow;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
-import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
-import static hey.io.heybackend.domain.performance.entity.QPlace.place;
 
 
 public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport implements PerformanceQueryRepository {
@@ -36,14 +42,24 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
      *
      * @param request
      * @param pageable
-     * @return Slice<Performance>
+     * @return 공연 목록
      */
     @Override
-    public Slice<Performance> getPerformanceList(PerformanceFilterRequest request, Pageable pageable) {
+    public Slice<PerformanceListResDto> findPerformancesByCondition(PerformanceListReqDto request, Pageable pageable) {
         return applySlicePagination(pageable, queryFactory ->
-                queryFactory.selectFrom(performance)
-                        .join(performance.place).fetchJoin()
-                        .leftJoin(performance.ticketings, performanceTicketing).fetchJoin()
+                queryFactory.select(Projections.fields(
+                                PerformanceListResDto.class,
+                                performance.performanceId.as("performanceId"),
+                                performance.name.as("performanceName"),
+                                performanceTicketing.openDatetime.min().as("openDatetime"),
+                                performance.ticketStatus.as("ticketStatus"),
+                                performance.startDate.as("startDate"),
+                                performance.endDate.as("endDate"),
+                                performance.place.name.as("placeName")
+                        ))
+                        .from(performance)
+                        .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                        .fetchJoin()
                         .where(
                                 performance.performanceStatus.ne(PerformanceStatus.INIT),
                                 inType(request.getType()),
@@ -51,6 +67,12 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
                                 inStatuses(request.getStatuses()),
                                 inTickets(request.getTickets())
                         )
+                        .groupBy(performance.performanceId,
+                                performance.name,
+                                performance.ticketStatus,
+                                performance.startDate,
+                                performance.endDate,
+                                performance.place.name)
                         .orderBy(performance.createdAt.desc())
         );
     }
@@ -59,21 +81,144 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
      * <p>공연 상세 조회</p>
      *
      * @param performanceId 공연 ID
-     * @return Optional<Performance>
+     * @return 공연 상세
      */
     @Override
-    public Optional<Performance> getPerformanceDetail(Long performanceId) {
+    public Optional<PerformanceDetailResDto> findPerformanceDetailByPerformanceId(Long performanceId) {
+        return Optional.ofNullable(select(Projections.fields(
+                PerformanceDetailResDto.class,
+                performance.performanceId,
+                performance.performanceType,
+                performance.performanceStatus,
+                performance.name.as("performanceName"),
+                performance.engName,
+                performance.startDate,
+                performance.endDate,
+                performance.runningTime,
+                performance.viewingAge,
+                performance.place.name.as("placeName"),
+                performance.place.address,
+                performance.place.latitude,
+                performance.place.longitude
+                ))
+                .from(performance)
+                .where(performance.performanceId.eq(performanceId), performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .fetchOne());
+    }
 
-        Performance performanceDetail = selectFrom(performance)
-                .join(performance.place).fetchJoin()
-                .leftJoin(performance.performanceArtists, performanceArtist).fetchJoin()
-                .leftJoin(performanceArtist.artist, artist).fetchJoin()
-                .where(performance.performanceId.eq(performanceId),
-                        performance.performanceStatus.ne(PerformanceStatus.INIT))
-                .orderBy(artist.name.asc())
-                .fetchOne();
+    /**
+     * <p>팔로우 공연 목록 조회</p>
+     *
+     * @param memberId
+     * @param pageable
+     * @return Slice<PerformanceListResponse>
+     */
+    @Override
+    public Slice<PerformanceListResDto> findFollowedPerformancesByMemberId(Long memberId, Pageable pageable) {
+        return applySlicePagination(pageable, queryFactory ->
+                queryFactory.select(Projections.fields(
+                                PerformanceListResDto.class,
+                                performance.performanceId.as("performanceId"),
+                                performance.name.as("performanceName"),
+                                performanceTicketing.openDatetime.min().as("openDatetime"),
+                                performance.ticketStatus.as("ticketStatus"),
+                                performance.startDate.as("startDate"),
+                                performance.endDate.as("endDate"),
+                                performance.place.name.as("placeName")
+                        ))
+                        .from(performance)
+                        .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                        .leftJoin(follow).on(follow.followTargetId.eq(performance.performanceId).and(follow.followType.eq(FollowType.PERFORMANCE)))
+                        .where(follow.member.memberId.eq(memberId))
+                        .where(performance.performanceStatus.ne(PerformanceStatus.INIT))
+                        .groupBy(performance.performanceId,
+                                performance.name,
+                                performance.ticketStatus,
+                                performance.startDate,
+                                performance.endDate,
+                                performance.place.name)
+                        .orderBy(performance.createdAt.desc())
+        );
+    }
 
-        return Optional.ofNullable(performanceDetail);
+    /**
+     * <p>아티스트 공연 목록 조회</p>
+     *
+     * @param artistId 아티스트 ID
+     * @return List<PerformanceListResponse>
+     */
+    @Override
+    public List<ArtistDetailResDto.ArtistPerformanceDto> findArtistPerformancesByArtistId(Long artistId) {
+        return select(Projections.fields(
+                ArtistDetailResDto.ArtistPerformanceDto.class,
+                performance.performanceId.as("performanceId"),
+                performance.name.as("performanceName"),
+                performanceTicketing.openDatetime.min().as("openDatetime"),
+                performance.ticketStatus.as("ticketStatus"),
+                performance.startDate.as("startDate"),
+                performance.endDate.as("endDate"),
+                performance.place.name.as("placeName")
+                ))
+                .from(performance)
+                .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                .leftJoin(performance.performanceArtists, performanceArtist)
+                .leftJoin(performanceArtist.artist, artist)
+                .where(artist.artistId.eq(artistId), performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .groupBy(performance.performanceId,
+                        performance.name,
+                        performance.ticketStatus,
+                        performance.startDate,
+                        performance.endDate,
+                        performance.place.name)
+                .orderBy(performance.createdAt.desc())
+                .fetch();
+    }
+
+    /**
+     * <p>HOT 5 공연 목록 조회</p>
+     *
+     * @return HOT 5 공연 목록
+     */
+    @Override
+    public List<TopRatedPerformanceDto> findTopRatedPerformances() {
+        return select(Projections.fields(
+                TopRatedPerformanceDto.class,
+                performance.performanceId,
+                performance.name.as("performanceName"),
+                performance.startDate,
+                performance.endDate
+                ))
+                .from(performance)
+                .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                .where(performance.startDate.goe(LocalDate.now().minusMonths(3)), performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .orderBy(
+                        performance.startDate.desc(),
+                        performanceTicketing.openDatetime.asc()
+                )
+                .limit(5)
+                .fetch();
+    }
+
+    /**
+     * <p>NEW 공연 목록 조회</p>
+     *
+     * @return NEW 공연 목록
+     */
+    @Override
+    public List<NewPerformanceDto> findNewPerformances() {
+        return select(Projections.fields(
+                NewPerformanceDto.class,
+                performance.performanceId,
+                performance.name.as("performanceName"),
+                performance.startDate,
+                performance.endDate
+                ))
+                .from(performance)
+                .where(performance.performanceStatus.ne(PerformanceStatus.INIT))
+                .orderBy(performance.createdAt.desc())
+                .limit(5)
+                .fetch();
+
     }
 
     private BooleanExpression inType(PerformanceType type) {

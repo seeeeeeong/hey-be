@@ -16,6 +16,7 @@ import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 @Configuration
 @RequiredArgsConstructor
 public class SwaggerConfig {
+
 
     @Bean
     public GroupedOpenApi heyOpenApi() {

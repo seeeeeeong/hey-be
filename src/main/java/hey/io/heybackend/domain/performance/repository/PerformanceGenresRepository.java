@@ -1,5 +1,6 @@
 package hey.io.heybackend.domain.performance.repository;
 
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceGenreDto;
 import hey.io.heybackend.domain.performance.entity.Performance;
 import hey.io.heybackend.domain.performance.entity.PerformanceGenres;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +10,7 @@ import java.util.List;
 
 @Repository
 public interface PerformanceGenresRepository extends JpaRepository<PerformanceGenres, Long> {
+
+    List<PerformanceGenreDto> findPerformanceGenresByPerformance(Performance performance);
 
 }

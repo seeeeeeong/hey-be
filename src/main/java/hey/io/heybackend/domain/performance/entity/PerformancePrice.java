@@ -27,15 +27,4 @@ public class PerformancePrice extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer priceAmount; // 금액
 
-    @Builder
-    public PerformancePrice(Performance performance, String priceInfo, Integer priceAmount) {
-        this.performance = performance;
-        this.priceInfo = priceInfo;
-        this.priceAmount = priceAmount;
-    }
-
-    void updatePerformance(Performance performance) {
-        this.performance = performance;
-    }
-
 }

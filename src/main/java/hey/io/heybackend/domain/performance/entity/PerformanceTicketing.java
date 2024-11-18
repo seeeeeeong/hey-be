@@ -32,18 +32,4 @@ public class PerformanceTicketing extends BaseTimeEntity {
 
     private String ticketingUrl; // 예매 링크
 
-    @Builder
-    public PerformanceTicketing(Performance performance, String ticketingBooth, String ticketingPremium,
-                                LocalDateTime openDatetime, String ticketingUrl) {
-        this.performance = performance;
-        this.ticketingBooth = ticketingBooth;
-        this.ticketingPremium = ticketingPremium;
-        this.openDatetime = openDatetime;
-        this.ticketingUrl = ticketingUrl;
-    }
-
-    void updatePerformance(Performance performance) {
-        this.performance = performance;
-    }
-
 }

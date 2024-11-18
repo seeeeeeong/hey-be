@@ -1,7 +1,7 @@
 package hey.io.heybackend.common.config.component;
 
-import hey.io.heybackend.domain.system.dto.AuthDTO;
-import hey.io.heybackend.domain.system.service.AuthService;
+import hey.io.heybackend.domain.auth.dto.AuthDto;
+import hey.io.heybackend.domain.auth.service.AuthService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -69,13 +69,13 @@ public class AvailableRoleHierarchy {
      * @return RoleHierarchyImpl 형태의 권한 계층 정보
      */
     private RoleHierarchyImpl buildRoleHierarchy() {
-        List<AuthDTO> authList = authService.getAllHierarchicalAuthList();
+        List<AuthDto> authList = authService.getAllHierarchicalAuthList();
 
         Builder builder = RoleHierarchyImpl.withRolePrefix("");
         Map<String, List<String>> roleHierarchyMap = new HashMap<>();
 
         // 권한 계층을 맵으로 수집
-        for (AuthDTO dto : authList) {
+        for (AuthDto dto : authList) {
             roleHierarchyMap.computeIfAbsent(dto.getUpperAuthId(), key -> new ArrayList<>()).add(dto.getAuthId());
         }
 

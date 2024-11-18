@@ -29,4 +29,5 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(jsonErrorResponse);
     }
+
 }

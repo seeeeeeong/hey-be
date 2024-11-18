@@ -9,14 +9,6 @@ import java.util.Optional;
 public interface MemberQueryRepository {
 
     /**
-     * <p>refreshToken을 가지는 Member 조회</p>
-     *
-     * @param refreshToken
-     * @return Optional<Member>
-     */
-    Optional<Member> findByRefreshToken(String refreshToken);
-
-    /**
      * <p>사용자 권한 정보</p>
      *
      * @param memberId 사용자 ID
@@ -24,4 +16,11 @@ public interface MemberQueryRepository {
      */
     List<String> selectUserAuthList(Long memberId);
 
+    /**
+     * <p>refreshToken을 가지는 Member 조회</p>
+     *
+     * @param refreshToken
+     * @return Optional<Member>
+     */
+    Optional<Member> findMemberByRefreshToken(String refreshToken);
 }

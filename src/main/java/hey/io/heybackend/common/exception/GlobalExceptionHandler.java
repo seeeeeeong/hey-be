@@ -5,6 +5,7 @@ import hey.io.heybackend.common.response.ApiResponse.ValidationError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler {
             HttpRequestMethodNotSupportedException e) {
         log.error("HttpRequestMethodNotSupportedException : {}", e.getMessage());
         return ApiResponse.failure(ErrorCode.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    protected ApiResponse<?> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException e) {
+        log.error("HttpMessageNotReadableException : {}", e.getMessage());
+        return ApiResponse.failure(ErrorCode.INVALID_INPUT_VALUE);
     }
 
     // 존재하지 않는 URI에 접근할 경우

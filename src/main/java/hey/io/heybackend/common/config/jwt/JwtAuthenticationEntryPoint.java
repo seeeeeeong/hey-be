@@ -29,4 +29,5 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(jsonErrorResponse);
     }
+
 }

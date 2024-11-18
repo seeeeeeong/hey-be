@@ -1,18 +1,16 @@
 package hey.io.heybackend.domain.oauth2.handler;
 
 import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
+import hey.io.heybackend.domain.auth.service.AuthService;
 import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.entity.SocialAccount;
+import hey.io.heybackend.domain.member.enums.NicknameType;
 import hey.io.heybackend.domain.member.enums.Provider;
-import hey.io.heybackend.domain.member.repository.MemberPushRepository;
-import hey.io.heybackend.domain.member.repository.MemberRepository;
-import hey.io.heybackend.domain.member.repository.SocialAccountRepository;
-import hey.io.heybackend.domain.member.service.MemberService;
+import hey.io.heybackend.domain.member.service.MemberCommandService;
+import hey.io.heybackend.domain.member.service.MemberQueryService;
 import hey.io.heybackend.domain.oauth2.service.PrincipalDetails;
-import hey.io.heybackend.domain.system.dto.TokenDTO;
-import hey.io.heybackend.domain.system.entity.Token;
-import hey.io.heybackend.domain.system.repository.AuthRepository;
-import hey.io.heybackend.domain.system.repository.TokenRepository;
-import hey.io.heybackend.domain.system.repository.UserAuthRepository;
+import hey.io.heybackend.domain.token.dto.TokenDto;
+import hey.io.heybackend.domain.token.service.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,23 +22,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.Random;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final TokenRepository tokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberService memberService;
 
+    private final MemberCommandService memberCommandService;
+    private final MemberQueryService memberQueryService;
+    private final AuthService authService;
+    private final TokenService tokenService;
 
     /**
      * <p>OAuth2 로그인 성공</p>
-     *
-     * 사용자가 OAuth2 로그인 성공시 호출
-     * 회원 정보 저장 및 JWT 토큰 생성
-     *
      */
     @Override
     @Transactional
@@ -55,13 +53,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String providerUid = principalDetails.getProviderUid();
 
         // 2. 조회한 email, provider 정보로 Member saveOrUpdate
-        Member member = memberService.saveOrUpdateMember(email, name, provider);
+        Member member = saveOrUpdateMember(email, name, provider);
 
         // 3. SocialAccount saveOrUpdate
-        memberService.saveOrUpdateSocialAccount(member, provider, providerUid);
+        saveOrUpdateSocialAccount(member, provider, providerUid);
 
         // 3. JWT 토큰 발급
-        TokenDTO tokenDTO = jwtTokenProvider.createToken(member);
+        TokenDto tokenDTO = tokenService.reIssueToken(member);
 
         // 4. accessToken, refreshToken 헤더에 담아 응답
         response.addHeader(jwtTokenProvider.getAccessHeader(), "Bearer " + tokenDTO.getAccessToken());
@@ -77,30 +75,42 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDTO.getAccessToken(), tokenDTO.getRefreshToken());
 
-        // 4. refreshToken 저장
-        insertToken(member, tokenDTO.getRefreshToken());
-
         log.info("accessToken: " + tokenDTO.getAccessToken());
         log.info("refreshToken: " + tokenDTO.getRefreshToken());
 
     }
 
+    private Member saveOrUpdateMember(String email, String name, Provider provider) {
+        Optional<Member> optionalMember = memberQueryService.getMemberByEmailAndProvider(email, provider);
 
-    /**
-     * <p>refreshToken 저장</p>
-     *
-     * @param member
-     * @param refreshToken
-     */
-    private void insertToken(Member member, String refreshToken) {
-        tokenRepository.deleteByMemberId(member.getMemberId());
-
-        Token token = Token.builder()
-                .memberId(member.getMemberId())
-                .refreshToken(refreshToken)
-                .userId(null)
-                .build();
-
-        tokenRepository.save(token);
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            member.updateMember(email, name != null ? name : member.getName());
+            return member;
+        } else {
+            Member newMember = memberCommandService.insertMember(email, name, getNickname());
+            memberCommandService.insertMemberPush(newMember);
+            authService.insertUserAuth(newMember);
+            return newMember;
+        }
     }
+
+    private String getNickname() {
+        String nickname;
+        do {
+            String nicknameBase = NicknameType.getRandomNickname();
+            int randomNumber = new Random().nextInt(100000);
+            nickname = String.format("%s_%05d", nicknameBase, randomNumber);
+        } while (memberQueryService.existsMemberByNickname(nickname));
+        return nickname;
+    }
+
+    private void saveOrUpdateSocialAccount(Member member, Provider provider, String providerUid) {
+        SocialAccount optionalSocialAccount = memberQueryService.getSocialAccountByMemberAndProvider(member, provider);
+        if (optionalSocialAccount == null) {
+            memberCommandService.insertSocialAccount(member, provider, providerUid);
+        }
+        optionalSocialAccount.updateProviderUid(providerUid);
+    }
+
 }
