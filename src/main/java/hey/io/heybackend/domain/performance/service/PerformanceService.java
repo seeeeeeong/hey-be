@@ -1,32 +1,35 @@
 package hey.io.heybackend.domain.performance.service;
 
 import hey.io.heybackend.common.response.SliceResponse;
-import hey.io.heybackend.common.exception.ErrorCode;
-import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
-import hey.io.heybackend.domain.artist.entity.Artist;
-import hey.io.heybackend.domain.artist.enums.ArtistStatus;
-import hey.io.heybackend.domain.file.dto.FileDTO;
+import hey.io.heybackend.domain.artist.service.ArtistQueryService;
+import hey.io.heybackend.domain.file.dto.FileDto;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.enums.FileCategory;
 import hey.io.heybackend.domain.file.service.FileService;
-import hey.io.heybackend.domain.member.enums.FollowType;
-import hey.io.heybackend.domain.member.service.FollowService;
-import hey.io.heybackend.domain.performance.dto.*;
-import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse.ArtistDTO;
-import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse.PerformancePriceDTO;
-import hey.io.heybackend.domain.performance.dto.PerformanceDetailResponse.PerformanceTicketingDTO;
+import hey.io.heybackend.domain.follow.enums.FollowType;
+import hey.io.heybackend.domain.follow.service.FollowQueryService;
+import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceArtistDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceGenreDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformancePriceDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceTicketingDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceListReqDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceListResDto;
 import hey.io.heybackend.domain.performance.entity.Performance;
-import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
+import hey.io.heybackend.domain.performance.repository.PerformanceGenresRepository;
+import hey.io.heybackend.domain.performance.repository.PerformancePriceRepository;
 import hey.io.heybackend.domain.performance.repository.PerformanceRepository;
-import hey.io.heybackend.domain.performance.mapper.PerformanceMapper; // ResponseBuilder import 추가
-import hey.io.heybackend.domain.system.dto.TokenDTO;
+import hey.io.heybackend.domain.performance.repository.PerformanceTicketingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,102 +38,114 @@ import java.util.stream.Collectors;
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
+
+    private final PerformanceGenresRepository performanceGenresRepository;
+    private final PerformancePriceRepository performancePriceRepository;
+    private final PerformanceTicketingRepository performanceTicketingRepository;
+
+    private final PerformanceQueryService performanceQueryService;
+    private final FollowQueryService followQueryService;
     private final FileService fileService;
-    private final FollowService followService;
-    private final PerformanceMapper performanceMapper;
+    private final ArtistQueryService artistQueryService;
+
 
     /**
      * <p>공연 목록 조회</p>
      *
-     * @param tokenDTO JWT 토큰 정보
+     * @param memberDto 인증된 사용자 정보
      * @param request 공연 목록 필터
-     * @param pageable 페이지 정보
+     * @param pageable 페이지
      * @return 공연 목록
      */
-    public SliceResponse<PerformanceListResponse> getPerformanceList(TokenDTO tokenDTO, PerformanceFilterRequest request, Pageable pageable) {
+    public SliceResponse<PerformanceListResDto> getPerformanceList(MemberDto memberDto, PerformanceListReqDto request, Pageable pageable) {
+
         // 1. 공연 목록 조회
-        Slice<Performance> performanceSliceList = performanceRepository.getPerformanceList(request, pageable);
+        Slice<PerformanceListResDto> performanceSliceList = performanceQueryService.getPerformancesByCondition(request, pageable);
+        List<PerformanceListResDto> performanceListResDto = performanceSliceList.getContent();
 
-        // 2. 공연 목록 응답 생성
-        List<PerformanceListResponse> performanceListResponse = performanceMapper.createPerformanceListResponse(performanceSliceList.getContent(), tokenDTO);
+        // 2. 공연 ID 목록 추출
+        List<Long> performanceIds = performanceListResDto.stream().map(PerformanceListResDto::getPerformanceId).collect(Collectors.toList());
 
-        return new SliceResponse<>(performanceListResponse, pageable, performanceSliceList.hasNext());
+        // 3. 팔로우 여부 확인
+        Map<Long, Boolean> isFollowdMap = new HashMap<>();
+
+        if (memberDto != null) {
+            List<Long> followedPerformanceIds = followQueryService.getFollowedTargetIds(memberDto.getMemberId(), FollowType.PERFORMANCE, performanceIds);
+            followedPerformanceIds.forEach(performanceId -> isFollowdMap.put(performanceId, true));
+        } else {
+            performanceSliceList.forEach(performance -> performance.setIsFollowed(false));
+        }
+
+        // 4. 파일 목록 조회
+        Map<Long, List<FileDto>> filesByIds = fileService.getFilesByIds(EntityType.PERFORMANCE, performanceIds, FileCategory.THUMBNAIL);
+
+        // 5. 팔로우 및 파일 매핑
+        performanceListResDto.forEach(performance -> {
+            Boolean isFollowed = isFollowdMap.getOrDefault(performance.getPerformanceId(), false);
+            performance.setIsFollowed(isFollowed);
+
+            List<FileDto> files = filesByIds.getOrDefault(performance.getPerformanceId(), List.of());
+            performance.setFiles(files);
+        });
+        return new SliceResponse<>(performanceListResDto, pageable, performanceSliceList.hasNext());
     }
 
     /**
      * <p>공연 상세 조회</p>
      *
+     * @param memberDto 인증된 사용자 정보
      * @param performanceId 공연 ID
-     * @param tokenDTO JWT 토큰 정보
-     * @return 공연 상세 정보
+     * @return 공연 상세
      */
-    public PerformanceDetailResponse getPerformanceDetail(Long performanceId, TokenDTO tokenDTO) {
-        // 1. 공연 조회
-        Performance performance = performanceRepository.getPerformanceDetail(performanceId)
-                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
+    public PerformanceDetailResDto getPerformanceDetail(MemberDto memberDto, Long performanceId) {
 
-        // 2. 팔로우 여부 조회
-        boolean isFollow = followService.checkExistFollow(tokenDTO, performanceId, FollowType.PERFORMANCE);
+        // 1. 공연 상세 조회
+        PerformanceDetailResDto performanceDetailResDto = performanceQueryService.getPerformanceDetailByPerformanceId(performanceId);
 
-        // 3. 공연 파일, 가격, 티켓 조회
-        List<FileDTO> fileList = fileService.getFileDtosByEntity(performanceId, EntityType.PERFORMANCE, FileCategory.DETAIL);
-        List<PerformancePriceDTO> priceList = getPriceList(performance);
-        List<PerformanceTicketingDTO> ticketingList = getTicketingList(performance);
+        // 2. 팔로우 여부 확인
+        if (memberDto != null) {
+            Boolean isFollowed = followQueryService.existsFollow(memberDto.getMemberId(), FollowType.PERFORMANCE, performanceId);
+            performanceDetailResDto.setIsFollowed(isFollowed);
+        } else {
+            performanceDetailResDto.setIsFollowed(false);
+        }
 
-        // 4. 공연 아티스트 조회
-        List<ArtistDTO> artistList = getArtistList(performance.getPerformanceArtists());
+        // 3. 파일 목록 조회
+        List<FileDto> performanceFiles = fileService.getFilesById(EntityType.PERFORMANCE, performanceId, FileCategory.DETAIL);
+        performanceDetailResDto.setFiles(performanceFiles);
 
-        return PerformanceDetailResponse.of(performance, isFollow, fileList, priceList, ticketingList, artistList);
+        Performance performance = performanceQueryService.getPerformance(performanceId);
+
+        // 4. 장르 목록 조회
+        List<PerformanceGenreDto> genres = performanceQueryService.getPerformanceGenresByPerformance(performance);
+        performanceDetailResDto.setGenres(genres);
+
+        // 5. 가격 목록 조회
+        List<PerformancePriceDto> prices = performanceQueryService.getPerformancePricesByPerformance(performance);
+        performanceDetailResDto.setPrices(prices);
+
+        // 6. 티켓 목록 조회
+        List<PerformanceTicketingDto> ticketings = performanceQueryService.getPerformanceTicketingsByPerformance(performance);
+        performanceDetailResDto.setTicketings(ticketings);
+
+        // 6. 공연 아티스트 목록 조회
+        List<PerformanceArtistDto> performanceArtists = artistQueryService.getPerformanceArtistsByPerformanceId(performance.getPerformanceId());
+
+        // 7. 공연 아티스트 ID 목록 추출
+        List<Long> artistIdList = performanceArtists.stream().map(PerformanceArtistDto::getArtistId).collect(Collectors.toList());
+
+        // 8. 공연 아티스트 파일 목록 조회
+        Map<Long, List<FileDto>> fileListByIdList = fileService.getFilesByIds(EntityType.ARTIST, artistIdList, FileCategory.THUMBNAIL);
+
+        // 9. 공연 아티스트 파일 매핑
+        performanceArtists.forEach(artist -> {
+            List<FileDto> artistFiles = fileListByIdList.getOrDefault(artist.getArtistId(), List.of());
+            artist.setFiles(artistFiles);
+        });
+
+        performanceDetailResDto.setArtists(performanceArtists);
+
+        return performanceDetailResDto;
     }
 
-    /**
-     * <p>공연 가격 정보 조회</p>
-     *
-     * @param performance 공연 엔티티
-     * @return 공연 가격 정보
-     */
-    private List<PerformancePriceDTO> getPriceList(Performance performance) {
-        return performance.getPrices().stream()
-                .map(PerformancePriceDTO::of)
-                .collect(Collectors.toList()).reversed();
-    }
-
-    /**
-     * <p>공연 티켓 조회</p>
-     *
-     * @param performance 공연 엔티티
-     * @return 공연 티켓 정보
-     */
-    private List<PerformanceTicketingDTO> getTicketingList(Performance performance) {
-        return performance.getTicketings().stream()
-                .map(PerformanceTicketingDTO::of)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * <p>공연 아티스트 조회</p>
-     *
-     * @param performanceArtists 공연 아티스트 목록
-     * @return 공연 아티스트 목록
-     */
-    public List<ArtistDTO> getArtistList(List<PerformanceArtist> performanceArtists) {
-        // 1. 아티스트 ID 목록
-        List<Long> artistIds = performanceArtists.stream()
-                .filter(performanceArtist -> performanceArtist.getArtist().getArtistStatus() == ArtistStatus.ENABLE)
-                .map(performanceArtist -> performanceArtist.getArtist().getArtistId())
-                .collect(Collectors.toList());
-
-        // 2. 아티스트 ID에 해당하는 파일 리스트
-        Map<Long, List<FileDTO>> filesByArtistIds = fileService.getFileDtosByEntityType(artistIds, EntityType.ARTIST, FileCategory.THUMBNAIL);
-
-        // 3. ArtistDTO 생성
-        return performanceArtists.stream()
-                .filter(performanceArtist -> artistIds.contains(performanceArtist.getArtist().getArtistId()))
-                .map(performanceArtist -> {
-                    Artist artist = performanceArtist.getArtist();
-                    List<FileDTO> fileList = filesByArtistIds.getOrDefault(artist.getArtistId(), Collections.emptyList());
-                    return ArtistDTO.of(artist, fileList);
-                })
-                .collect(Collectors.toList());
-    }
 }

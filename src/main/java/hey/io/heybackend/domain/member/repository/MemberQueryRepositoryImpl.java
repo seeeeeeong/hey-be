@@ -8,32 +8,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static hey.io.heybackend.domain.member.entity.QMember.member;
-import static hey.io.heybackend.domain.system.entity.QToken.token;
-import static hey.io.heybackend.domain.system.entity.QUserAuth.userAuth;
+import static hey.io.heybackend.domain.token.entity.QToken.token;
+import static hey.io.heybackend.domain.auth.entity.QUserAuth.userAuth;
 
 
 public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implements MemberQueryRepository {
 
     public MemberQueryRepositoryImpl() {
         super(Member.class);
-    }
-
-
-    /**
-     * <p>refreshToken을 가지는 Member 조회</p>
-     *
-     * @param refreshToken
-     * @return Optional<Member>
-     */
-    @Override
-    public Optional<Member> findByRefreshToken(String refreshToken) {
-        Member optionalMember = select(member)
-                .from(member)
-                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
-                .where(token.refreshToken.eq(refreshToken))
-                .fetchFirst();
-
-        return Optional.ofNullable(optionalMember);
     }
 
     /**
@@ -48,6 +30,23 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
             .from(userAuth)
             .where(userAuth.userId.eq(String.valueOf(memberId)))
             .fetch();
+    }
+
+    /**
+     * <p>refreshToken을 가지는 Member 조회</p>
+     *
+     * @param refreshToken
+     * @return Optional<Member>
+     */
+    @Override
+    public Optional<Member> findMemberByRefreshToken(String refreshToken) {
+        Member optionalMember = select(member)
+                .from(member)
+                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
+                .where(token.refreshToken.eq(refreshToken))
+                .fetchFirst();
+
+        return Optional.ofNullable(optionalMember);
     }
 
 }

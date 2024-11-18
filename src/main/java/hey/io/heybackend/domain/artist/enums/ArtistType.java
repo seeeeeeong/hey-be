@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ArtistType implements EnumMapperType {
+
     GROUP("그룹"),
     SOLO("솔로");
 

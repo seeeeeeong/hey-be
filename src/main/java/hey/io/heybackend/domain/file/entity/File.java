@@ -4,7 +4,6 @@ import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.enums.FileCategory;
 import hey.io.heybackend.domain.file.enums.FileType;
-import hey.io.heybackend.domain.performance.entity.Performance;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -48,29 +47,5 @@ public class File extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Integer fileOrder; // 정렬 분류
-
-    @Builder
-    public File(EntityType entityType, Long entityId, FileType fileType, FileCategory fileCategory, String fileUrl,
-        Integer width, Integer height, Integer fileOrder) {
-        this.entityType = entityType;
-        this.entityId = entityId;
-        this.fileType = fileType;
-        this.fileCategory = fileCategory;
-        this.fileName = extractFileName(fileUrl);
-        this.fileUrl = fileUrl;
-        this.width = width;
-        this.height = height;
-        this.fileOrder = fileOrder;
-    }
-
-    private String extractFileName(String url) {
-        // URL에서 마지막 '/' 이후의 파일명 추출
-        int lastSlashIndex = url.lastIndexOf('/');
-        if (lastSlashIndex == -1 || lastSlashIndex == url.length() - 1) {
-            return null; // '/'가 없거나 파일명이 없는 경우
-        }
-
-        return url.substring(lastSlashIndex + 1);
-    }
 
 }

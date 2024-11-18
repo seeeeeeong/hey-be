@@ -3,9 +3,12 @@ package hey.io.heybackend.common.config;
 import hey.io.heybackend.common.config.filter.JwtAuthenticationProcessingFilter;
 import hey.io.heybackend.common.config.jwt.JwtAccessDeniedHandler;
 import hey.io.heybackend.common.config.jwt.JwtAuthenticationEntryPoint;
+import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
+import hey.io.heybackend.domain.member.service.MemberQueryService;
 import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginFailureHandler;
 import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginSuccessHandler;
 import hey.io.heybackend.domain.oauth2.service.PrincipalOauth2UserService;
+import hey.io.heybackend.domain.token.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,27 +23,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-
-    private final PrincipalOauth2UserService principalOauth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    private final PrincipalOauth2UserService principalOauth2UserService;
+    private final MemberQueryService memberQueryService;
+    private final TokenService tokenService;
+
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Value("${spring.profiles.active}")
     private String profiles;
-
-
 
     /**
      * <p>HttpSecurity 설정</p>
@@ -53,7 +52,6 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 설정
         return setCsrf(http)
-
                 // 세션을 사용하지 않음
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -74,19 +72,19 @@ public class SecurityConfig {
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureHandler(oAuth2LoginFailureHandler))
 
-
                 // 익명 권한 설정
                 .anonymous(anonymous -> anonymous
                         .principal("guest")
                         .authorities("ANONYMOUS"))
 
                 // JWT 인증 필터 적용
-                .addFilterBefore(this.jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationProcessingFilter(memberQueryService, tokenService, jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
 
                 // 예외 처리 적용
-                .exceptionHandling((exceptions) -> exceptions
-//                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler))
+                .exceptionHandling(exceptionHandling -> {
+//                    exceptionHandling.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
+                    exceptionHandling.accessDeniedHandler(new JwtAccessDeniedHandler());
+                })
 
                 .build();
     }
@@ -103,7 +101,6 @@ public class SecurityConfig {
         }
         return http;
     }
-
 
     /**
      * <p>인증 관리 bean 설정</p>

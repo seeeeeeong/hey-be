@@ -2,10 +2,10 @@ package hey.io.heybackend.common.config.jwt;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
-import hey.io.heybackend.domain.member.dto.MemberDTO;
+import hey.io.heybackend.domain.member.dto.MemberDto;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.service.MemberService;
-import hey.io.heybackend.domain.system.dto.TokenDTO;
+import hey.io.heybackend.domain.member.service.CustomUserDetailService;
+import hey.io.heybackend.domain.token.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -50,7 +50,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
 
-    private final MemberService memberService;
+    private final CustomUserDetailService customUserDetailService;
 
     // 토큰에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
@@ -58,9 +58,7 @@ public class JwtTokenProvider {
 
         // 사용자 정보 조회
         String memberId = claims.getSubject();
-        MemberDTO memberDTO = memberService.loadUserByUsername(memberId);
-
-        log.info(memberDTO.getAuthorities().toString());
+        MemberDto memberDto = customUserDetailService.loadUserByUsername(memberId);
 
         // 권한 정보 조회 및 변환
         @SuppressWarnings("unchecked")
@@ -69,7 +67,7 @@ public class JwtTokenProvider {
             .map(authMap -> new SimpleGrantedAuthority(authMap.get("authority")))
             .toList();
 
-        return new UsernamePasswordAuthenticationToken(memberDTO, token, authorities);
+        return new UsernamePasswordAuthenticationToken(memberDto, token, authorities);
     }
 
     // 토큰 유효성 검사
@@ -93,7 +91,7 @@ public class JwtTokenProvider {
     }
 
     // 인증 정보로 토큰 생성
-    public TokenDTO createToken(Member member) {
+    public TokenDto createToken(Member member) {
         Long memberId = member.getMemberId();
         Date now = new Date();
 
@@ -115,7 +113,7 @@ public class JwtTokenProvider {
             .signWith(getSigningKey(), SignatureAlgorithm.HS512)
             .compact();
 
-        return TokenDTO.builder()
+        return TokenDto.builder()
             .memberId(memberId)
             .grantType("Bearer")
             .accessToken(accessToken)
@@ -126,10 +124,10 @@ public class JwtTokenProvider {
 
     // 인증 정보로 claims 생성
     private Claims getClaims(Member member) {
-        List<SimpleGrantedAuthority> authorities = memberService.getAuthorities(member);
+        List<SimpleGrantedAuthority> authorities = customUserDetailService.getAuthorities(member);
 
         Claims claims = Jwts.claims();
-        claims.put("userInfo", MemberDTO.of(member, authorities));
+        claims.put("userInfo", MemberDto.of(member, authorities));
         claims.put("authorities", authorities);
         return claims;
     }

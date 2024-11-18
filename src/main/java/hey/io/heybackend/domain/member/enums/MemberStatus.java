@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MemberStatus implements EnumMapperType {
 
-
     ACTIVE("활성화"),
     LOCKED("잠금"),
     QUIT("탈퇴"),

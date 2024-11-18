@@ -7,7 +7,6 @@ import hey.io.heybackend.domain.file.entity.File;
 import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -54,25 +53,5 @@ public class Artist extends BaseTimeEntity {
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerformanceArtist> performanceArtists = new ArrayList<>();
 
-
-    @Builder
-    public Artist(String name, String engName, String orgName, ArtistType artistType, String artistUid,
-                  String artistUrl, Integer popularity, ArtistStatus artistStatus, List<File> artistFiles) {
-        this.name = name;
-        this.engName = engName;
-        this.orgName = orgName;
-        this.artistType = artistType;
-        this.artistUid = artistUid;
-        this.artistUrl = artistUrl;
-        this.popularity = popularity;
-        this.artistStatus = artistStatus;
-        setArtistFiles(artistFiles);
-    }
-
-    // 이미지 정보 매핑
-    private void setArtistFiles(List<File> files) {
-        this.files = files;
-    }
-
-    }
+}
 

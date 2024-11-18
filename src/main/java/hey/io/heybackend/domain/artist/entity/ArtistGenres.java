@@ -1,6 +1,5 @@
 package hey.io.heybackend.domain.artist.entity;
 
-
 import hey.io.heybackend.domain.artist.enums.ArtistGenre;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
