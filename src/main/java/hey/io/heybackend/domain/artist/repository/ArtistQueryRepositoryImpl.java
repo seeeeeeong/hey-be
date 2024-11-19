@@ -1,6 +1,7 @@
 package hey.io.heybackend.domain.artist.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResDto;
 import hey.io.heybackend.domain.artist.dto.ArtistListResDto;
@@ -9,9 +10,11 @@ import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.follow.enums.FollowType;
 import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedArtistDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceArtistDto;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,7 @@ import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.follow.entity.QFollow.follow;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
+import static hey.io.heybackend.domain.performance.entity.QPerformanceTicketing.performanceTicketing;
 
 public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implements ArtistQueryRepository {
 
@@ -120,4 +124,45 @@ public class ArtistQueryRepositoryImpl extends Querydsl5RepositorySupport implem
                 .limit(5)
                 .fetch();
     }
+
+    @Override
+    public Slice<ArtistListResDto> findArtistsByKeyword(SearchReqDto request, Pageable pageable) {
+        return applySlicePagination(pageable, queryFactory ->
+                queryFactory.select(Projections.fields(
+                                ArtistListResDto.class,
+                                artist.artistId,
+                                artist.name,
+                                artist.engName,
+                                artist.artistType
+                        ))
+                        .from(artist)
+                        .leftJoin(artist.performanceArtists, performanceArtist)
+                        .leftJoin(performanceArtist.performance, performance)
+                        .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                        .where(
+                                artist.artistStatus.eq(ArtistStatus.ENABLE),
+                                artist.name.startsWith(request.getKeyword())
+                        )
+                        .groupBy(
+                                artist.artistId,
+                                artist.name,
+                                artist.engName,
+                                artist.artistType
+                        )
+                        .orderBy(
+                                new CaseBuilder()
+                                        .when(performanceTicketing.openDatetime.min().isNotNull()
+                                                .and(performanceTicketing.openDatetime.min().after(LocalDateTime.now())))
+                                        .then(1)
+                                        .when(performanceTicketing.openDatetime.min().isNotNull()
+                                                .and(performanceTicketing.openDatetime.min().before(LocalDateTime.now())))
+                                        .then(2)
+                                        .otherwise(3)
+                                        .asc(),
+                                performanceTicketing.openDatetime.min().asc().nullsLast(),
+                                artist.name.asc()
+                        )
+        );
+    }
+
 }

@@ -13,6 +13,7 @@ import hey.io.heybackend.domain.performance.repository.PerformanceGenresReposito
 import hey.io.heybackend.domain.performance.repository.PerformancePriceRepository;
 import hey.io.heybackend.domain.performance.repository.PerformanceRepository;
 import hey.io.heybackend.domain.performance.repository.PerformanceTicketingRepository;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -41,6 +42,10 @@ public class PerformanceQueryService {
 
     public PerformanceDetailResDto getPerformanceDetailByPerformanceId(Long performanceId) {
         return performanceRepository.findPerformanceDetailByPerformanceId(performanceId).orElseThrow(() -> new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND));
+    }
+
+    public Slice<PerformanceListResDto> searchPerformancesByKeyword(SearchReqDto request, Pageable pageable) {
+        return performanceRepository.findPerformancesByKeyword(request, pageable);
     }
 
     public List<ArtistPerformanceDto> getArtistPerformancesByArtistId(Long artistId) {

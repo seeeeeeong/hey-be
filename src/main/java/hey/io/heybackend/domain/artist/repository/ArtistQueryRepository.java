@@ -4,6 +4,7 @@ import hey.io.heybackend.domain.artist.dto.ArtistDetailResDto;
 import hey.io.heybackend.domain.artist.dto.ArtistListResDto;
 import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedArtistDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceArtistDto;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -45,5 +46,8 @@ public interface ArtistQueryRepository {
      * @return TopRatedArtist 목록
      */
     List<TopRatedArtistDto> findTopRatedArtists();
+
+    Slice<ArtistListResDto> findArtistsByKeyword(SearchReqDto request, Pageable pageable);
+
 
 }

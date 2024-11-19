@@ -1,20 +1,19 @@
 package hey.io.heybackend.domain.file.dto;
 
-import hey.io.heybackend.domain.file.entity.File;
 import hey.io.heybackend.domain.file.enums.FileCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
-public class FileDTO {
+@NoArgsConstructor
+@Schema(description = "파일 목록")
+public class FileDto {
 
     @Schema(description = "파일 ID", example = "1")
     private Long fileId;
 
-    @Schema(description = "파일 카테고리", example = "THUMBNAIL",
-            allowableValues = {"THUMBNAIL", "DETAIL"})
+    @Schema(description = "파일 카테고리", example = "THUMBNAIL")
     private FileCategory fileCategory;
 
     @Schema(description = "파일명", example = "example.png")
@@ -29,14 +28,4 @@ public class FileDTO {
     @Schema(description = "파일 높이", example = "640")
     private Integer height;
 
-    public static FileDTO of(File file) {
-        return FileDTO.builder()
-                .fileId(file.getFileId())
-                .fileCategory(file.getFileCategory())
-                .fileName(file.getFileName())
-                .fileUrl(file.getFileUrl())
-                .width(file.getWidth())
-                .height(file.getHeight())
-                .build();
-    }
 }

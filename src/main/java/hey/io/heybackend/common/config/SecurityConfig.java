@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
                         .requestMatchers("/main").permitAll() // 메인
                         .requestMatchers("/member/terms").permitAll() // 약간 동의
+                        .requestMatchers("/search/**").permitAll()
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
 

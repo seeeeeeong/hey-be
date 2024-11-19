@@ -11,6 +11,7 @@ import hey.io.heybackend.domain.artist.repository.ArtistGenresRepository;
 import hey.io.heybackend.domain.artist.repository.ArtistRepository;
 import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedArtistDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto.PerformanceArtistDto;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -49,5 +50,9 @@ public class ArtistQueryService {
 
     public List<ArtistGenreDto> getArtistGenresByArtist(Artist artist) {
         return artistGenresRepository.findArtistGenresByArtist(artist);
+    }
+
+    public Slice<ArtistListResDto> searchArtistsByKeyword(SearchReqDto request, Pageable pageable) {
+        return artistRepository.findArtistsByKeyword(request, pageable);
     }
 }
