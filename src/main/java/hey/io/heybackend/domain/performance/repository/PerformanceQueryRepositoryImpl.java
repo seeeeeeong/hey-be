@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.artist.dto.ArtistDetailResDto;
 import hey.io.heybackend.domain.follow.enums.FollowType;
-import hey.io.heybackend.domain.main.dto.HomeResDto;
 import hey.io.heybackend.domain.main.dto.HomeResDto.NewPerformanceDto;
 import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedPerformanceDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto;
@@ -16,6 +15,7 @@ import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceStatus;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import hey.io.heybackend.domain.performance.enums.TicketStatus;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.util.ObjectUtils;
@@ -219,6 +219,41 @@ public class PerformanceQueryRepositoryImpl extends Querydsl5RepositorySupport i
                 .limit(5)
                 .fetch();
 
+    }
+
+    @Override
+    public Slice<PerformanceListResDto> findPerformancesByKeyword(SearchReqDto request, Pageable pageable) {
+        return applySlicePagination(pageable, queryFactory ->
+                queryFactory.select(Projections.fields(
+                                PerformanceListResDto.class,
+                                performance.performanceId.as("performanceId"),
+                                performance.name.as("performanceName"),
+                                performanceTicketing.openDatetime.min().as("openDatetime"),
+                                performance.ticketStatus.as("ticketStatus"),
+                                performance.startDate.as("startDate"),
+                                performance.endDate.as("endDate"),
+                                performance.place.name.as("placeName")
+                        ))
+                        .from(performance)
+                        .leftJoin(performanceTicketing).on(performanceTicketing.performance.eq(performance))
+                        .fetchJoin()
+                        .where(
+                                performance.performanceStatus.ne(PerformanceStatus.INIT),
+                                inKeyword(request.getKeyword()),
+                                inStatuses(request.getStatuses())
+                        )
+                        .groupBy(performance.performanceId,
+                                performance.name,
+                                performance.ticketStatus,
+                                performance.startDate,
+                                performance.endDate,
+                                performance.place.name)
+                        .orderBy(performance.createdAt.desc())
+        );
+    }
+
+    private BooleanExpression inKeyword(String keyword) {
+        return ObjectUtils.isEmpty(keyword) ? null : performance.name.contains(keyword);
     }
 
     private BooleanExpression inType(PerformanceType type) {

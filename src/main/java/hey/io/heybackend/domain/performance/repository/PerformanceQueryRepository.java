@@ -6,6 +6,7 @@ import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedPerformanceDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceListReqDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceListResDto;
+import hey.io.heybackend.domain.search.dto.SearchReqDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -63,4 +64,8 @@ public interface PerformanceQueryRepository {
      * @return NEW 공연 목록
      */
     List<NewPerformanceDto> findNewPerformances();
+
+
+    Slice<PerformanceListResDto> findPerformancesByKeyword(SearchReqDto request, Pageable pageable);
+
 }

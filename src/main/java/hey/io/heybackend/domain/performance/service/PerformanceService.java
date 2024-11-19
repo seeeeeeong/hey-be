@@ -37,12 +37,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class PerformanceService {
 
-    private final PerformanceRepository performanceRepository;
-
-    private final PerformanceGenresRepository performanceGenresRepository;
-    private final PerformancePriceRepository performancePriceRepository;
-    private final PerformanceTicketingRepository performanceTicketingRepository;
-
     private final PerformanceQueryService performanceQueryService;
     private final FollowQueryService followQueryService;
     private final FileService fileService;

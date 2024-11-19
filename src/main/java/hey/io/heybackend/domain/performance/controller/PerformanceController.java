@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/performances")
 @Tag(name = "1. Performance", description = "공연 관련 API")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PerformanceController {
 
     private final PerformanceService performanceService;

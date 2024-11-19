@@ -84,9 +84,9 @@ public class HomeService {
         });
 
         return HomeResDto.builder()
-                .topRatedPerformanceList(topRatedPerformances)
-                .topRatedArtistList(topRatedArtists)
-                .newPerformanceList(newPerformances)
+                .topRatedPerformances(topRatedPerformances)
+                .topRatedArtists(topRatedArtists)
+                .newPerformances(newPerformances)
                 .build();
 
     }

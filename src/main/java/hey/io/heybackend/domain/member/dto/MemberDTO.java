@@ -14,15 +14,15 @@ import java.util.*;
 
 @Getter
 @Builder
-public class MemberDTO implements UserDetails {
+public class MemberDto implements UserDetails {
 
-    private String memberId; // 사용자 ID
+    private Long memberId; // 사용자 ID
     private String email; // 이메일
     private Set<GrantedAuthority> authorities; // 권한 목록
 
-    public static MemberDTO of(Member member, Collection<? extends GrantedAuthority> authorities) {
-        return MemberDTO.builder()
-                .memberId(String.valueOf(member.getMemberId()))
+    public static MemberDto of(Member member, Collection<? extends GrantedAuthority> authorities) {
+        return MemberDto.builder()
+                .memberId(member.getMemberId())
                 .email(member.getEmail())
                 .authorities(Collections.unmodifiableSet(sortAuthorities(authorities)))
                 .build();
@@ -35,7 +35,7 @@ public class MemberDTO implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.memberId;
+        return this.memberId.toString();
     }
 
     @Override
@@ -66,7 +66,7 @@ public class MemberDTO implements UserDetails {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof MemberDTO dto)) {
+        if (!(obj instanceof MemberDto dto)) {
             return false;
         }
         return (this.memberId != null || dto.getMemberId() == null)
