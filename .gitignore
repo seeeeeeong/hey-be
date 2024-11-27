@@ -18,13 +18,17 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.ideagit push -f origin master
-
+.idea
+*.iws
 *.iml
 *.ipr
+*.env
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+src/main/generated/
+src/main/resources/key/
+Dockerfile
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,7 +39,4 @@ out/
 
 ### VS Code ###
 .vscode/
-
 .env
-!**/src/main/generated/
-Dockerfile
