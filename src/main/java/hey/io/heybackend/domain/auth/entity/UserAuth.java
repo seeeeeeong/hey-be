@@ -8,7 +8,7 @@ import lombok.*;
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = {"member", "auth"})
+@EqualsAndHashCode(of = {"userId", "auth"})
 public class UserAuth {
 
     @Id

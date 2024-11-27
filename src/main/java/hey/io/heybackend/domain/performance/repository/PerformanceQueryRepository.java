@@ -1,71 +1,75 @@
 package hey.io.heybackend.domain.performance.repository;
 
-import hey.io.heybackend.domain.artist.dto.ArtistDetailResDto.ArtistPerformanceDto;
-import hey.io.heybackend.domain.main.dto.HomeResDto.NewPerformanceDto;
-import hey.io.heybackend.domain.main.dto.HomeResDto.TopRatedPerformanceDto;
-import hey.io.heybackend.domain.performance.dto.PerformanceDetailResDto;
-import hey.io.heybackend.domain.performance.dto.PerformanceListReqDto;
-import hey.io.heybackend.domain.performance.dto.PerformanceListResDto;
-import hey.io.heybackend.domain.search.dto.SearchReqDto;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-
+import hey.io.heybackend.common.response.SliceResponse;
+import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse;
+import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.PriceDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.TicketingDto;
+import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceListResponse;
+import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceSearchCondition;
+import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import java.util.List;
-import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 
 public interface PerformanceQueryRepository {
 
+    /**
+     * <p>공연 목록 (Slice)</p>
+     *
+     * @param searchCondition 조회 조건
+     * @param memberId        회원 ID
+     * @param pageable        페이징 정보
+     * @return Slice 공연 목록
+     */
+    SliceResponse<PerformanceListResponse> selectPerformanceSliceList(PerformanceSearchCondition searchCondition,
+        Long memberId, Pageable pageable);
 
     /**
-     * <p>공연 목록 조회</p>
+     * <p>공연 목록</p>
      *
-     * @param request
-     * @param pageable
+     * @param searchCondition 조회 조건
+     * @param memberId        회원 ID
      * @return 공연 목록
      */
-    Slice<PerformanceListResDto> findPerformancesByCondition(PerformanceListReqDto request, Pageable pageable);
+    List<PerformanceListResponse> selectPerformanceList(PerformanceSearchCondition searchCondition, Long memberId);
 
+    /**
+     * <p>공연별 티켓 오픈 목록</p>
+     *
+     * @param performanceIds 공연 ID 목록
+     * @return 가장 빠른 예매 시간과 공연 매핑 목록
+     */
+    List<PerformanceListResponse> selectPerformanceOpenDatetimeList(List<Long> performanceIds);
 
     /**
      * <p>공연 상세</p>
      *
      * @param performanceId 공연 ID
-     * @return 공연 상세
+     * @param memberId      회원 ID
+     * @return 공연 상세 정보 + 장소 정보 + 팔로우 정보
      */
-    Optional<PerformanceDetailResDto> findPerformanceDetailByPerformanceId(Long performanceId);
+    PerformanceDetailResponse selectPerformanceDetail(Long performanceId, Long memberId);
 
     /**
-     * <p>팔로우 공연 목록 조회</p>
+     * <p>공연 장르 목록</p>
      *
-     * @param memberId 회원 ID
-     * @param pageable
-     * @return 팔로우 공연 목록
+     * @param performanceId 공연 ID
+     * @return 공연 장르 목록
      */
-    Slice<PerformanceListResDto> findFollowedPerformancesByMemberId(Long memberId, Pageable pageable);
+    List<PerformanceGenre> selectPerformanceGenreList(Long performanceId);
 
     /**
-     * <p>아티스트 공연 목록 조회</p>
+     * <p>공연 가격 목록</p>
      *
-     * @param artistId 아티스트 ID
-     * @return List<PerformanceListResponse>
+     * @param performanceId 공연 ID
+     * @return 공연 가격 목록
      */
-    List<ArtistPerformanceDto> findArtistPerformancesByArtistId(Long artistId);
+    List<PriceDto> selectPerformancePriceList(Long performanceId);
 
     /**
-     * <p>HOT 5 공연 목록 조회</p>
+     * <p>공연 예매 목록</p>
      *
-     * @return HOT 5 공연 목록
+     * @param performanceId 공연 ID
+     * @return 공연 예매 목록
      */
-    List<TopRatedPerformanceDto> findTopRatedPerformances();
-
-    /**
-     * <p>NEW 공연 목록 조회</p>
-     *
-     * @return NEW 공연 목록
-     */
-    List<NewPerformanceDto> findNewPerformances();
-
-
-    Slice<PerformanceListResDto> findPerformancesByKeyword(SearchReqDto request, Pageable pageable);
-
+    List<TicketingDto> selectPerformanceTicketList(Long performanceId);
 }

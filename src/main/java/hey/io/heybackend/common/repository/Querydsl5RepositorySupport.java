@@ -6,14 +6,16 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import hey.io.heybackend.common.response.SliceResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
 import org.springframework.data.jpa.repository.support.Querydsl;
@@ -23,10 +25,6 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
 
 @Repository
 public abstract class Querydsl5RepositorySupport extends QuerydslRepositorySupport {
@@ -157,10 +155,10 @@ public abstract class Querydsl5RepositorySupport extends QuerydslRepositorySuppo
      * @param query    Function 객체
      * @return Slice 페이징 목록
      */
-    protected <T> Slice<T> applySlicePagination(Pageable pageable, Function<JPAQueryFactory, JPAQuery<T>> query) {
+    protected <T> SliceResponse<T> applySlicePagination(Pageable pageable, Function<JPAQueryFactory, JPAQuery<T>> query) {
         JPAQuery<T> jpaContentQuery = query.apply(getQueryFactory());
         List<T> content = Objects.requireNonNull(getQuerydsl()).applyPagination(pageable, jpaContentQuery).fetch();
         boolean hasNext = content.size() >= pageable.getPageSize();
-        return new SliceImpl<>(content, pageable, hasNext);
+        return new SliceResponse<>(content, pageable, hasNext);
     }
 }

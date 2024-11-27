@@ -31,14 +31,6 @@ springdoc:
       theme: tomorrow-night
     tags-sorter: alpha
     operations-sorter: method
-  bearer:
-    enabled: on
-    tokens:
-      - name: Default
-        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-      - name: User2
-        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-
 
 management:
   endpoints:
@@ -57,16 +49,13 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      default_batch_fetch_size: 100
       ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
-        use_sql_comments: true
         default_batch_fetch_size: 100
-    show-sql: true
   data:
     redis:
       host: localhost
@@ -101,16 +90,13 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      default_batch_fetch_size: 100
       ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
-        use_sql_comments: true
         default_batch_fetch_size: 100
-    show-sql: true
   data:
     redis:
       host: localhost

@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.follow.enums;
+package hey.io.heybackend.domain.member.enums;
 
 import hey.io.heybackend.common.mapper.EnumMapperType;
 import lombok.Getter;
