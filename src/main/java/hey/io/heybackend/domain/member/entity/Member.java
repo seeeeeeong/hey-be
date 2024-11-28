@@ -78,7 +78,7 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
         this.accessedAt = accessedAt;
     }
 
-    public static Member create(String email, String name, String nickname) {
+    public static Member of(String email, String name, String nickname) {
         return Member.builder()
                 .email(email)
                 .name(name != null ? name : nickname)

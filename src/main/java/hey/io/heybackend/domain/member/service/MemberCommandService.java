@@ -27,7 +27,7 @@ public class MemberCommandService {
 
     @Transactional
     public Member createMember(String email, String name, String nickname) {
-        Member member = Member.create(email, name, nickname);
+        Member member = Member.of(email, name, nickname);
         return memberRepository.save(member);
     }
 
@@ -54,10 +54,6 @@ public class MemberCommandService {
         socialAccountRepository.save(socialAccount);
     }
 
-    @Transactional
-    public void updateSocialAccount(SocialAccount socialAccount, String providerUid) {
-        socialAccount.updateProviderUid(providerUid);
-    }
 
     @Transactional
     public void createMemberInterest(List<MemberInterest> memberInterests) {

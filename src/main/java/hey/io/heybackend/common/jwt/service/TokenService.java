@@ -31,4 +31,12 @@ public class TokenService {
         tokenRepository.saveAndFlush(token);
         return tokenDto;
     }
+
+    @Transactional
+    public TokenDto insertToken(Member member) {
+        TokenDto tokenDto = jwtTokenProvider.createToken(member);
+        Token token = Token.of(member.getMemberId(), tokenDto.getRefreshToken());
+        tokenRepository.save(token);
+        return tokenDto;
+    }
 }

@@ -6,9 +6,13 @@ import hey.io.heybackend.domain.member.dto.*;
 import hey.io.heybackend.domain.member.dto.MemberInfoResDto.MemberInterestDto;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
+import hey.io.heybackend.domain.member.entity.MemberPush;
 import hey.io.heybackend.domain.member.entity.SocialAccount;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
 import hey.io.heybackend.domain.member.enums.Provider;
+import hey.io.heybackend.domain.member.enums.PushType;
+import hey.io.heybackend.domain.member.repository.MemberPushRepository;
+import hey.io.heybackend.domain.member.repository.MemberRepository;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +34,8 @@ public class MemberService {
 
     private final NicknameUtil nicknameUtil;
 
+    private final MemberRepository memberRepository;
+    private final MemberPushRepository memberPushRepository;
 
     /**
      * <p>약관 동의</p>
@@ -167,48 +174,37 @@ public class MemberService {
 
     }
 
-    /**
-     * <p>회원 생성/업데이트</p>
-     *
-     * @param email
-     * @param name
-     * @param provider
-     * @param providerUid
-     * @return Member
-     */
-    @Transactional
-    public Member insertOrUpdateMember(String email, String name, Provider provider, String providerUid) {
-        Member member = memberQueryService.getByProviderUid(provider, providerUid);
+//
+//
+//
+//
+//
 
+    public Optional<Member> getMemberByProviderUid(String providerUid) {
+        return memberRepository.selectMemberByProviderUid(providerUid);
+    }
+
+    @Transactional
+    public Member insertMember(String email, String name) {
+        Member newMember = Member.of(email, name, getNickname());
+        return memberRepository.save(newMember);
+    }
+
+    private String getNickname() {
         String nickname;
         do {
             nickname = nicknameUtil.generateNickname();
-        } while (memberQueryService.existsByNickname(nickname));
-
-        if (member == null) {
-            Member newMember = memberCommandService.createMember(email, name, nickname);
-            memberCommandService.createMemberPush(newMember);
-            authService.insertUserAuth(newMember);
-            return newMember;
-        }
-        memberCommandService.updateMember(member, email, name);
-        return member;
+        } while (existsNickname(nickname));
+        return nickname;
     }
 
-    /**
-     * <p>소셜 정보 생성/업데이트</p>
-     *
-     * @param member
-     * @param provider
-     * @param providerUid
-     */
     @Transactional
-    public void insertOrUpdateSocialAccount(Member member, Provider provider, String providerUid) {
-        SocialAccount socialAccount = memberQueryService.getByMemberAndProvider(member, provider);
-        if (socialAccount == null) {
-            memberCommandService.createSocialAccount(member, provider, providerUid);
-        }
-        memberCommandService.updateSocialAccount(socialAccount, providerUid);
+    public void insertMemberPush(Member member) {
+        MemberPush memberPush = MemberPush.builder()
+                .member(member)
+                .pushType(PushType.PERFORMANCE)
+                .pushEnabled(true)
+                .build();
+        memberPushRepository.save(memberPush);
     }
-
 }

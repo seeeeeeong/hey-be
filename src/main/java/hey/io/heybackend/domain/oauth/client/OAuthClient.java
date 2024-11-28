@@ -3,7 +3,15 @@ package hey.io.heybackend.domain.oauth.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.SignedJWT;
 import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.util.OAuth2Util;
 import hey.io.heybackend.domain.oauth.properties.AppleProperties;
 import hey.io.heybackend.domain.oauth.properties.GoogleProperties;
@@ -18,7 +26,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.URL;
 import java.security.PrivateKey;
+import java.text.ParseException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -107,7 +118,7 @@ public class OAuthClient {
         }
     }
 
-    public String getAppleIdToken(String code) {
+    public String getAppleIdToken(String code) throws ParseException, IOException, JOSEException {
         String clientSecret = createClientSecret();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -118,7 +129,26 @@ public class OAuthClient {
         body.put("code", code);
         body.put("grant_type", "authorization_code");
         body.put("redirect_uri", appleProperties.getRedirectUri());
-        return oAuth2Util.getIdentityToken(appleProperties.getTokenUrl(), headers, body);
+
+        String idToken = oAuth2Util.getIdentityToken(appleProperties.getTokenUrl(), headers, body);
+
+        if (!validateAppleIdToken(idToken)) {
+            throw new BusinessException(PARSING_ERROR);
+        }
+
+        return idToken;
+    }
+
+    private boolean validateAppleIdToken(String idToken) throws ParseException, JOSEException, IOException {
+        SignedJWT signedJWT = SignedJWT.parse(idToken);
+        // 1. Apple의 공개 키 조회
+        JWKSet jwkSet = JWKSet.load(new URL(appleProperties.getPublicKeyUrl()));
+        JWK jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());
+        // 2. 검증을 위한 RSA 공개 키 생성E
+        RSAKey rsaKey = (RSAKey) jwk;
+        JWSVerifier verifier = new RSASSAVerifier(rsaKey.toRSAPublicKey());
+        // 3. JWT 서명 검증
+        return signedJWT.verify(verifier);
     }
 
     private String createClientSecret() {

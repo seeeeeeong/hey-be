@@ -68,4 +68,14 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
                         .fetchOne()
         );
     }
+
+    @Override
+    public Optional<Member> selectMemberByProviderUid(String providerUid) {
+        return Optional.ofNullable(
+                selectFrom(member)
+                        .join(socialAccount).on(member.memberId.eq(socialAccount.member.memberId))
+                        .where(socialAccount.providerUid.eq(providerUid))
+                        .fetchOne()
+        );
+    }
 }

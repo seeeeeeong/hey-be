@@ -32,7 +32,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void insertUserAuth(Member member) {
+    public void saveUserAuth(Member member) {
         Auth memberSnsAuth = authRepository.findById(AuthType.MEMBER_SNS.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
         Auth isAuthenticatedFullyAuth = authRepository.findById(AuthType.IS_AUTHENTICATED_FULLY.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
 
@@ -44,4 +44,17 @@ public class AuthService {
         userAuthRepository.save(memberSnsUserAuth);
         userAuthRepository.save(IsAuthenticatedFullyUserAuth);
     }
+
+    public List<Auth> getAuthList(List<String> authIds) {
+        return authRepository.findByAuthIdIn(authIds);
+    }
+
+    @Transactional
+    public void insertUserAuth(String userId, List<Auth> auths) {
+        List<UserAuth> userAuths = auths.stream()
+                .map(auth -> UserAuth.of(userId, auth))
+                .toList();
+        userAuthRepository.saveAll(userAuths);
+    }
+
 }

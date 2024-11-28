@@ -34,6 +34,6 @@ public interface MemberQueryRepository {
      */
     List<String> selectUserAuthList(Long memberId);
 
-
+    Optional<Member> selectMemberByProviderUid(String providerUid);
 
 }
