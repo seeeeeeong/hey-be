@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.token.dto;
+package hey.io.heybackend.common.jwt.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

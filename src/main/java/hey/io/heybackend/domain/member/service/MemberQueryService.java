@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,34 +24,28 @@ public class MemberQueryService {
     private final SocialAccountRepository socialAccountRepository;
     private final MemberInterestRepository memberInterestRepository;
 
-    public Member getMemberByMemberId(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+    public Member getByMemberId(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
-
-    public Member getMemberByRefreshToken(String refreshToken) {
-        return memberRepository.findMemberByRefreshToken(refreshToken).orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+    public Member getByProviderUid(Provider provider, String providerUid) {
+        return memberRepository.findByProviderUidAndProvider(provider, providerUid).orElse(null);
     }
 
-    public Optional<Member> getMemberByEmailAndProvider(String email, Provider provider) {
-        return memberRepository.findAllByEmail(email).stream()
-                .filter(existingMember -> existingMember.getSocialAccounts().stream()
-                        .anyMatch(socialAccount -> socialAccount.getProvider() == provider))
-                .findFirst();
+    public Member getByRefreshToken(String refreshToken) {
+        return memberRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
-    public boolean existsMemberByNickname(String nickname) {
+    public boolean existsByNickname(String nickname) {
         return memberRepository.existsByNickname(nickname);
     }
 
-    public List<MemberInterest> getMemberInterestsByMember(Member member) {
+    public List<MemberInterest> getByMember(Member member) {
         return memberInterestRepository.findByMember(member);
     }
 
-    public SocialAccount getSocialAccountByMemberAndProvider(Member member, Provider provider) {
-        return socialAccountRepository.findByMemberAndProvider(member, provider)
-                .orElse(null);
+    public SocialAccount getByMemberAndProvider(Member member, Provider provider) {
+        return socialAccountRepository.findByMemberAndProvider(member, provider).orElse(null);
     }
 
 }

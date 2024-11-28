@@ -4,9 +4,7 @@ import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
 import hey.io.heybackend.domain.member.entity.MemberPush;
 import hey.io.heybackend.domain.member.entity.SocialAccount;
-import hey.io.heybackend.domain.member.enums.MemberStatus;
 import hey.io.heybackend.domain.member.enums.Provider;
-import hey.io.heybackend.domain.member.enums.PushType;
 import hey.io.heybackend.domain.member.repository.MemberInterestRepository;
 import hey.io.heybackend.domain.member.repository.MemberPushRepository;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
@@ -15,12 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class MemberCommandService {
 
     private final SocialAccountRepository socialAccountRepository;
@@ -28,45 +24,49 @@ public class MemberCommandService {
     private final MemberPushRepository memberPushRepository;
     private final MemberRepository memberRepository;
 
-    private final MemberQueryService memberQueryService;
 
-    public Member insertMember(String email, String name, String nickname) {
-        Member member = Member.builder()
-                .email(email)
-                .name(name != null ? name : nickname) // 플랫폼 제공 name이 null인 경우, 닉네임 사용
-                .nickname(nickname)
-                .memberStatus(MemberStatus.ACTIVE)
-                .optionalTermsAgreed(false) // 약관 동의 여부 false
-                .accessedAt(LocalDateTime.now())
-                .build();
+    @Transactional
+    public Member createMember(String email, String name, String nickname) {
+        Member member = Member.create(email, name, nickname);
         return memberRepository.save(member);
     }
 
-    public void insertMemberInterests(List<MemberInterest> memberInterests) {
-        memberInterestRepository.saveAll(memberInterests);
+    @Transactional
+    public void updateMember(Member member, String email, String name) {
+        member.updateMember(email, name);
     }
 
-    public void deleteMemberInterests(Member member) {
-        List<MemberInterest> memberInterests = memberQueryService.getMemberInterestsByMember(member);
-        memberInterestRepository.deleteAll(memberInterests);
+    @Transactional
+    public void updateOptionalTermsAgreed(Member member,
+                                          Boolean optionalTermsAgreed) {
+        member.updateOptionalTermsAgreed(optionalTermsAgreed);
     }
 
-    public void insertMemberPush(Member member) {
-        MemberPush memberPush = MemberPush.builder()
-                .member(member)
-                .pushType(PushType.PERFORMANCE)
-                .pushEnabled(true)
-                .build();
+    @Transactional
+    public void createMemberPush(Member member) {
+        MemberPush memberPush = MemberPush.of(member);
         memberPushRepository.save(memberPush);
     }
 
-    public SocialAccount insertSocialAccount(Member member, Provider provider, String providerUid) {
-        SocialAccount socialAccount = SocialAccount.builder()
-                .member(member)
-                .provider(provider)
-                .providerUid(providerUid)
-                .build();
-        return socialAccountRepository.save(socialAccount);
+    @Transactional
+    public void createSocialAccount(Member member, Provider provider, String providerUid) {
+        SocialAccount socialAccount = SocialAccount.of(member, provider, providerUid);
+        socialAccountRepository.save(socialAccount);
+    }
+
+    @Transactional
+    public void updateSocialAccount(SocialAccount socialAccount, String providerUid) {
+        socialAccount.updateProviderUid(providerUid);
+    }
+
+    @Transactional
+    public void createMemberInterest(List<MemberInterest> memberInterests) {
+        memberInterestRepository.saveAll(memberInterests);
+    }
+
+    @Transactional
+    public void deleteMemberInterests(List<MemberInterest> memberInterests) {
+        memberInterestRepository.deleteAll(memberInterests);
     }
 
 }

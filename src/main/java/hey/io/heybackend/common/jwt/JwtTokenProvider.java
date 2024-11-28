@@ -1,18 +1,17 @@
-package hey.io.heybackend.common.config.jwt;
+package hey.io.heybackend.common.jwt;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
+import hey.io.heybackend.common.jwt.dto.TokenDto;
 import hey.io.heybackend.domain.member.dto.MemberDto;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.service.CustomUserDetailService;
-import hey.io.heybackend.domain.token.dto.TokenDto;
+import hey.io.heybackend.domain.member.service.MemberDetailService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
 
-    private final CustomUserDetailService customUserDetailService;
+    private final MemberDetailService memberDetailService;
 
     // 토큰에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
@@ -58,7 +57,7 @@ public class JwtTokenProvider {
 
         // 사용자 정보 조회
         String memberId = claims.getSubject();
-        MemberDto memberDto = customUserDetailService.loadUserByUsername(memberId);
+        MemberDto memberDto = memberDetailService.loadUserByUsername(memberId);
 
         // 권한 정보 조회 및 변환
         @SuppressWarnings("unchecked")
@@ -92,13 +91,12 @@ public class JwtTokenProvider {
 
     // 인증 정보로 토큰 생성
     public TokenDto createToken(Member member) {
-        Long memberId = member.getMemberId();
         Date now = new Date();
 
         // Access Token 생성
         String accessToken = Jwts.builder()
             .setHeaderParam("typ", "JWT")
-            .setSubject(memberId.toString())
+            .setSubject(member.getMemberId().toString())
             .addClaims(getClaims(member))
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + accessTokenTime))
@@ -114,7 +112,7 @@ public class JwtTokenProvider {
             .compact();
 
         return TokenDto.builder()
-            .memberId(memberId)
+            .memberId(member.getMemberId())
             .grantType("Bearer")
             .accessToken(accessToken)
             .refreshToken(refreshToken)
@@ -124,7 +122,7 @@ public class JwtTokenProvider {
 
     // 인증 정보로 claims 생성
     private Claims getClaims(Member member) {
-        List<SimpleGrantedAuthority> authorities = customUserDetailService.getAuthorities(member);
+        List<SimpleGrantedAuthority> authorities = memberDetailService.getAuthorities(member);
 
         Claims claims = Jwts.claims();
         claims.put("userInfo", MemberDto.of(member, authorities));
@@ -181,12 +179,10 @@ public class JwtTokenProvider {
         response.setHeader(accessHeader, accessToken);
     }
 
-
     // refreshToken 헤더 설정
     public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
         response.setHeader(refreshHeader, refreshToken);
     }
-
 
     // 서명 키 반환
     private Key getSigningKey() {

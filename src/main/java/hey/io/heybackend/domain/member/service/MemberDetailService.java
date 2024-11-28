@@ -3,11 +3,11 @@ package hey.io.heybackend.domain.member.service;
 import hey.io.heybackend.common.config.component.AvailableRoleHierarchy;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
+import hey.io.heybackend.domain.auth.entity.UserAuth;
+import hey.io.heybackend.domain.auth.repository.UserAuthRepository;
 import hey.io.heybackend.domain.member.dto.MemberDto;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
-import hey.io.heybackend.domain.auth.entity.UserAuth;
-import hey.io.heybackend.domain.auth.repository.UserAuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,13 +21,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailService implements UserDetailsService {
+public class MemberDetailService implements UserDetailsService {
+
+    private final AvailableRoleHierarchy availableRoleHierarchy;
 
     private final MemberRepository memberRepository;
     private final UserAuthRepository userAuthRepository;
-
-
-    private final AvailableRoleHierarchy availableRoleHierarchy;
 
 
     /**
@@ -46,6 +45,12 @@ public class CustomUserDetailService implements UserDetailsService {
         return MemberDto.of(member, authorities);
     }
 
+    /**
+     * <p>사용자 권한 목록 조회</p>
+     *
+     * @param member 사용자
+     * @return 사용자 권한 목록
+     */
     public List<SimpleGrantedAuthority> getAuthorities(Member member) {
         String userId = String.valueOf(member.getMemberId());
         List<UserAuth> userAuthList = userAuthRepository.findByUserId(userId);

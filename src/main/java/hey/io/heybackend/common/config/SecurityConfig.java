@@ -1,14 +1,10 @@
 package hey.io.heybackend.common.config;
 
 import hey.io.heybackend.common.config.filter.JwtAuthenticationProcessingFilter;
-import hey.io.heybackend.common.config.jwt.JwtAccessDeniedHandler;
-import hey.io.heybackend.common.config.jwt.JwtAuthenticationEntryPoint;
-import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
+import hey.io.heybackend.common.jwt.JwtAccessDeniedHandler;
+import hey.io.heybackend.common.jwt.JwtTokenProvider;
+import hey.io.heybackend.common.jwt.service.TokenService;
 import hey.io.heybackend.domain.member.service.MemberQueryService;
-import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginFailureHandler;
-import hey.io.heybackend.domain.oauth2.handler.OAuth2LoginSuccessHandler;
-import hey.io.heybackend.domain.oauth2.service.PrincipalOauth2UserService;
-import hey.io.heybackend.domain.token.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,14 +25,10 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-
-    private final PrincipalOauth2UserService principalOauth2UserService;
-    private final MemberQueryService memberQueryService;
-    private final TokenService tokenService;
-
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final TokenService tokenService;
+    private final MemberQueryService memberQueryService;
 
     @Value("${spring.profiles.active}")
     private String profiles;
@@ -59,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health_check").permitAll() // Swagger 경로 허용
                         .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
+                        .requestMatchers("/login/**").permitAll() // 로그인
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
                         .requestMatchers("/main").permitAll() // 메인
@@ -67,19 +60,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
 
-                // oauth2 Login 설정
-                .oauth2Login(oauth2Login -> oauth2Login
-                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userService(principalOauth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureHandler(oAuth2LoginFailureHandler))
-
                 // 익명 권한 설정
                 .anonymous(anonymous -> anonymous
                         .principal("guest")
                         .authorities("ANONYMOUS"))
 
                 // JWT 인증 필터 적용
-                .addFilterBefore(new JwtAuthenticationProcessingFilter(memberQueryService, tokenService, jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationProcessingFilter(jwtTokenProvider, tokenService, memberQueryService), UsernamePasswordAuthenticationFilter.class)
 
                 // 예외 처리 적용
                 .exceptionHandling(exceptionHandling -> {

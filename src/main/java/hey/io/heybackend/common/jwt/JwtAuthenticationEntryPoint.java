@@ -1,4 +1,4 @@
-package hey.io.heybackend.common.config.jwt;
+package hey.io.heybackend.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hey.io.heybackend.common.exception.ErrorCode;

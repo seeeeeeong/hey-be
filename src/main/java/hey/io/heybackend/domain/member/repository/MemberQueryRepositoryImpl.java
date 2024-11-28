@@ -3,13 +3,15 @@ package hey.io.heybackend.domain.member.repository;
 
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.enums.Provider;
 
 import java.util.List;
 import java.util.Optional;
 
-import static hey.io.heybackend.domain.member.entity.QMember.member;
-import static hey.io.heybackend.domain.token.entity.QToken.token;
+import static hey.io.heybackend.common.jwt.entity.QToken.token;
 import static hey.io.heybackend.domain.auth.entity.QUserAuth.userAuth;
+import static hey.io.heybackend.domain.member.entity.QMember.member;
+import static hey.io.heybackend.domain.member.entity.QSocialAccount.socialAccount;
 
 
 public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implements MemberQueryRepository {
@@ -33,13 +35,13 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     }
 
     /**
-     * <p>refreshToken을 가지는 Member 조회</p>
+     * <p>refreshToken으로 Member 조회</p>
      *
      * @param refreshToken
      * @return Optional<Member>
      */
     @Override
-    public Optional<Member> findMemberByRefreshToken(String refreshToken) {
+    public Optional<Member> findByRefreshToken(String refreshToken) {
         Member optionalMember = select(member)
                 .from(member)
                 .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
@@ -49,4 +51,21 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         return Optional.ofNullable(optionalMember);
     }
 
+
+    /**
+     * <p>플랫폼 정보로 Member 조회</p>
+     *
+     * @param provider
+     * @param providerUid
+     * @return Optional<Member>
+     */
+    @Override
+    public Optional<Member> findByProviderUidAndProvider(Provider provider, String providerUid) {
+        return Optional.ofNullable(
+                selectFrom(member)
+                        .join(socialAccount).on(member.memberId.eq(socialAccount.member.memberId))
+                        .where(socialAccount.provider.eq(provider), socialAccount.providerUid.eq(providerUid))
+                        .fetchOne()
+        );
+    }
 }

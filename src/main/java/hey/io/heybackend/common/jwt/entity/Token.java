@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.token.entity;
+package hey.io.heybackend.common.jwt.entity;
 
 import hey.io.heybackend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -7,9 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 @Table(schema = "system")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Token extends BaseTimeEntity {
 
@@ -29,6 +29,13 @@ public class Token extends BaseTimeEntity {
         this.memberId = memberId;
         this.userId = userId;
         this.refreshToken = refreshToken;
+    }
+
+    public static Token of(Long memberId, String refreshToken) {
+        return Token.builder()
+                .memberId(memberId)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public void updateRefreshToken(String refreshToken) {

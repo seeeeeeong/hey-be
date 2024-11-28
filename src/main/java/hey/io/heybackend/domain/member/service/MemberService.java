@@ -1,10 +1,14 @@
 package hey.io.heybackend.domain.member.service;
 
+import hey.io.heybackend.common.util.NicknameUtil;
+import hey.io.heybackend.domain.auth.service.AuthService;
 import hey.io.heybackend.domain.member.dto.*;
 import hey.io.heybackend.domain.member.dto.MemberInfoResDto.MemberInterestDto;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
+import hey.io.heybackend.domain.member.entity.SocialAccount;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
+import hey.io.heybackend.domain.member.enums.Provider;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
 import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,10 @@ public class MemberService {
 
     private final MemberCommandService memberCommandService;
     private final MemberQueryService memberQueryService;
+    private final AuthService authService;
+
+    private final NicknameUtil nicknameUtil;
+
 
     /**
      * <p>약관 동의</p>
@@ -32,10 +40,9 @@ public class MemberService {
     @Transactional
     public Long modifyMemberTerms(MemberDto memberDto, MemberTermsReqDto request) {
 
-        Member member = memberQueryService.getMemberByMemberId(memberDto.getMemberId());
-        member.updateOptionalTermsAgreed(request.getBasicTermsAgreed());
+        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
+        memberCommandService.updateOptionalTermsAgreed(member, request.getBasicTermsAgreed());
         return member.getMemberId();
-
     }
 
     /**
@@ -48,9 +55,10 @@ public class MemberService {
     @Transactional
     public Long createMemberInterest(MemberDto memberDto, MemberInterestReqDto request) {
 
-        Member member = memberQueryService.getMemberByMemberId(memberDto.getMemberId());
+        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
 
-        memberCommandService.deleteMemberInterests(member);
+        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
+        memberCommandService.deleteMemberInterests(memberInterests);
 
         List<MemberInterest> newMemberInterests = new ArrayList<>();
 
@@ -67,7 +75,7 @@ public class MemberService {
                 newMemberInterests.add(memberInterest);
             }
         }
-        memberCommandService.insertMemberInterests(newMemberInterests);
+        memberCommandService.createMemberInterest(newMemberInterests);
         return member.getMemberId();
 
     }
@@ -80,9 +88,9 @@ public class MemberService {
      */
     public MemberInfoResDto getMemberInfo(MemberDto memberDto) {
 
-        Member member = memberQueryService.getMemberByMemberId(memberDto.getMemberId());
+        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
 
-        List<MemberInterest> memberInterests = memberQueryService.getMemberInterestsByMember(member);
+        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
 
         List<PerformanceType> types = memberInterests.stream()
                 .filter(interest -> interest.getInterestCategory().equals(InterestCategory.TYPE.getCode()))
@@ -117,7 +125,7 @@ public class MemberService {
      * @return 닉네임 중복 여부
      */
     public Boolean existsNickname(String nickname) {
-        return memberQueryService.existsMemberByNickname(nickname);
+        return memberQueryService.existsByNickname(nickname);
     }
 
 
@@ -131,11 +139,12 @@ public class MemberService {
     @Transactional
     public Long modifyMember(MemberDto memberDto, ModifyMemberReqDto request) {
 
-        Member member = memberQueryService.getMemberByMemberId(memberDto.getMemberId());
+        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
 
         member.updateNickname(request.getNickname());
 
-        memberCommandService.deleteMemberInterests(member);
+        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
+        memberCommandService.deleteMemberInterests(memberInterests);
 
         List<MemberInterest> newMemberInterests = new ArrayList<>();
 
@@ -153,12 +162,53 @@ public class MemberService {
             }
         }
 
-        memberCommandService.insertMemberInterests(newMemberInterests);
-
+        memberCommandService.createMemberInterest(newMemberInterests);
         return member.getMemberId();
 
     }
 
+    /**
+     * <p>회원 생성/업데이트</p>
+     *
+     * @param email
+     * @param name
+     * @param provider
+     * @param providerUid
+     * @return Member
+     */
+    @Transactional
+    public Member insertOrUpdateMember(String email, String name, Provider provider, String providerUid) {
+        Member member = memberQueryService.getByProviderUid(provider, providerUid);
 
+        String nickname;
+        do {
+            nickname = nicknameUtil.generateNickname();
+        } while (memberQueryService.existsByNickname(nickname));
+
+        if (member == null) {
+            Member newMember = memberCommandService.createMember(email, name, nickname);
+            memberCommandService.createMemberPush(newMember);
+            authService.insertUserAuth(newMember);
+            return newMember;
+        }
+        memberCommandService.updateMember(member, email, name);
+        return member;
+    }
+
+    /**
+     * <p>소셜 정보 생성/업데이트</p>
+     *
+     * @param member
+     * @param provider
+     * @param providerUid
+     */
+    @Transactional
+    public void insertOrUpdateSocialAccount(Member member, Provider provider, String providerUid) {
+        SocialAccount socialAccount = memberQueryService.getByMemberAndProvider(member, provider);
+        if (socialAccount == null) {
+            memberCommandService.createSocialAccount(member, provider, providerUid);
+        }
+        memberCommandService.updateSocialAccount(socialAccount, providerUid);
+    }
 
 }
