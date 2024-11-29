@@ -57,6 +57,10 @@ public enum ErrorCode {
     // OAuth
     UNSUPPORTED_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다."),
 
+    // MEMBER
+    DUPLICATED_NICKNAME(HttpStatus.CONFLICT, "중복된 닉네임입니다."),
+
+
     ;
 
     private final HttpStatus httpStatus;

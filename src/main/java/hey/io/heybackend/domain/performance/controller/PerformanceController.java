@@ -5,12 +5,11 @@ import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.response.PageRequest;
 import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceSearchCondition;
 import hey.io.heybackend.domain.performance.service.PerformanceService;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,30 +33,30 @@ public class PerformanceController {
      * <p>공연 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param memberDto       회원 정보
+     * @param authenticatedMember       회원 정보
      * @param pageRequest     페이징 정보
      * @return 공연 목록
      */
     @GetMapping
     @Operation(summary = "공연 목록", description = "공연 목록을 조회합니다.")
     public ApiResponse<SliceResponse<PerformanceListResponse>> searchPerformanceList(
-        @ParameterObject PerformanceSearchCondition searchCondition, @Parameter(hidden = true) MemberDto memberDto,
+        @ParameterObject PerformanceSearchCondition searchCondition, @Parameter(hidden = true) AuthenticatedMember authenticatedMember,
         @Valid @ParameterObject PageRequest pageRequest) {
-        return ApiResponse.success(performanceService.searchPerformanceSliceList(searchCondition, memberDto, pageRequest));
+        return ApiResponse.success(performanceService.searchPerformanceSliceList(searchCondition, authenticatedMember, pageRequest));
     }
 
     /**
      * <p>공연 상세</p>
      *
      * @param performanceId 공연 ID
-     * @param memberDto     회원 정보
+     * @param authenticatedMember     회원 정보
      * @return 공연 상세 정보
      */
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.PERFORMANCE_NOT_FOUND)
     @Operation(summary = "공연 상세", description = "공연 상세 정보를 조회합니다.")
     public ApiResponse<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("id") Long performanceId,
-        @Parameter(hidden = true) MemberDto memberDto) {
-        return ApiResponse.success(performanceService.getPerformanceDetail(performanceId, memberDto));
+        @Parameter(hidden = true) AuthenticatedMember authenticatedMember) {
+        return ApiResponse.success(performanceService.getPerformanceDetail(performanceId, authenticatedMember));
     }
 }

@@ -18,25 +18,12 @@ public class TokenService {
     private final TokenRepository tokenRepository;
 
     @Transactional
-    public void saveRefreshToken(Long memberId, String refreshToken) {
-        tokenRepository.save(Token.of(memberId, refreshToken));
-    }
-
-    @Transactional
-    public TokenDto reIssueToken(Member member) {
+    public TokenDto insertToken(Member member) {
         TokenDto tokenDto = jwtTokenProvider.createToken(member);
         tokenRepository.deleteByMemberId(member.getMemberId());
 
         Token token = Token.of(member.getMemberId(), tokenDto.getRefreshToken());
         tokenRepository.saveAndFlush(token);
-        return tokenDto;
-    }
-
-    @Transactional
-    public TokenDto insertToken(Member member) {
-        TokenDto tokenDto = jwtTokenProvider.createToken(member);
-        Token token = Token.of(member.getMemberId(), tokenDto.getRefreshToken());
-        tokenRepository.save(token);
         return tokenDto;
     }
 }

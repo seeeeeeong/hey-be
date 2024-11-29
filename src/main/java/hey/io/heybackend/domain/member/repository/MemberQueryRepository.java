@@ -1,8 +1,9 @@
 package hey.io.heybackend.domain.member.repository;
 
 
+import hey.io.heybackend.domain.member.dto.MemberDto;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.enums.Provider;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,14 +18,7 @@ public interface MemberQueryRepository {
      */
     Optional<Member> findByRefreshToken(String refreshToken);
 
-    /**
-     * <p>플랫폼 정보로 Member 조회</p>
-     *
-     * @param provider
-     * @param providerUid
-     * @return Optional<Member>
-     */
-    Optional<Member> findByProviderUidAndProvider(Provider provider, String providerUid);
+
 
     /**
      * <p>사용자 권한 정보</p>
@@ -36,4 +30,8 @@ public interface MemberQueryRepository {
 
     Optional<Member> selectMemberByProviderUid(String providerUid);
 
+    List<String> selectMemberInterestList(InterestCategory category, Long memberId);
+
+
+    MemberDto.MemberDetailResponse selectMemberDetail(Long memberId);
 }

@@ -3,9 +3,9 @@ package hey.io.heybackend.common.jwt;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
 import hey.io.heybackend.common.jwt.dto.TokenDto;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.service.MemberDetailService;
+import hey.io.heybackend.domain.auth.service.CustomUserDetailService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -49,7 +49,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
 
-    private final MemberDetailService memberDetailService;
+    private final CustomUserDetailService customUserDetailService;
 
     // 토큰에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
@@ -57,7 +57,7 @@ public class JwtTokenProvider {
 
         // 사용자 정보 조회
         String memberId = claims.getSubject();
-        MemberDto memberDto = memberDetailService.loadUserByUsername(memberId);
+        AuthenticatedMember authenticatedMember = customUserDetailService.loadUserByUsername(memberId);
 
         // 권한 정보 조회 및 변환
         @SuppressWarnings("unchecked")
@@ -66,7 +66,7 @@ public class JwtTokenProvider {
             .map(authMap -> new SimpleGrantedAuthority(authMap.get("authority")))
             .toList();
 
-        return new UsernamePasswordAuthenticationToken(memberDto, token, authorities);
+        return new UsernamePasswordAuthenticationToken(authenticatedMember, token, authorities);
     }
 
     // 토큰 유효성 검사
@@ -112,20 +112,21 @@ public class JwtTokenProvider {
             .compact();
 
         return TokenDto.builder()
-            .memberId(member.getMemberId())
-            .grantType("Bearer")
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .expiresIn(formatExpirationTime(getExpirationTime(accessToken)))
-            .build();
+                .memberId(member.getMemberId())
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(formatExpirationTime(getExpirationTime(accessToken)))
+                .memberStatus(member.getMemberStatus())
+                .build();
     }
 
     // 인증 정보로 claims 생성
     private Claims getClaims(Member member) {
-        List<SimpleGrantedAuthority> authorities = memberDetailService.getAuthorities(member);
+        List<SimpleGrantedAuthority> authorities = customUserDetailService.getAuthorities(member);
 
         Claims claims = Jwts.claims();
-        claims.put("userInfo", MemberDto.of(member, authorities));
+        claims.put("userInfo", AuthenticatedMember.of(member, authorities));
         claims.put("authorities", authorities);
         return claims;
     }

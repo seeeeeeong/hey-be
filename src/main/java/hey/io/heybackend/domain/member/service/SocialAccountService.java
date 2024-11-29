@@ -19,7 +19,7 @@ public class SocialAccountService {
     }
 
     @Transactional
-    public SocialAccount saveSocialAccount(SocialAccount socialAccount) {
+    public SocialAccount insertSocialAccount(SocialAccount socialAccount) {
         return socialAccountRepository.save(socialAccount);
     }
 

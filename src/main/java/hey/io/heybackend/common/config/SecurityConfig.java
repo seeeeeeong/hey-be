@@ -4,7 +4,7 @@ import hey.io.heybackend.common.config.filter.JwtAuthenticationProcessingFilter;
 import hey.io.heybackend.common.jwt.JwtAccessDeniedHandler;
 import hey.io.heybackend.common.jwt.JwtTokenProvider;
 import hey.io.heybackend.common.jwt.service.TokenService;
-import hey.io.heybackend.domain.member.service.MemberQueryService;
+import hey.io.heybackend.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final TokenService tokenService;
-    private final MemberQueryService memberQueryService;
+    private final MemberService memberService;
 
     @Value("${spring.profiles.active}")
     private String profiles;
@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .authorities("ANONYMOUS"))
 
                 // JWT 인증 필터 적용
-                .addFilterBefore(new JwtAuthenticationProcessingFilter(jwtTokenProvider, tokenService, memberQueryService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationProcessingFilter(jwtTokenProvider, tokenService, memberService), UsernamePasswordAuthenticationFilter.class)
 
                 // 예외 처리 적용
                 .exceptionHandling(exceptionHandling -> {

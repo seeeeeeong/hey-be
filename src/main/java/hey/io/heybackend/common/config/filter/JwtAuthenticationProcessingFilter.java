@@ -7,7 +7,7 @@ import hey.io.heybackend.common.jwt.dto.TokenDto;
 import hey.io.heybackend.common.jwt.service.TokenService;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.service.MemberQueryService;
+import hey.io.heybackend.domain.member.service.MemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final TokenService tokenService;
-    private final MemberQueryService memberQueryService;
+    private final MemberService memberService;
 
 
     @Override
@@ -58,8 +58,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        Member member = memberQueryService.getByRefreshToken(refreshToken);
-        TokenDto tokenDto = tokenService.reIssueToken(member);
+        Member member = memberService.getByRefreshToken(refreshToken);
+        TokenDto tokenDto = tokenService.insertToken(member);
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
 

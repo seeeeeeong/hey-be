@@ -1,108 +1,114 @@
 package hey.io.heybackend.domain.member.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import hey.io.heybackend.domain.member.entity.Member;
-import lombok.Builder;
-import lombok.Getter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.SpringSecurityCoreVersion;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.Assert;
+import hey.io.heybackend.domain.member.entity.MemberInterest;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
+import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
+import hey.io.heybackend.domain.performance.enums.PerformanceType;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
-@Getter
-@Builder
-public class MemberDto implements UserDetails {
+public class MemberDto {
 
-    private Long memberId; // 사용자 ID
-    private String email; // 이메일
-    private Set<GrantedAuthority> authorities; // 권한 목록
-
-    public static MemberDto of(Member member, Collection<? extends GrantedAuthority> authorities) {
-        return MemberDto.builder()
-                .memberId(member.getMemberId())
-                .email(member.getEmail())
-                .authorities(Collections.unmodifiableSet(sortAuthorities(authorities)))
-                .build();
+    @Getter
+    @NoArgsConstructor
+    public static class MemberTermsRequest {
+        @NotNull
+        private Boolean basicTermsAgreed;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
+    @Getter
+    @NoArgsConstructor
+    public static class MemberInterestRequest {
 
-    @Override
-    public String getUsername() {
-        return this.memberId.toString();
-    }
+        private List<PerformanceType> type;
+        private List<PerformanceGenre> genre;
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof MemberDto dto)) {
-            return false;
+        public List<MemberInterest> toMemberInterests(Member member) {
+            List<MemberInterest> memberInterests = new ArrayList<>();
+            if (type != null) {
+                for (PerformanceType type : type) {
+                    memberInterests.add(MemberInterest.of(member, InterestCategory.TYPE, type.getCode()));
+                }
+            }
+            if (genre != null) {
+                for (PerformanceGenre genre : genre) {
+                    memberInterests.add(MemberInterest.of(member, InterestCategory.GENRE, genre.getCode()));
+                }
+            }
+            return memberInterests;
         }
-        return (this.memberId != null || dto.getMemberId() == null)
-                && (this.memberId == null || this.memberId.equals(dto.getMemberId()));
     }
 
-    private static SortedSet<GrantedAuthority> sortAuthorities(
-            Collection<? extends GrantedAuthority> authorities) {
-        Assert.notNull(authorities, "Cannot pass a null GrantedAuthority collection");
-        SortedSet<GrantedAuthority> sortedAuthorities = new TreeSet<>(new AuthorityComparator());
 
-        for (GrantedAuthority grantedAuthority : authorities) {
-            Assert.notNull(grantedAuthority,
-                    "GrantedAuthority list cannot contain any null elements");
-            sortedAuthorities.add(grantedAuthority);
+    @Getter
+    @NoArgsConstructor
+    public static class ModifyMemberRequest {
+        @NotNull
+        private String nickname;
+        private List<PerformanceType> type;
+        private List<PerformanceGenre> genre;
+
+        public List<MemberInterest> toMemberInterests(Member member) {
+            List<MemberInterest> memberInterests = new ArrayList<>();
+            if (type != null) {
+                for (PerformanceType type : type) {
+                    memberInterests.add(MemberInterest.of(member, InterestCategory.TYPE, type.getCode()));
+                }
+            }
+            if (genre != null) {
+                for (PerformanceGenre genre : genre) {
+                    memberInterests.add(MemberInterest.of(member, InterestCategory.GENRE, genre.getCode()));
+                }
+            }
+            return memberInterests;
         }
-
-        return sortedAuthorities;
     }
 
-    private static class AuthorityComparator implements Comparator<GrantedAuthority>, Serializable {
 
-        @Serial
-        private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
+    @Getter
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberDetailResponse {
 
-        public int compare(GrantedAuthority g1, GrantedAuthority g2) {
-            if (g2.getAuthority() == null) {
-                return -1;
+        private Long memberId;
+        private String nickname;
+        private String accessedAt;
+        private MemberInterestDto interests;
+
+        @Getter
+        @Builder
+        public static class MemberInterestDto {
+            private List<String> type;
+            private List<String> genre;
+
+            public static MemberInterestDto of(List<String> typeList, List<String> genreList) {
+                return MemberInterestDto.builder()
+                        .type(typeList)
+                        .genre(genreList)
+                        .build();
             }
 
-            if (g1.getAuthority() == null) {
-                return 1;
-            }
+        }
 
-            return g1.getAuthority().compareTo(g2.getAuthority());
+        @QueryProjection
+        public MemberDetailResponse(Long memberId, String nickname, LocalDateTime accessedAt) {
+            this.memberId = memberId;
+            this.nickname = nickname;
+            this.accessedAt = accessedAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
+        }
+
+        public static MemberDetailResponse of(MemberDetailResponse memberDetail, MemberDetailResponse.MemberInterestDto interests) {
+            return memberDetail.toBuilder()
+                    .interests(interests)
+                    .build();
         }
     }
-
 }

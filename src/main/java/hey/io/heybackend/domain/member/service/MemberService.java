@@ -1,128 +1,95 @@
 package hey.io.heybackend.domain.member.service;
 
+import hey.io.heybackend.common.exception.BusinessException;
+import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.common.util.NicknameUtil;
-import hey.io.heybackend.domain.auth.service.AuthService;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.dto.*;
-import hey.io.heybackend.domain.member.dto.MemberInfoResDto.MemberInterestDto;
+import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
+import hey.io.heybackend.domain.member.dto.MemberDto.MemberInterestRequest;
+import hey.io.heybackend.domain.member.dto.MemberDto.MemberTermsRequest;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
 import hey.io.heybackend.domain.member.entity.MemberPush;
-import hey.io.heybackend.domain.member.entity.SocialAccount;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
-import hey.io.heybackend.domain.member.enums.Provider;
 import hey.io.heybackend.domain.member.enums.PushType;
+import hey.io.heybackend.domain.member.repository.MemberInterestRepository;
 import hey.io.heybackend.domain.member.repository.MemberPushRepository;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
-import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
-import hey.io.heybackend.domain.performance.enums.PerformanceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberCommandService memberCommandService;
-    private final MemberQueryService memberQueryService;
-    private final AuthService authService;
-
     private final NicknameUtil nicknameUtil;
 
     private final MemberRepository memberRepository;
     private final MemberPushRepository memberPushRepository;
+    private final MemberInterestRepository memberInterestRepository;
 
     /**
-     * <p>약관 동의</p>
+     * <p>약관 동의 수정</p>
      *
-     * @param memberDto 인증된 사용자 정보
-     * @param request
+     * @param authenticatedMember 인증 회원 정보
+     * @param memberTermsRequest 약관 동의 정보
      * @return 회원 ID
      */
     @Transactional
-    public Long modifyMemberTerms(MemberDto memberDto, MemberTermsReqDto request) {
-
-        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
-        memberCommandService.updateOptionalTermsAgreed(member, request.getBasicTermsAgreed());
+    public Long modifyMemberTerms(AuthenticatedMember authenticatedMember, MemberTermsRequest memberTermsRequest) {
+        Member member = memberRepository.findById(authenticatedMember.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+        member.updateOptionalTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
+        member.updateMemberStatus();
         return member.getMemberId();
     }
 
     /**
-     * <p>관심 정보</p>
+     * <p>관심 정보 등록</p>
      *
-     * @param memberDto 인증된 사용자 정보
-     * @param request
+     * @param authenticatedMember 인증 회원 정보
+     * @param memberInterestRequest 관심 정보
      * @return 회원 ID
      */
     @Transactional
-    public Long createMemberInterest(MemberDto memberDto, MemberInterestReqDto request) {
+    public Long createMemberInterest(AuthenticatedMember authenticatedMember, MemberInterestRequest memberInterestRequest) {
 
-        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
+        Member member = memberRepository.findById(authenticatedMember.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+        memberInterestRepository.deleteByMember(member);
 
-        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
-        memberCommandService.deleteMemberInterests(memberInterests);
-
-        List<MemberInterest> newMemberInterests = new ArrayList<>();
-
-        if (request.getType() != null) {
-            for (PerformanceType type : request.getType()) {
-                MemberInterest memberInterest = MemberInterest.of(member, InterestCategory.TYPE.getCode(), type.getCode());
-                newMemberInterests.add(memberInterest);
-            }
-        }
-
-        if (request.getGenre() != null) {
-            for (PerformanceGenre genre : request.getGenre()) {
-                MemberInterest memberInterest = MemberInterest.of(member, InterestCategory.GENRE.getCode(), genre.getCode());
-                newMemberInterests.add(memberInterest);
-            }
-        }
-        memberCommandService.createMemberInterest(newMemberInterests);
+        List<MemberInterest> newMemberInterests = memberInterestRequest.toMemberInterests(member);
+        memberInterestRepository.saveAll(newMemberInterests);
         return member.getMemberId();
 
     }
 
     /**
-     * <p>회원 정보 조회</p>
+     * <p>회원 상세</p>
      *
-     * @param memberDto 인증된 사용자 정보
-     * @return 회원 정보
+     * @param authenticatedMember 인증 회원 정보
+     * @return 회원 상세 정보
      */
-    public MemberInfoResDto getMemberInfo(MemberDto memberDto) {
+    public MemberDetailResponse getMemberInfo(AuthenticatedMember authenticatedMember) {
 
-        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
+        MemberDetailResponse memberDetail = memberRepository.selectMemberDetail(authenticatedMember.getMemberId());
 
-        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
+        if (memberDetail == null) {
+            throw new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
 
-        List<PerformanceType> types = memberInterests.stream()
-                .filter(interest -> interest.getInterestCategory().equals(InterestCategory.TYPE.getCode()))
-                .map(interest -> PerformanceType.valueOf(interest.getInterestCode()))
-                .collect(Collectors.toList());
+        List<String> typeList = memberRepository.selectMemberInterestList(InterestCategory.TYPE, authenticatedMember.getMemberId());
+        List<String> genreList = memberRepository.selectMemberInterestList(InterestCategory.GENRE, authenticatedMember.getMemberId());
 
-        List<PerformanceGenre> genres = memberInterests.stream()
-                .filter(interest -> interest.getInterestCategory().equals(InterestCategory.GENRE.getCode()))
-                .map(interest -> PerformanceGenre.valueOf(interest.getInterestCode()))
-                .collect(Collectors.toList());
+        MemberDetailResponse.MemberInterestDto interests = MemberDetailResponse.MemberInterestDto.of(typeList, genreList);
 
-        MemberInterestDto interests = MemberInterestDto.builder()
-                .type(types)
-                .genre(genres)
-                .build();
-
-        MemberInfoResDto memberInfoResDto = MemberInfoResDto.builder()
-                .memberId(member.getMemberId())
-                .nickname(member.getNickname())
-                .accessedAt(member.getAccessedAt())
-                .build();
-
-        memberInfoResDto.setInterests(interests);
-
-        return memberInfoResDto;
+        return MemberDetailResponse.of(memberDetail, interests);
     }
 
     /**
@@ -132,53 +99,34 @@ public class MemberService {
      * @return 닉네임 중복 여부
      */
     public Boolean existsNickname(String nickname) {
-        return memberQueryService.existsByNickname(nickname);
+        return memberRepository.existsByNickname(nickname);
     }
-
 
     /**
      * <p>회원 정보 수정</p>
      *
-     * @param memberDto 인증된 사용자 정보
-     * @param request
+     * @param authenticatedMember 인증 회원 정보
+     * @param modifyMemberRequest 회원 정보
      * @return 회원 ID
      */
     @Transactional
-    public Long modifyMember(MemberDto memberDto, ModifyMemberReqDto request) {
+    public Long modifyMember(AuthenticatedMember authenticatedMember, MemberDto.ModifyMemberRequest modifyMemberRequest) {
 
-        Member member = memberQueryService.getByMemberId(memberDto.getMemberId());
+        Member member = memberRepository.findById(authenticatedMember.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        member.updateNickname(request.getNickname());
-
-        List<MemberInterest> memberInterests = memberQueryService.getByMember(member);
-        memberCommandService.deleteMemberInterests(memberInterests);
-
-        List<MemberInterest> newMemberInterests = new ArrayList<>();
-
-        if (request.getType() != null) {
-            for (PerformanceType type : request.getType()) {
-                MemberInterest memberInterest = MemberInterest.of(member, InterestCategory.TYPE.getCode(), type.getCode());
-                newMemberInterests.add(memberInterest);
-            }
+        if (existsNickname(modifyMemberRequest.getNickname())) {
+            throw new BusinessException(ErrorCode.DUPLICATED_NICKNAME);
         }
+        member.updateNickname(modifyMemberRequest.getNickname());
 
-        if (request.getGenre() != null) {
-            for (PerformanceGenre genre : request.getGenre()) {
-                MemberInterest memberInterest = MemberInterest.of(member, InterestCategory.GENRE.getCode(), genre.getCode());
-                newMemberInterests.add(memberInterest);
-            }
-        }
+        memberInterestRepository.deleteByMember(member);
+        List<MemberInterest> newMemberInterests = modifyMemberRequest.toMemberInterests(member);
+        memberInterestRepository.saveAll(newMemberInterests);
 
-        memberCommandService.createMemberInterest(newMemberInterests);
         return member.getMemberId();
-
     }
 
-//
-//
-//
-//
-//
 
     public Optional<Member> getMemberByProviderUid(String providerUid) {
         return memberRepository.selectMemberByProviderUid(providerUid);
@@ -206,5 +154,9 @@ public class MemberService {
                 .pushEnabled(true)
                 .build();
         memberPushRepository.save(memberPush);
+    }
+
+    public Member getByRefreshToken(String refreshToken) {
+        return memberRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

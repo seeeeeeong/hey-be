@@ -2,8 +2,10 @@ package hey.io.heybackend.domain.member.repository;
 
 
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
+import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.member.dto.QMemberDto_MemberDetailResponse;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.enums.Provider;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import java.util.Optional;
 import static hey.io.heybackend.common.jwt.entity.QToken.token;
 import static hey.io.heybackend.domain.auth.entity.QUserAuth.userAuth;
 import static hey.io.heybackend.domain.member.entity.QMember.member;
+import static hey.io.heybackend.domain.member.entity.QMemberInterest.memberInterest;
 import static hey.io.heybackend.domain.member.entity.QSocialAccount.socialAccount;
 
 
@@ -51,24 +54,6 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         return Optional.ofNullable(optionalMember);
     }
 
-
-    /**
-     * <p>플랫폼 정보로 Member 조회</p>
-     *
-     * @param provider
-     * @param providerUid
-     * @return Optional<Member>
-     */
-    @Override
-    public Optional<Member> findByProviderUidAndProvider(Provider provider, String providerUid) {
-        return Optional.ofNullable(
-                selectFrom(member)
-                        .join(socialAccount).on(member.memberId.eq(socialAccount.member.memberId))
-                        .where(socialAccount.provider.eq(provider), socialAccount.providerUid.eq(providerUid))
-                        .fetchOne()
-        );
-    }
-
     @Override
     public Optional<Member> selectMemberByProviderUid(String providerUid) {
         return Optional.ofNullable(
@@ -77,5 +62,24 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
                         .where(socialAccount.providerUid.eq(providerUid))
                         .fetchOne()
         );
+    }
+
+    @Override
+    public List<String> selectMemberInterestList(InterestCategory category, Long memberId) {
+        return select(memberInterest.interestCode)
+                .from(memberInterest)
+                .where(memberInterest.interestCategory.eq(category), memberInterest.member.memberId.eq(memberId))
+                .fetch();
+    }
+
+    @Override
+    public MemberDto.MemberDetailResponse selectMemberDetail(Long memberId) {
+        return select(new QMemberDto_MemberDetailResponse(
+                member.memberId,
+                member.nickname,
+                member.accessedAt
+                )).from(member)
+                .where(member.memberId.eq(memberId))
+                .fetchOne();
     }
 }

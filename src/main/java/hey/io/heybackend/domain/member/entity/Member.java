@@ -17,7 +17,7 @@ import java.util.List;
 @Table(schema = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseTimeEntity implements Persistable<Long> {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,20 +51,6 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<UserAuth> userAuth = new ArrayList<>();
-
-
-    @Override
-    public Long getId() {
-        return null;
-    }
-
-    @Override
-    public boolean isNew() {
-        return false;
-    }
 
 
     @Builder
@@ -102,5 +88,13 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updateMemberStatus() {
+        if (this.optionalTermsAgreed) {
+            this.memberStatus = MemberStatus.ACTIVE;
+        } else {
+            this.memberStatus = MemberStatus.LOCKED;
+        }
     }
 }

@@ -1,11 +1,11 @@
-package hey.io.heybackend.domain.member.service;
+package hey.io.heybackend.domain.auth.service;
 
 import hey.io.heybackend.common.config.component.AvailableRoleHierarchy;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.domain.auth.entity.UserAuth;
 import hey.io.heybackend.domain.auth.repository.UserAuthRepository;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class MemberDetailService implements UserDetailsService {
+public class CustomUserDetailService implements UserDetailsService {
 
     private final AvailableRoleHierarchy availableRoleHierarchy;
 
@@ -36,13 +36,13 @@ public class MemberDetailService implements UserDetailsService {
      * @return MemberDto
      */
     @Override
-    public MemberDto loadUserByUsername(String userId) throws UsernameNotFoundException {
+    public AuthenticatedMember loadUserByUsername(String userId) throws UsernameNotFoundException {
         Member member = memberRepository.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<GrantedAuthority> authorities = loadUserAuthorities(userId);
 
-        return MemberDto.of(member, authorities);
+        return AuthenticatedMember.of(member, authorities);
     }
 
     /**
@@ -76,6 +76,5 @@ public class MemberDetailService implements UserDetailsService {
         // 연결된 모든 하위 계층 권한 포함
         return availableRoleHierarchy.getReachableAuthorities(authorities);
     }
-
 
 }

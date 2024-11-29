@@ -31,19 +31,6 @@ public class AuthService {
         return authRepository.selectHierarchicalAuthList();
     }
 
-    @Transactional
-    public void saveUserAuth(Member member) {
-        Auth memberSnsAuth = authRepository.findById(AuthType.MEMBER_SNS.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
-        Auth isAuthenticatedFullyAuth = authRepository.findById(AuthType.IS_AUTHENTICATED_FULLY.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
-
-        String userId = String.valueOf(member.getMemberId());
-
-        UserAuth memberSnsUserAuth = UserAuth.of(userId, memberSnsAuth);
-        UserAuth IsAuthenticatedFullyUserAuth = UserAuth.of(userId, isAuthenticatedFullyAuth);
-
-        userAuthRepository.save(memberSnsUserAuth);
-        userAuthRepository.save(IsAuthenticatedFullyUserAuth);
-    }
 
     public List<Auth> getAuthList(List<String> authIds) {
         return authRepository.findByAuthIdIn(authIds);

@@ -8,7 +8,7 @@ import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistSearchCondition;
 import hey.io.heybackend.domain.file.dto.FileDto;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.service.FileService;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.PriceDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.TicketingDto;
@@ -33,15 +33,15 @@ public class PerformanceService {
      * <p>공연 목록 (Slice)</p>
      *
      * @param searchCondition 조회 조건
-     * @param memberDto       회원 정보
+     * @param authenticatedMember       회원 정보
      * @param pageable        페이징 정보
      * @return 공연 목록
      */
     public SliceResponse<PerformanceListResponse> searchPerformanceSliceList(PerformanceSearchCondition searchCondition,
-        MemberDto memberDto, Pageable pageable) {
+                                                                             AuthenticatedMember authenticatedMember, Pageable pageable) {
         // 1. 공연 목록 조회
         SliceResponse<PerformanceListResponse> performanceList = performanceRepository.selectPerformanceSliceList(
-            searchCondition, memberDto.getMemberId(), pageable);
+            searchCondition, authenticatedMember.getMemberId(), pageable);
 
         List<Long> performanceIds = performanceList.getContent().stream()
             .map(PerformanceListResponse::getPerformanceId)
@@ -61,12 +61,12 @@ public class PerformanceService {
      * <p>공연 상세</p>
      *
      * @param performanceId 공연 ID
-     * @param memberDto     회원 정보
+     * @param authenticatedMember     회원 정보
      * @return 공연 상세 정보
      */
-    public PerformanceDetailResponse getPerformanceDetail(Long performanceId, MemberDto memberDto) {
+    public PerformanceDetailResponse getPerformanceDetail(Long performanceId, AuthenticatedMember authenticatedMember) {
         // 1. 공연 상세 정보 조회
-        PerformanceDetailResponse performanceDetail = performanceRepository.selectPerformanceDetail(performanceId, memberDto.getMemberId());
+        PerformanceDetailResponse performanceDetail = performanceRepository.selectPerformanceDetail(performanceId, authenticatedMember.getMemberId());
         if (performanceDetail == null) {
             throw new EntityNotFoundException(ErrorCode.PERFORMANCE_NOT_FOUND);
         }
@@ -84,7 +84,7 @@ public class PerformanceService {
         List<FileDto> fileList = fileService.getDetailFileList(EntityType.PERFORMANCE, performanceId);
 
         // 6. 공연 아티스트 목록 조회
-        List<ArtistListResponse> artistList = performanceArtistService.searchArtistList(ArtistSearchCondition.of(performanceId), memberDto);
+        List<ArtistListResponse> artistList = performanceArtistService.searchArtistList(ArtistSearchCondition.of(performanceId), authenticatedMember);
 
         // 7. 목록 데이터 생성
         return PerformanceDetailResponse.of(performanceDetail, genreList, priceList, ticketingList, fileList, artistList);

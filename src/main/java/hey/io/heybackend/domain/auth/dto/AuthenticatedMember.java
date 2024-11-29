@@ -1,4 +1,4 @@
-package hey.io.heybackend.domain.member.dto;
+package hey.io.heybackend.domain.auth.dto;
 
 import hey.io.heybackend.domain.member.entity.Member;
 import lombok.Builder;
@@ -14,14 +14,14 @@ import java.util.*;
 
 @Getter
 @Builder
-public class MemberDto implements UserDetails {
+public class AuthenticatedMember implements UserDetails {
 
     private Long memberId; // 사용자 ID
     private String email; // 이메일
     private Set<GrantedAuthority> authorities; // 권한 목록
 
-    public static MemberDto of(Member member, Collection<? extends GrantedAuthority> authorities) {
-        return MemberDto.builder()
+    public static AuthenticatedMember of(Member member, Collection<? extends GrantedAuthority> authorities) {
+        return AuthenticatedMember.builder()
                 .memberId(member.getMemberId())
                 .email(member.getEmail())
                 .authorities(Collections.unmodifiableSet(sortAuthorities(authorities)))
@@ -66,7 +66,7 @@ public class MemberDto implements UserDetails {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof MemberDto dto)) {
+        if (!(obj instanceof AuthenticatedMember dto)) {
             return false;
         }
         return (this.memberId != null || dto.getMemberId() == null)

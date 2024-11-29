@@ -1,5 +1,6 @@
 package hey.io.heybackend.common.jwt.dto;
 
+import hey.io.heybackend.domain.member.enums.MemberStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,5 +24,7 @@ public class TokenDto {
 
     @Schema(description = "액세스 토큰 만료 일시", pattern = "yyyy-MM-dd HH:mi:ss", example = "2024-10-28 12:06:55")
     private String expiresIn;
+
+    private MemberStatus memberStatus;
 
 }

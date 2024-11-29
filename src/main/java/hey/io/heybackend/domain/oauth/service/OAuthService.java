@@ -5,7 +5,6 @@ import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.jwt.dto.TokenDto;
 import hey.io.heybackend.domain.member.enums.Provider;
-import hey.io.heybackend.domain.member.service.MemberOAuthService;
 import hey.io.heybackend.domain.oauth.client.OAuthClient;
 import hey.io.heybackend.domain.oauth.dto.SocialUserInfo;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +20,15 @@ import java.util.Map;
 public class OAuthService {
 
     private final OAuthClient oAuthClient;
-    private final MemberOAuthService memberOAuthService;
+    private final OAuthLoginService OAuthLoginService;
 
+    /**
+     * <p>소셜 로그인</p>
+     *
+     * @param provider ("kakao", "google", "apple")
+     * @param code 인증 코드
+     * @return 토큰 정보
+     */
     @Transactional
     public TokenDto login(String provider, String code) throws ParseException, IOException, JOSEException {
         return switch (provider.toLowerCase()) {
@@ -33,10 +39,18 @@ public class OAuthService {
         };
     }
 
+    /**
+     * <p>카카오/구글 로그인</p>
+     *
+     * @param accessToken accessToken 토큰
+     * @param provider ("kakao", "google")
+     * @param userInfoFetcher 사용자 정보 인터페이스
+     * @return 토큰 정보
+     */
     private TokenDto handleLogin(String accessToken, Provider provider, UserInfoFetcher userInfoFetcher) {
-        Map<String, Object> userInfo = userInfoFetcher.fetchUserInfo(accessToken);
-
         try {
+            // 소셜 회원 정보 조회
+            Map<String, Object> userInfo = userInfoFetcher.fetchUserInfo(accessToken);
             SocialUserInfo socialUserInfo = provider.mapUserInfo(userInfo);
             return processLogin(socialUserInfo);
         } catch (ParseException e) {
@@ -44,13 +58,22 @@ public class OAuthService {
         }
     }
 
+    // 소셜 회원 정보 조회 인터페이스
     @FunctionalInterface
     public interface UserInfoFetcher {
         Map<String, Object> fetchUserInfo(String accessToken);
     }
 
+    /**
+     * <p>카카오/구글 로그인</p>
+     *
+     * @param idToken ID 토큰
+     * @param provider ("apple")
+     * @return 토큰 정보
+     */
     private TokenDto handleAppleLogin(String idToken, Provider provider) {
         try {
+            // 소셜 회원 정보 조회
             Map<String, Object> userInfo = Map.of("id_token", idToken);
             SocialUserInfo socialUserInfo = provider.mapUserInfo(userInfo);
             return processLogin(socialUserInfo);
@@ -59,7 +82,14 @@ public class OAuthService {
         }
     }
 
+    /**
+     * <p>회원 가입 및 로그인</p>
+     *
+     * @param socialUserInfo 소셜 회원 정보
+     * @return 토큰 정보
+     */
     private TokenDto processLogin(SocialUserInfo socialUserInfo) {
-        return memberOAuthService.processLogin(socialUserInfo);
+        // 회원 가입 및 로그인 처리, 토큰 발급
+        return OAuthLoginService.processLogin(socialUserInfo);
     }
 }
