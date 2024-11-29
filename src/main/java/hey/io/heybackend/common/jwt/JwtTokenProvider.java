@@ -117,7 +117,7 @@ public class JwtTokenProvider {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(formatExpirationTime(getExpirationTime(accessToken)))
-                .memberStatus(member.getMemberStatus())
+                .memberStatus(member.getMemberStatus().getDescription())
                 .build();
     }
 

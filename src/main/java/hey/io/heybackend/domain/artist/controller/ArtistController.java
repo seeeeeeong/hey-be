@@ -33,7 +33,7 @@ public class ArtistController {
      * <p>아티스트 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param authenticatedMember       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @param pageRequest     페이징 정보
      * @return 아티스트 목록
      */
@@ -49,7 +49,7 @@ public class ArtistController {
      * <p>아티스트 상세</p>
      *
      * @param artistId  아티스트 ID
-     * @param authenticatedMember 회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 아티스트 상세 정보
      */
     @Operation(summary = "아티스트 상세", description = "아티스트 상세 정보를 조회합니다.")

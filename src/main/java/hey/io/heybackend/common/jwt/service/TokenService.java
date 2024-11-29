@@ -17,13 +17,18 @@ public class TokenService {
 
     private final TokenRepository tokenRepository;
 
+    /**
+     * <p>토큰 저장</p>
+     *
+     * @param member 회원 정보
+     * @return 토큰 정보
+     */
     @Transactional
     public TokenDto insertToken(Member member) {
         TokenDto tokenDto = jwtTokenProvider.createToken(member);
         tokenRepository.deleteByMemberId(member.getMemberId());
 
-        Token token = Token.of(member.getMemberId(), tokenDto.getRefreshToken());
-        tokenRepository.saveAndFlush(token);
+        tokenRepository.saveAndFlush(Token.of(member.getMemberId(), tokenDto.getRefreshToken()));
         return tokenDto;
     }
 }

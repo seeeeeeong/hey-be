@@ -3,6 +3,7 @@ package hey.io.heybackend.domain.member.controller;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
+import hey.io.heybackend.common.swagger.ApiErrorCodes;
 import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.dto.*;
 import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
@@ -71,10 +72,11 @@ public class MemberController {
     /**
      * <p>닉네임 중복 확인</p>
      *
-     * @param nickname
+     * @param nickname 닉네임
      * @return 닉네임 중복 여부
      */
     @GetMapping("/mypage/info/nickname")
+    @Operation(summary = "닉네임 중복 확인", description = "닉네임 중복을 확인합니다.")
     public ApiResponse<Boolean> existsNickname(@RequestParam("nickname") String nickname) {
         return ApiResponse.success(memberService.existsNickname(nickname));
     }
@@ -87,9 +89,10 @@ public class MemberController {
      * @return 회원 ID
      */
     @PutMapping("/mypage/info")
+    @ApiErrorCode(ErrorCode.MEMBER_NOT_FOUND)
+    @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
     public ApiResponse<Long> modifyMember(@AuthenticationPrincipal AuthenticatedMember authenticatedMember,
                                           @RequestBody @Valid MemberDto.ModifyMemberRequest modifyMemberRequest) {
         return ApiResponse.success(memberService.modifyMember(authenticatedMember, modifyMemberRequest));
     }
-
 }

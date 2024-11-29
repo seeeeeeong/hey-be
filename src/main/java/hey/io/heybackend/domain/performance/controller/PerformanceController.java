@@ -33,7 +33,7 @@ public class PerformanceController {
      * <p>공연 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param authenticatedMember       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @param pageRequest     페이징 정보
      * @return 공연 목록
      */
@@ -49,7 +49,7 @@ public class PerformanceController {
      * <p>공연 상세</p>
      *
      * @param performanceId 공연 ID
-     * @param authenticatedMember     회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 공연 상세 정보
      */
     @GetMapping("/{id}")

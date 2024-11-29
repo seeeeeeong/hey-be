@@ -49,18 +49,22 @@ public class OAuthClient {
     private final ObjectMapper objectMapper;
     private final OAuth2Util oAuth2Util;
 
+    // 카카오 accessToken 요청
     public String getKakaoAccessToken(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
         Map<String, String> body = new HashMap<>();
         body.put("client_id", kakaoProperties.getClientId());
         body.put("client_secret", kakaoProperties.getClientSecret());
         body.put("code", code);
         body.put("grant_type", "authorization_code");
         body.put("redirect_uri", kakaoProperties.getRedirectUri());
+
         return oAuth2Util.getAccessToken(kakaoProperties.getTokenUrl(), headers, body);
     }
 
+    // 카카오 회원 정보 요청
     public Map getKakaoUserInfo(String accessToken)  {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -76,6 +80,8 @@ public class OAuthClient {
         );
 
         ObjectMapper objectMapper = new ObjectMapper();
+
+        // id, email 추출
         try {
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
@@ -89,8 +95,8 @@ public class OAuthClient {
         }
     }
 
+    // 구글 accessToken 요청
     public String getGoogleAccessToken(String code) {
-//        String decode = URLDecoder.decode(code, StandardCharsets.UTF_8);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -100,6 +106,7 @@ public class OAuthClient {
         body.put("code", code);
         body.put("grant_type", "authorization_code");
         body.put("redirect_uri", googleProperties.getRedirectUri());
+
         return oAuth2Util.getAccessToken(googleProperties.getTokenUrl(), headers, body);
     }
 
@@ -118,6 +125,7 @@ public class OAuthClient {
         }
     }
 
+    // 애플 idToken 요청
     public String getAppleIdToken(String code) throws ParseException, IOException, JOSEException {
         String clientSecret = createClientSecret();
         HttpHeaders headers = new HttpHeaders();
@@ -132,6 +140,7 @@ public class OAuthClient {
 
         String idToken = oAuth2Util.getIdentityToken(appleProperties.getTokenUrl(), headers, body);
 
+        // 유효성 검사
         if (!validateAppleIdToken(idToken)) {
             throw new BusinessException(PARSING_ERROR);
         }
@@ -139,22 +148,29 @@ public class OAuthClient {
         return idToken;
     }
 
+    // 유효성 검사
     private boolean validateAppleIdToken(String idToken) throws ParseException, JOSEException, IOException {
         SignedJWT signedJWT = SignedJWT.parse(idToken);
-        // 1. Apple의 공개 키 조회
+
+        // 공개 키 조회
         JWKSet jwkSet = JWKSet.load(new URL(appleProperties.getPublicKeyUrl()));
         JWK jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());
-        // 2. 검증을 위한 RSA 공개 키 생성E
+
+        // 검증을 위한 RSA 공개 키 생성
         RSAKey rsaKey = (RSAKey) jwk;
         JWSVerifier verifier = new RSASSAVerifier(rsaKey.toRSAPublicKey());
-        // 3. JWT 서명 검증
+
+        // JWT 서명 검증
         return signedJWT.verify(verifier);
     }
 
+    // 클라이언트 시크릿 생성
     private String createClientSecret() {
         PrivateKey privateKey = getPrivateKey();
+
         long nowMillis  = System.currentTimeMillis();
         Date now = new Date(nowMillis);
+
         return Jwts.builder()
                 .setHeaderParam("kid", appleProperties.getKeyId())
                 .setIssuer(appleProperties.getTeamId())
@@ -166,8 +182,10 @@ public class OAuthClient {
                 .compact();
     }
 
+    // 개인키 조회
     private PrivateKey getPrivateKey() {
         JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+
         try {
             byte[] privateKeyBytes = Base64.getDecoder().decode(appleProperties.getPrivateKey());
 
@@ -177,5 +195,4 @@ public class OAuthClient {
             throw new RuntimeException(e);
         }
     }
-
 }

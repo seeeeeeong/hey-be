@@ -32,7 +32,7 @@ public class ArtistService {
      * <p>아티스트 목록 (Slice)</p>
      *
      * @param searchCondition 조회 조건
-     * @param authenticatedMember       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @param pageable        페이징 정보
      * @return 아티스트 목록
      */
@@ -57,7 +57,7 @@ public class ArtistService {
      * <p>아티스트 상세</p>
      *
      * @param artistId  공연 ID
-     * @param authenticatedMember 회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 아티스트 상세 정보
      */
     public ArtistDetailResponse getArtistDetail(Long artistId, AuthenticatedMember authenticatedMember) {

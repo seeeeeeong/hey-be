@@ -1,6 +1,7 @@
-package hey.io.heybackend.domain.member.entity;
+package hey.io.heybackend.domain.follow.entity;
 
-import hey.io.heybackend.domain.member.enums.FollowType;
+import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.follow.enums.FollowType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

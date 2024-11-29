@@ -74,6 +74,7 @@ public class Member extends BaseTimeEntity {
                 .build();
     }
 
+    // 회원 정보 업데이트
     public void updateMember(String email, String name) {
         this.email = email;
         this.name = name;
@@ -82,18 +83,21 @@ public class Member extends BaseTimeEntity {
         this.accessedAt = LocalDateTime.now();
     }
 
+    // 약관 동의 정보 업데이트
     public void updateOptionalTermsAgreed(Boolean optionalTermsAgreed) {
         this.optionalTermsAgreed = optionalTermsAgreed;
     }
 
+    // 닉네임 업데이트
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
 
+    // 회원 상태 업데이트
     public void updateMemberStatus() {
-        if (this.optionalTermsAgreed) {
+        if (this.optionalTermsAgreed) { // 약관 동의 정보가 true일 경우
             this.memberStatus = MemberStatus.ACTIVE;
-        } else {
+        } else { // 약관 동의 정보가 false일 경우
             this.memberStatus = MemberStatus.LOCKED;
         }
     }

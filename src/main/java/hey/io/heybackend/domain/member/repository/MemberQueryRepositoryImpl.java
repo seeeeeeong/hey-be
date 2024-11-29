@@ -24,6 +24,56 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     }
 
     /**
+     * <p>회원 정보</p>
+     *
+     * @param providerUid
+     * @return 회원 정보
+     */
+    @Override
+    public Optional<Member> selectMemberByProviderUid(String providerUid) {
+        return Optional.ofNullable(
+                selectFrom(member)
+                        .join(socialAccount).on(member.memberId.eq(socialAccount.member.memberId))
+                        .where(socialAccount.providerUid.eq(providerUid))
+                        .fetchOne()
+        );
+    }
+
+    /**
+     * <p>회원 정보</p>
+     *
+     * @param refreshToken refresh 토큰
+     * @return 회원 정보
+     */
+    @Override
+    public Optional<Member> selectMemberByRefreshToken(String refreshToken) {
+        Member optionalMember = select(member)
+                .from(member)
+                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
+                .where(token.refreshToken.eq(refreshToken))
+                .fetchFirst();
+
+        return Optional.ofNullable(optionalMember);
+    }
+
+    /**
+     * <p>회원 상세</p>
+     *
+     * @param memberId 회원 ID
+     * @return 회원 상세 정보
+     */
+    @Override
+    public MemberDto.MemberDetailResponse selectMemberDetail(Long memberId) {
+        return select(new QMemberDto_MemberDetailResponse(
+                member.memberId,
+                member.nickname,
+                member.accessedAt
+        )).from(member)
+                .where(member.memberId.eq(memberId))
+                .fetchOne();
+    }
+
+    /**
      * <p>사용자 권한 정보</p>
      *
      * @param memberId 사용자 ID
@@ -38,32 +88,12 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
     }
 
     /**
-     * <p>refreshToken으로 Member 조회</p>
+     * <p>회원 관심 목록</p>
      *
-     * @param refreshToken
-     * @return Optional<Member>
+     * @param category 카테고리
+     * @param memberId 회원 ID
+     * @return 회원 관심 목록 정보
      */
-    @Override
-    public Optional<Member> findByRefreshToken(String refreshToken) {
-        Member optionalMember = select(member)
-                .from(member)
-                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
-                .where(token.refreshToken.eq(refreshToken))
-                .fetchFirst();
-
-        return Optional.ofNullable(optionalMember);
-    }
-
-    @Override
-    public Optional<Member> selectMemberByProviderUid(String providerUid) {
-        return Optional.ofNullable(
-                selectFrom(member)
-                        .join(socialAccount).on(member.memberId.eq(socialAccount.member.memberId))
-                        .where(socialAccount.providerUid.eq(providerUid))
-                        .fetchOne()
-        );
-    }
-
     @Override
     public List<String> selectMemberInterestList(InterestCategory category, Long memberId) {
         return select(memberInterest.interestCode)
@@ -72,14 +102,4 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
                 .fetch();
     }
 
-    @Override
-    public MemberDto.MemberDetailResponse selectMemberDetail(Long memberId) {
-        return select(new QMemberDto_MemberDetailResponse(
-                member.memberId,
-                member.nickname,
-                member.accessedAt
-                )).from(member)
-                .where(member.memberId.eq(memberId))
-                .fetchOne();
-    }
 }

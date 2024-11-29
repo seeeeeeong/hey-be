@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> , MemberQueryRepository{
-
     boolean existsByNickname(String nickname);
-
 }

@@ -7,13 +7,12 @@ import hey.io.heybackend.common.util.NicknameUtil;
 import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.dto.*;
 import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
+import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse.MemberInterestDto;
 import hey.io.heybackend.domain.member.dto.MemberDto.MemberInterestRequest;
 import hey.io.heybackend.domain.member.dto.MemberDto.MemberTermsRequest;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
-import hey.io.heybackend.domain.member.entity.MemberPush;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
-import hey.io.heybackend.domain.member.enums.PushType;
 import hey.io.heybackend.domain.member.repository.MemberInterestRepository;
 import hey.io.heybackend.domain.member.repository.MemberPushRepository;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
@@ -22,16 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final NicknameUtil nicknameUtil;
-
     private final MemberRepository memberRepository;
-    private final MemberPushRepository memberPushRepository;
     private final MemberInterestRepository memberInterestRepository;
 
     /**
@@ -43,9 +38,14 @@ public class MemberService {
      */
     @Transactional
     public Long modifyMemberTerms(AuthenticatedMember authenticatedMember, MemberTermsRequest memberTermsRequest) {
+        // 1. 회원 조회
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 약관 동의 여부 수정
         member.updateOptionalTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
+
+        // 3. 회원 상태 수정
         member.updateMemberStatus();
         return member.getMemberId();
     }
@@ -60,14 +60,18 @@ public class MemberService {
     @Transactional
     public Long createMemberInterest(AuthenticatedMember authenticatedMember, MemberInterestRequest memberInterestRequest) {
 
+        // 1. 회원 조회
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 관심 정보 삭제
         memberInterestRepository.deleteByMember(member);
 
+        // 3. 관심 정보 등록
         List<MemberInterest> newMemberInterests = memberInterestRequest.toMemberInterests(member);
         memberInterestRepository.saveAll(newMemberInterests);
-        return member.getMemberId();
 
+        return member.getMemberId();
     }
 
     /**
@@ -78,16 +82,16 @@ public class MemberService {
      */
     public MemberDetailResponse getMemberInfo(AuthenticatedMember authenticatedMember) {
 
+        // 1. 회원 상세 정보 조회
         MemberDetailResponse memberDetail = memberRepository.selectMemberDetail(authenticatedMember.getMemberId());
-
         if (memberDetail == null) {
             throw new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
+        // 2. 관심 정보 조회
         List<String> typeList = memberRepository.selectMemberInterestList(InterestCategory.TYPE, authenticatedMember.getMemberId());
         List<String> genreList = memberRepository.selectMemberInterestList(InterestCategory.GENRE, authenticatedMember.getMemberId());
-
-        MemberDetailResponse.MemberInterestDto interests = MemberDetailResponse.MemberInterestDto.of(typeList, genreList);
+        MemberInterestDto interests = MemberInterestDto.of(typeList, genreList);
 
         return MemberDetailResponse.of(memberDetail, interests);
     }
@@ -112,51 +116,20 @@ public class MemberService {
     @Transactional
     public Long modifyMember(AuthenticatedMember authenticatedMember, MemberDto.ModifyMemberRequest modifyMemberRequest) {
 
+        // 1. 회원 조회
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (existsNickname(modifyMemberRequest.getNickname())) {
-            throw new BusinessException(ErrorCode.DUPLICATED_NICKNAME);
-        }
+        // 2. 닉네임 수정
         member.updateNickname(modifyMemberRequest.getNickname());
 
+        // 3. 관심 정보 삭제
         memberInterestRepository.deleteByMember(member);
+
+        // 4. 관심 정보 등록
         List<MemberInterest> newMemberInterests = modifyMemberRequest.toMemberInterests(member);
         memberInterestRepository.saveAll(newMemberInterests);
 
         return member.getMemberId();
-    }
-
-
-    public Optional<Member> getMemberByProviderUid(String providerUid) {
-        return memberRepository.selectMemberByProviderUid(providerUid);
-    }
-
-    @Transactional
-    public Member insertMember(String email, String name) {
-        Member newMember = Member.of(email, name, getNickname());
-        return memberRepository.save(newMember);
-    }
-
-    private String getNickname() {
-        String nickname;
-        do {
-            nickname = nicknameUtil.generateNickname();
-        } while (existsNickname(nickname));
-        return nickname;
-    }
-
-    @Transactional
-    public void insertMemberPush(Member member) {
-        MemberPush memberPush = MemberPush.builder()
-                .member(member)
-                .pushType(PushType.PERFORMANCE)
-                .pushEnabled(true)
-                .build();
-        memberPushRepository.save(memberPush);
-    }
-
-    public Member getByRefreshToken(String refreshToken) {
-        return memberRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

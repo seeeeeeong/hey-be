@@ -65,7 +65,7 @@ public class OAuthService {
     }
 
     /**
-     * <p>카카오/구글 로그인</p>
+     * <p>애플 로그인</p>
      *
      * @param idToken ID 토큰
      * @param provider ("apple")

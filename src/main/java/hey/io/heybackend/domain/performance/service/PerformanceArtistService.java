@@ -26,7 +26,7 @@ public class PerformanceArtistService {
      * <p>공연 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param authenticatedMember       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 공연 목록
      */
     public List<PerformanceListResponse> searchPerformanceList(PerformanceSearchCondition searchCondition,
@@ -53,7 +53,7 @@ public class PerformanceArtistService {
      * <p>아티스트 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param authenticatedMember       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 아티스트 목록
      */
     public List<ArtistListResponse> searchArtistList(ArtistSearchCondition searchCondition, AuthenticatedMember authenticatedMember) {
