@@ -25,7 +25,7 @@ public class TokenDto {
     @Schema(description = "액세스 토큰 만료 일시", pattern = "yyyy-MM-dd HH:mi:ss", example = "2024-10-28 12:06:55")
     private String expiresIn;
 
-    @Schema(description = "회원 상태", example = "활성화")
-    private String memberStatus;
+    @Schema(description = "회원 상태", example = "ACTIVE")
+    private MemberStatus memberStatus;
 
 }
