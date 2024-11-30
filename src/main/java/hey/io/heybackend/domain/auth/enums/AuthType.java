@@ -15,9 +15,7 @@ public enum AuthType implements EnumMapperType {
     MEMBER_SNS("SNS 로그인 권한"),
     IS_AUTHENTICATED_FULLY("인증 완료"),
     ANONYMOUS("익명 권한")
-
     ;
-
 
     private final String description; // Enum 설명
 

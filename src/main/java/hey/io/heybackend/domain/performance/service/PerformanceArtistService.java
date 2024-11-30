@@ -6,7 +6,7 @@ import hey.io.heybackend.domain.artist.repository.ArtistRepository;
 import hey.io.heybackend.domain.file.dto.FileDto;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.service.FileService;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceSearchCondition;
 import hey.io.heybackend.domain.performance.repository.PerformanceRepository;
@@ -26,14 +26,14 @@ public class PerformanceArtistService {
      * <p>공연 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param memberDto       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 공연 목록
      */
     public List<PerformanceListResponse> searchPerformanceList(PerformanceSearchCondition searchCondition,
-        MemberDto memberDto) {
+        AuthenticatedMember authenticatedMember) {
         // 1. 공연 목록 조회
         List<PerformanceListResponse> performanceList = performanceRepository.selectPerformanceList(searchCondition,
-            memberDto.getMemberId());
+            authenticatedMember.getMemberId());
 
         List<Long> performanceIds = performanceList.stream()
             .map(PerformanceListResponse::getPerformanceId)
@@ -53,12 +53,12 @@ public class PerformanceArtistService {
      * <p>아티스트 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param memberDto       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 아티스트 목록
      */
-    public List<ArtistListResponse> searchArtistList(ArtistSearchCondition searchCondition, MemberDto memberDto) {
+    public List<ArtistListResponse> searchArtistList(ArtistSearchCondition searchCondition, AuthenticatedMember authenticatedMember) {
         // 1. 아티스트 목록 조회
-        List<ArtistListResponse> artistList = artistRepository.selectArtistList(searchCondition, memberDto.getMemberId());
+        List<ArtistListResponse> artistList = artistRepository.selectArtistList(searchCondition, authenticatedMember.getMemberId());
 
         List<Long> artistIds = artistList.stream()
             .map(ArtistListResponse::getArtistId)

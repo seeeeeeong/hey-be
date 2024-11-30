@@ -9,7 +9,5 @@ import java.util.List;
 
 @Repository
 public interface MemberInterestRepository extends JpaRepository<MemberInterest, Long> {
-
-    List<MemberInterest> findByMember(Member member);
-
+    void deleteByMember(Member member);
 }

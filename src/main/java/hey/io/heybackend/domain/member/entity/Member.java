@@ -17,7 +17,7 @@ import java.util.List;
 @Table(schema = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseTimeEntity implements Persistable<Long> {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,20 +52,6 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<UserAuth> userAuth = new ArrayList<>();
-
-
-    @Override
-    public Long getId() {
-        return null;
-    }
-
-    @Override
-    public boolean isNew() {
-        return false;
-    }
-
 
     @Builder
     private Member(String email, String name, String nickname,
@@ -78,6 +64,17 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
         this.accessedAt = accessedAt;
     }
 
+    public static Member of(String email, String name, String nickname) {
+        return Member.builder()
+                .email(email)
+                .name(name != null ? name : nickname)
+                .nickname(nickname)
+                .memberStatus(MemberStatus.LOCKED)
+                .optionalTermsAgreed(false)
+                .build();
+    }
+
+    // 회원 정보 업데이트
     public void updateMember(String email, String name) {
         this.email = email;
         this.name = name;
@@ -86,11 +83,22 @@ public class Member extends BaseTimeEntity implements Persistable<Long> {
         this.accessedAt = LocalDateTime.now();
     }
 
+    // 약관 동의 정보 업데이트
     public void updateOptionalTermsAgreed(Boolean optionalTermsAgreed) {
         this.optionalTermsAgreed = optionalTermsAgreed;
     }
 
+    // 닉네임 업데이트
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    // 회원 상태 업데이트
+    public void updateMemberStatus() {
+        if (this.optionalTermsAgreed) { // 약관 동의 정보가 true일 경우
+            this.memberStatus = MemberStatus.ACTIVE;
+        } else { // 약관 동의 정보가 false일 경우
+            this.memberStatus = MemberStatus.LOCKED;
+        }
     }
 }

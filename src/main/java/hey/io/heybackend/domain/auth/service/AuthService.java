@@ -19,8 +19,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthRepository authRepository;
     private final UserAuthRepository userAuthRepository;
+    private final AuthRepository authRepository;
+
+    /**
+     * <p>권한 목록</p>
+     *
+     * @param authIds 권한 ID 목록
+     * @return 권한 목록 정보
+     */
+    public List<Auth> getAuthList(List<String> authIds) {
+        return authRepository.findByAuthIdIn(authIds);
+    }
+
+    /**
+     * <p>권한 저장</p>
+     *
+     * @param userId 회원 ID
+     * @param auths 권한 목록
+     */
+    @Transactional
+    public void insertUserAuth(String userId, List<Auth> auths) {
+        List<UserAuth> userAuths = auths.stream()
+                .map(auth -> UserAuth.of(userId, auth))
+                .toList();
+        userAuthRepository.saveAll(userAuths);
+    }
 
     /**
      * <p>계층화 권한 목록</p>
@@ -31,17 +55,5 @@ public class AuthService {
         return authRepository.selectHierarchicalAuthList();
     }
 
-    @Transactional
-    public void insertUserAuth(Member member) {
-        Auth memberSnsAuth = authRepository.findById(AuthType.MEMBER_SNS.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
-        Auth isAuthenticatedFullyAuth = authRepository.findById(AuthType.IS_AUTHENTICATED_FULLY.getCode()).orElseThrow(() -> new EntityNotFoundException(ErrorCode.AUTH_NOT_FOUND));
 
-        String userId = String.valueOf(member.getMemberId());
-
-        UserAuth memberSnsUserAuth = UserAuth.of(userId, memberSnsAuth);
-        UserAuth IsAuthenticatedFullyUserAuth = UserAuth.of(userId, isAuthenticatedFullyAuth);
-
-        userAuthRepository.save(memberSnsUserAuth);
-        userAuthRepository.save(IsAuthenticatedFullyUserAuth);
-    }
 }

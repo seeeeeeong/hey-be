@@ -9,7 +9,7 @@ import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistListResponse;
 import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistSearchCondition;
 import hey.io.heybackend.domain.artist.service.ArtistService;
-import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,30 +33,30 @@ public class ArtistController {
      * <p>아티스트 목록</p>
      *
      * @param searchCondition 조회 조건
-     * @param memberDto       회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @param pageRequest     페이징 정보
      * @return 아티스트 목록
      */
     @GetMapping
     @Operation(summary = "아티스트 목록", description = "아티스트 목록을 조회합니다.")
     public ApiResponse<SliceResponse<ArtistListResponse>> searchArtistList(
-        @ParameterObject ArtistSearchCondition searchCondition, @Parameter(hidden = true) MemberDto memberDto,
+        @ParameterObject ArtistSearchCondition searchCondition, @Parameter(hidden = true) AuthenticatedMember authenticatedMember,
         @Valid @ParameterObject PageRequest pageRequest) {
-        return ApiResponse.success(artistService.searchArtistSliceList(searchCondition, memberDto, pageRequest));
+        return ApiResponse.success(artistService.searchArtistSliceList(searchCondition, authenticatedMember, pageRequest));
     }
 
     /**
      * <p>아티스트 상세</p>
      *
      * @param artistId  아티스트 ID
-     * @param memberDto 회원 정보
+     * @param authenticatedMember 인증 회원 정보
      * @return 아티스트 상세 정보
      */
     @Operation(summary = "아티스트 상세", description = "아티스트 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
     @ApiErrorCode(ErrorCode.ARTIST_NOT_FOUND)
     public ApiResponse<ArtistDetailResponse> getArtistDetail(@PathVariable("id") Long artistId,
-        @Parameter(hidden = true) MemberDto memberDto) {
-        return ApiResponse.success(artistService.getArtistDetail(artistId, memberDto));
+        @Parameter(hidden = true) AuthenticatedMember authenticatedMember) {
+        return ApiResponse.success(artistService.getArtistDetail(artistId, authenticatedMember));
     }
 }

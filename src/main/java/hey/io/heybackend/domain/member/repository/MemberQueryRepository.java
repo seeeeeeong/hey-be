@@ -1,12 +1,40 @@
 package hey.io.heybackend.domain.member.repository;
 
 
+import hey.io.heybackend.domain.member.dto.MemberDto;
+import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
 import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface MemberQueryRepository {
+
+
+    /**
+     * <p>회원 정보</p>
+     *
+     * @param providerUid
+     * @return 회원 정보
+     */
+    Optional<Member> selectMemberByProviderUid(String providerUid);
+
+    /**
+     * <p>회원 정보</p>
+     *
+     * @param refreshToken refresh 토큰
+     * @return 회원 정보
+     */
+    Optional<Member> selectMemberByRefreshToken(String refreshToken);
+
+    /**
+     * <p>회원 상세</p>
+     *
+     * @param memberId 회원 ID
+     * @return 회원 상세 정보
+     */
+    MemberDetailResponse selectMemberDetail(Long memberId);
 
     /**
      * <p>사용자 권한 정보</p>
@@ -16,11 +44,14 @@ public interface MemberQueryRepository {
      */
     List<String> selectUserAuthList(Long memberId);
 
+
     /**
-     * <p>refreshToken을 가지는 Member 조회</p>
+     * <p>회원 관심 목록</p>
      *
-     * @param refreshToken
-     * @return Optional<Member>
+     * @param category 카테고리
+     * @param memberId 회원 ID
+     * @return 회원 관심 목록 정보
      */
-    Optional<Member> findMemberByRefreshToken(String refreshToken);
+    List<String> selectMemberInterestList(InterestCategory category, Long memberId);
+
 }

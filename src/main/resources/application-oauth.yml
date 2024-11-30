@@ -1,43 +1,32 @@
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: ${KAKAO_REDIRECT_URI}
-            client-authentication-method: client_secret_post
-            authorization-grant-type: authorization_code
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URI}
-            scope:
-              - email
-              - profile
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    token-url: ${GOOGLE_TOKEN_URL}
+    user-info-url: ${GOOGLE_USER_INFO_URL}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
 
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: ${KAKAO_TOKEN_URL}
-            user-info-uri: ${KAKAO_USER_INFO_URL}
-            user_name_attribute: id
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    token-url: ${KAKAO_TOKEN_URL}
+    user-info-url: ${KAKAO_USER_INFO_URL}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
 
-apple:
-  url: https://appleid.apple.com
-  path: static/apple/AuthKey_${APPLE_KEY_ID}.p8
-  cid: ${APPLE_CLIENT_ID}
-  tid: ${APPLE_TEAM_ID}
-  kid: ${APPLE_KEY_ID}
+  apple:
+    client-id: ${APPLE_CLIENT_ID}
+    key-id: ${APPLE_KEY_ID}
+    team-id: ${APPLE_TEAM_ID}
+    private-key: ${APPLE_PRIVATE_KEY}
+    public-key-url: ${APPLE_PUBLIC_KEY_URL}
+    token-url: ${APPLE_TOKEN_URL}
+    redirect-uri: ${APPLE_REDIRECT_URI}
 
 jwt:
   secret: ${JWT_SECRET}
-
   access:
     expiration: 3600000
     header: Authorization
-
   refresh:
     expiration: 5184000000
     header: Authorization-refresh

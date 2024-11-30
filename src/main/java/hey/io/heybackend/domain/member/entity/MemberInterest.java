@@ -1,14 +1,12 @@
 package hey.io.heybackend.domain.member.entity;
 
-import hey.io.heybackend.common.entity.BaseEntity;
 import hey.io.heybackend.common.entity.BaseTimeEntity;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(schema = "member")
@@ -25,19 +23,20 @@ public class MemberInterest extends BaseTimeEntity {
     private Member member;
 
     @Column(nullable = false)
-    private String interestCategory;
+    @Enumerated(EnumType.STRING)
+    private InterestCategory interestCategory;
 
     @Column(nullable = false)
     private String interestCode;
 
     @Builder
-    private MemberInterest(Member member, String interestCategory, String interestCode) {
+    private MemberInterest(Member member, InterestCategory interestCategory, String interestCode) {
         this.member = member;
         this.interestCategory = interestCategory;
         this.interestCode = interestCode;
     }
 
-    public static MemberInterest of(Member member, String interestCategory, String interestCode) {
+    public static MemberInterest of(Member member, InterestCategory interestCategory, String interestCode) {
         return MemberInterest.builder()
                 .member(member)
                 .interestCategory(interestCategory)

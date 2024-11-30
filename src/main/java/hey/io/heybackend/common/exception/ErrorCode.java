@@ -20,6 +20,7 @@ public enum ErrorCode {
     API_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 API를 찾을 수 없습니다."),
     QUERY_PARAMETER_REQUIRED(HttpStatus.BAD_REQUEST, "쿼리 파라미터가 필요한 API입니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
+    PARSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"파싱에 실패했습니다."),
 
     // Authorization
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
@@ -52,6 +53,13 @@ public enum ErrorCode {
 
     // Follow
     FOLLOW_ALREADY_EXIST(HttpStatus.CONFLICT, "팔로우가 이미 존재합니다."),
+
+    // OAuth
+    UNSUPPORTED_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다."),
+
+    // MEMBER
+    DUPLICATED_NICKNAME(HttpStatus.CONFLICT, "중복된 닉네임입니다."),
+
 
     ;
 

@@ -1,20 +1,19 @@
 package hey.io.heybackend.common.config.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hey.io.heybackend.common.config.jwt.JwtTokenProvider;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
+import hey.io.heybackend.common.jwt.JwtTokenProvider;
+import hey.io.heybackend.common.jwt.dto.TokenDto;
+import hey.io.heybackend.common.jwt.service.TokenService;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.service.MemberQueryService;
-import hey.io.heybackend.domain.token.dto.TokenDto;
-import hey.io.heybackend.domain.token.service.TokenService;
+import hey.io.heybackend.domain.oauth.service.OAuthLoginService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -28,10 +27,11 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
-    private final MemberQueryService memberQueryService;
-    private final TokenService tokenService;
-
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final TokenService tokenService;
+    private final OAuthLoginService oAuthLoginService;
+
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -39,48 +39,51 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            // 1. Request Header에서 refreshToken 추출
+            // refreshToken 토큰 추출, 유효성 검사
             String refreshToken = jwtTokenProvider.extractRefreshToken(request)
                     .filter(jwtTokenProvider::validateToken)
                     .orElse(null);
 
-            // 2.1 refreshToken 존재할 경우
+            // refreshToken이 존재하면, accessToken 토큰 재발급
             if (refreshToken != null) {
-                // refreshToken 검증, 토큰 재발급
                 checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
                 return;
             }
 
-            // 2.2 refreshToken 존재하지 않을 경우
+            // refreshToen이 존재하지 않으면, accessToken 인증
             if (refreshToken == null) {
-                // accessToken 검증, 인증 성공/실패 처리
                 checkAccessTokenAndAuthentication(request, response, filterChain);
             }
+
         } catch (UnAuthorizedException e) {
             handleUnauthorizedException(response, e);
         }
     }
 
+    // accessToken 재발급
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        Member member = memberQueryService.getMemberByRefreshToken(refreshToken);
+        Member member = oAuthLoginService.getMemberByRefreshToken(refreshToken);
 
-        TokenDto tokenDto = tokenService.reIssueToken(member);
+        TokenDto tokenDto = tokenService.insertToken(member);
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
 
+    // accessToken 인증
     private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                                   FilterChain filterChain) throws ServletException, IOException {
         jwtTokenProvider.extractAccessToken(request)
                         .filter(jwtTokenProvider::validateToken)
-                                .ifPresent(accessToken -> saveAuthentication(jwtTokenProvider.getAuthentication(accessToken)));
+                        .ifPresent(accessToken -> saveAuthentication(jwtTokenProvider.getAuthentication(accessToken)));
 
         filterChain.doFilter(request, response);
     }
 
+    // 인증 객체 저장
     private void saveAuthentication(Authentication authentication) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    // 인증 실패 에러
     private void handleUnauthorizedException(HttpServletResponse response, UnAuthorizedException e) throws IOException {
         ApiResponse<?> apiResponse = ApiResponse.failure(e.getErrorCode());
 
