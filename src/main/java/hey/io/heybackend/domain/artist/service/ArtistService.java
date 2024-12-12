@@ -2,7 +2,6 @@ package hey.io.heybackend.domain.artist.service;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
-import hey.io.heybackend.common.jwt.dto.TokenDto;
 import hey.io.heybackend.common.response.SliceResponse;
 import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistDetailResponse;
 import hey.io.heybackend.domain.artist.dto.ArtistDto.ArtistListResponse;
@@ -12,6 +11,7 @@ import hey.io.heybackend.domain.artist.repository.ArtistRepository;
 import hey.io.heybackend.domain.file.dto.FileDto;
 import hey.io.heybackend.domain.file.enums.EntityType;
 import hey.io.heybackend.domain.file.service.FileService;
+import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceListResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceSearchCondition;
 import hey.io.heybackend.domain.performance.service.PerformanceArtistService;
@@ -32,15 +32,15 @@ public class ArtistService {
      * <p>아티스트 목록 (Slice)</p>
      *
      * @param searchCondition 조회 조건
-     * @param tokenDto        토큰 정보
+     * @param authenticatedMember 회원 정보
      * @param pageable        페이징 정보
      * @return 아티스트 목록
      */
     public SliceResponse<ArtistListResponse> searchArtistSliceList(ArtistSearchCondition searchCondition,
-        TokenDto tokenDto, Pageable pageable) {
+        AuthenticatedMember authenticatedMember, Pageable pageable) {
         // 1. 아티스트 목록 조회
         SliceResponse<ArtistListResponse> artistList = artistRepository.selectArtistSliceList(searchCondition,
-            tokenDto.getMemberId(), pageable);
+            authenticatedMember.getMemberId(), pageable);
 
         List<Long> artistIds = artistList.getContent().stream()
             .map(ArtistListResponse::getArtistId)
@@ -57,12 +57,12 @@ public class ArtistService {
      * <p>아티스트 상세</p>
      *
      * @param artistId 공연 ID
-     * @param tokenDto 토큰 정보
+     * @param authenticatedMember 회원 정보
      * @return 아티스트 상세 정보
      */
-    public ArtistDetailResponse getArtistDetail(Long artistId, TokenDto tokenDto) {
+    public ArtistDetailResponse getArtistDetail(Long artistId, AuthenticatedMember authenticatedMember) {
         // 1. 아티스트 상세 정보 조회
-        ArtistDetailResponse artistDetail = artistRepository.selectArtistDetail(artistId, tokenDto.getMemberId());
+        ArtistDetailResponse artistDetail = artistRepository.selectArtistDetail(artistId, authenticatedMember.getMemberId());
         if (artistDetail == null) {
             throw new EntityNotFoundException(ErrorCode.ARTIST_NOT_FOUND);
         }
@@ -75,7 +75,7 @@ public class ArtistService {
 
         // 4. 아티스트 공연 목록 조회
         List<PerformanceListResponse> performanceList = performanceArtistService.searchPerformanceList(
-            PerformanceSearchCondition.of(artistId), tokenDto);
+            PerformanceSearchCondition.of(artistId), authenticatedMember);
 
         // 5. 목록 데이터 생성
         return ArtistDetailResponse.of(artistDetail, genreList, fileList, performanceList);

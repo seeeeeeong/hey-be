@@ -1,11 +1,9 @@
 package hey.io.heybackend.domain.member.repository;
 
 
-import hey.io.heybackend.domain.member.dto.MemberDto;
-import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
-
+import hey.io.heybackend.domain.mypage.dto.MyPageDto.MemberDetailResponse;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,20 +1,19 @@
 package hey.io.heybackend.domain.member.repository;
 
 
-import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
-import hey.io.heybackend.domain.member.dto.MemberDto;
-import hey.io.heybackend.domain.member.dto.QMemberDto_MemberDetailResponse;
-import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.member.enums.InterestCategory;
-
-import java.util.List;
-import java.util.Optional;
-
-import static hey.io.heybackend.common.jwt.entity.QToken.token;
-import static hey.io.heybackend.domain.auth.entity.QUserAuth.userAuth;
 import static hey.io.heybackend.domain.member.entity.QMember.member;
 import static hey.io.heybackend.domain.member.entity.QMemberInterest.memberInterest;
 import static hey.io.heybackend.domain.member.entity.QSocialAccount.socialAccount;
+import static hey.io.heybackend.domain.user.entity.QToken.token;
+import static hey.io.heybackend.domain.user.entity.QUserAuth.userAuth;
+
+import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
+import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.enums.InterestCategory;
+import hey.io.heybackend.domain.mypage.dto.MyPageDto.MemberDetailResponse;
+import hey.io.heybackend.domain.mypage.dto.QMyPageDto_MemberDetailResponse;
+import java.util.List;
+import java.util.Optional;
 
 
 public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implements MemberQueryRepository {
@@ -63,8 +62,8 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
      * @return 회원 상세 정보
      */
     @Override
-    public MemberDto.MemberDetailResponse selectMemberDetail(Long memberId) {
-        return select(new QMemberDto_MemberDetailResponse(
+    public MemberDetailResponse selectMemberDetail(Long memberId) {
+        return select(new QMyPageDto_MemberDetailResponse(
                 member.memberId,
                 member.nickname,
                 member.accessedAt

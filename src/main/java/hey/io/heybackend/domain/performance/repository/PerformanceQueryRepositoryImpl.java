@@ -1,6 +1,6 @@
 package hey.io.heybackend.domain.performance.repository;
 
-import static hey.io.heybackend.domain.follow.entity.QFollow.follow;
+import static hey.io.heybackend.domain.member.entity.QFollow.follow;
 import static hey.io.heybackend.domain.performance.entity.QPerformance.performance;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceGenres.performanceGenres;
@@ -17,7 +17,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.common.response.SliceResponse;
-import hey.io.heybackend.domain.follow.enums.FollowType;
+import hey.io.heybackend.domain.member.enums.FollowType;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.PriceDto;
 import hey.io.heybackend.domain.performance.dto.PerformanceDto.PerformanceDetailResponse.TicketingDto;

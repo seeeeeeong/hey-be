@@ -1,7 +1,6 @@
 package hey.io.heybackend.domain.auth.repository;
 
 import hey.io.heybackend.domain.auth.dto.AuthDto;
-
 import java.util.List;
 
 public interface AuthQueryRepository {

@@ -4,9 +4,6 @@ import hey.io.heybackend.common.mapper.EnumMapperType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.lang.model.type.ArrayType;
-import java.util.NoSuchElementException;
-
 @Getter
 @RequiredArgsConstructor
 public enum PerformanceStatus implements EnumMapperType {

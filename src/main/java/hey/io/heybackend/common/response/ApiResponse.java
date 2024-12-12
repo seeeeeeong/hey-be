@@ -3,12 +3,11 @@ package hey.io.heybackend.common.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import hey.io.heybackend.common.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
-
-import java.util.List;
 
 @Getter
 @Builder

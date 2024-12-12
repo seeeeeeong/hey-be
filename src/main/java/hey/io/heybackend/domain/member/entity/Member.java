@@ -2,16 +2,19 @@ package hey.io.heybackend.domain.member.entity;
 
 import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Persistable;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(schema = "member")
@@ -49,9 +52,6 @@ public class Member extends BaseTimeEntity {
     @Column(name = "accessed_at")
     private LocalDateTime accessedAt;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SocialAccount> socialAccounts = new ArrayList<>();
-
 
     @Builder
     private Member(String email, String name, String nickname,
@@ -69,7 +69,7 @@ public class Member extends BaseTimeEntity {
                 .email(email)
                 .name(name != null ? name : nickname)
                 .nickname(nickname)
-                .memberStatus(MemberStatus.LOCKED)
+                .memberStatus(MemberStatus.INIT)
                 .optionalTermsAgreed(false)
                 .build();
     }
@@ -98,7 +98,7 @@ public class Member extends BaseTimeEntity {
         if (this.optionalTermsAgreed) { // 약관 동의 정보가 true일 경우
             this.memberStatus = MemberStatus.ACTIVE;
         } else { // 약관 동의 정보가 false일 경우
-            this.memberStatus = MemberStatus.LOCKED;
+            this.memberStatus = MemberStatus.INIT;
         }
     }
 }

@@ -7,7 +7,6 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -37,16 +36,12 @@ public class QArtist extends EntityPathBase<Artist> {
 
     public final StringPath engName = createString("engName");
 
-    public final ListPath<ArtistGenres, QArtistGenres> genres = this.<ArtistGenres, QArtistGenres>createList("genres", ArtistGenres.class, QArtistGenres.class, PathInits.DIRECT2);
-
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath name = createString("name");
 
     public final StringPath orgName = createString("orgName");
-
-    public final ListPath<hey.io.heybackend.domain.performance.entity.PerformanceArtist, hey.io.heybackend.domain.performance.entity.QPerformanceArtist> performanceArtists = this.<hey.io.heybackend.domain.performance.entity.PerformanceArtist, hey.io.heybackend.domain.performance.entity.QPerformanceArtist>createList("performanceArtists", hey.io.heybackend.domain.performance.entity.PerformanceArtist.class, hey.io.heybackend.domain.performance.entity.QPerformanceArtist.class, PathInits.DIRECT2);
 
     public final NumberPath<Integer> popularity = createNumber("popularity", Integer.class);
 

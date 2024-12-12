@@ -4,14 +4,20 @@ import hey.io.heybackend.common.entity.BaseTimeEntity;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.artist.enums.ArtistType;
 import hey.io.heybackend.domain.file.entity.File;
-import hey.io.heybackend.domain.performance.entity.PerformanceArtist;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(schema = "artist")
@@ -46,12 +52,6 @@ public class Artist extends BaseTimeEntity {
 
     @Transient
     private List<File> files = new ArrayList<>();
-
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ArtistGenres> genres = new ArrayList<>();
-
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PerformanceArtist> performanceArtists = new ArrayList<>();
 
 }
 

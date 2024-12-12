@@ -31,14 +31,10 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final StringPath engName = createString("engName");
 
-    public final ListPath<PerformanceGenres, QPerformanceGenres> genres = this.<PerformanceGenres, QPerformanceGenres>createList("genres", PerformanceGenres.class, QPerformanceGenres.class, PathInits.DIRECT2);
-
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath name = createString("name");
-
-    public final ListPath<PerformanceArtist, QPerformanceArtist> performanceArtists = this.<PerformanceArtist, QPerformanceArtist>createList("performanceArtists", PerformanceArtist.class, QPerformanceArtist.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> performanceId = createNumber("performanceId", Long.class);
 
@@ -50,13 +46,9 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final QPlace place;
 
-    public final ListPath<PerformancePrice, QPerformancePrice> prices = this.<PerformancePrice, QPerformancePrice>createList("prices", PerformancePrice.class, QPerformancePrice.class, PathInits.DIRECT2);
-
     public final StringPath runningTime = createString("runningTime");
 
     public final DatePath<java.time.LocalDate> startDate = createDate("startDate", java.time.LocalDate.class);
-
-    public final ListPath<PerformanceTicketing, QPerformanceTicketing> ticketings = this.<PerformanceTicketing, QPerformanceTicketing>createList("ticketings", PerformanceTicketing.class, QPerformanceTicketing.class, PathInits.DIRECT2);
 
     public final EnumPath<hey.io.heybackend.domain.performance.enums.TicketStatus> ticketStatus = createEnum("ticketStatus", hey.io.heybackend.domain.performance.enums.TicketStatus.class);
 
