@@ -33,7 +33,8 @@ public class LoginController {
     @GetMapping("/login/oauth2/code/{provider}")
     @Operation(summary = "소셜 로그인", description = "소셜 로그인을 진행합니다.")
     public ApiResponse<TokenDto> login(@PathVariable(name = "provider") String provider,
-                                       @RequestParam(name = "code") String code) throws ParseException, IOException, JOSEException {
+                                       @RequestParam(name = "code") String code)
+        throws ParseException, IOException, JOSEException {
         return ApiResponse.success(loginService.login(provider, code));
     }
 }
