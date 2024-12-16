@@ -44,6 +44,13 @@ public class LoginService {
 
     private final TokenService tokenService;
 
+    /**
+     * <p>로그인</p>
+     *
+     * @param provider kakao, google, apple
+     * @param code Authorization Code
+     * @return 발급 받은 토큰 정보
+     */
     @Transactional
     public TokenDto login(Provider provider, String code) throws ParseException, IOException, JOSEException {
         String token = getAccessTokenOrIdToken(provider, code);
@@ -120,6 +127,7 @@ public class LoginService {
         socialAccountRepository.saveAndFlush(socialAccount);
 
         return member;
+
     }
 
     private String getAccessTokenOrIdToken(Provider provider, String code) throws IOException, ParseException, JOSEException {

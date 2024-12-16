@@ -1,9 +1,12 @@
 package hey.io.heybackend.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hey.io.heybackend.common.exception.ErrorCode;
+import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.domain.member.entity.Member;
+import hey.io.heybackend.domain.member.repository.MemberRepository;
 import hey.io.heybackend.domain.member.service.MemberService;
 import hey.io.heybackend.domain.user.dto.TokenDto;
 import hey.io.heybackend.domain.user.service.TokenService;
@@ -27,7 +30,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenService tokenService;
-    private final MemberService memberService;
+
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -58,7 +62,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     // accessToken 재발급
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        Member member = memberService.getMemberByRefreshToken(refreshToken);
+        Member member = memberRepository.selectMemberByRefreshToken(refreshToken)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         TokenDto tokenDto = tokenService.insertToken(member);
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());

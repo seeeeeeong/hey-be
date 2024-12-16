@@ -75,8 +75,13 @@ public class Member extends BaseTimeEntity {
     }
 
     // 약관 동의 정보 업데이트
-    public void updateOptionalTermsAgreed(Boolean optionalTermsAgreed) {
-        this.basicTermsAgreed = optionalTermsAgreed;
+    public void setBasicTermsAgreed(Boolean basicTermsAgreed) {
+        this.basicTermsAgreed = basicTermsAgreed;
+    }
+
+    // 회원 상태 업데이트
+    public void updateMemberStatus(MemberStatus memberStatus) {
+        this.memberStatus = memberStatus;
     }
 
     // 닉네임 업데이트
@@ -84,12 +89,4 @@ public class Member extends BaseTimeEntity {
         this.nickname = nickname;
     }
 
-    // 회원 상태 업데이트
-    public void updateMemberStatus() {
-        if (this.basicTermsAgreed) { // 약관 동의 정보가 true일 경우
-            this.memberStatus = MemberStatus.ACTIVE;
-        } else { // 약관 동의 정보가 false일 경우
-            this.memberStatus = MemberStatus.INIT;
-        }
-    }
 }

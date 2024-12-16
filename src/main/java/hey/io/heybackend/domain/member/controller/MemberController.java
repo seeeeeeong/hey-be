@@ -5,8 +5,8 @@ import hey.io.heybackend.common.resolver.AuthUser;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.swagger.ApiErrorCode;
 import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
-import hey.io.heybackend.domain.member.dto.MemberDto;
-import hey.io.heybackend.domain.member.dto.MemberDto.MemberTermsRequest;
+import hey.io.heybackend.domain.member.dto.MemberInterestRequest;
+import hey.io.heybackend.domain.member.dto.MemberTermsRequest;
 import hey.io.heybackend.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -58,7 +58,7 @@ public class MemberController {
   @Operation(summary = "관심 정보", description = "관심 정보를 생성합니다.")
   public ApiResponse<Long> createMemberInterest(
       @AuthUser @Parameter(hidden = true) AuthenticatedMember authenticatedMember,
-      @RequestBody @Valid MemberDto.MemberInterestRequest memberInterestRequest) {
+      @RequestBody @Valid MemberInterestRequest memberInterestRequest) {
     return ApiResponse.created(
         memberService.createMemberInterest(authenticatedMember, memberInterestRequest));
   }

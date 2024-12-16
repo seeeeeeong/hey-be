@@ -3,11 +3,12 @@ package hey.io.heybackend.domain.member.service;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
-import hey.io.heybackend.domain.member.dto.MemberDto.MemberInterestRequest;
-import hey.io.heybackend.domain.member.dto.MemberDto.MemberTermsRequest;
+import hey.io.heybackend.domain.member.dto.MemberInterestRequest;
+import hey.io.heybackend.domain.member.dto.MemberTermsRequest;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.entity.MemberInterest;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
+import hey.io.heybackend.domain.member.enums.MemberStatus;
 import hey.io.heybackend.domain.member.repository.MemberInterestRepository;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
 import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
@@ -34,16 +35,18 @@ public class MemberService {
      */
     @Transactional
     public Long modifyMemberTerms(AuthenticatedMember authenticatedMember, MemberTermsRequest memberTermsRequest) {
-        // 1. 회원 조회
+
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2. 약관 동의 여부 수정
-        member.updateOptionalTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
+        member.setBasicTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
 
-        // 3. 회원 상태 수정
-        member.updateMemberStatus();
+        if (memberTermsRequest.getBasicTermsAgreed()) {
+            member.updateMemberStatus(MemberStatus.ACTIVE);
+        }
+
         return member.getMemberId();
+
     }
 
     /**
@@ -64,34 +67,28 @@ public class MemberService {
         memberInterestRepository.deleteByMember(member);
 
         // 3. 관심 정보 등록
-        List<MemberInterest> newMemberInterests = convertToMemberInterests(member, memberInterestRequest);
-        memberInterestRepository.saveAll(newMemberInterests);
-
-        return member.getMemberId();
-    }
-
-    // refreshToken으로 회원 조회
-    public Member getMemberByRefreshToken(String refreshToken) {
-        return memberRepository.selectMemberByRefreshToken(refreshToken)
-            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-    }
-
-    // MemberInterest 변환
-    private List<MemberInterest> convertToMemberInterests(Member member, MemberInterestRequest memberInterestRequest) {
-        List<MemberInterest> memberInterests = new ArrayList<>();
-
         if (memberInterestRequest.getType() != null) {
-            for (PerformanceType type : memberInterestRequest.getType()) {
-                memberInterests.add(MemberInterest.of(member, InterestCategory.TYPE, type.getCode()));
-            }
+            memberInterestRequest.getType().forEach(type -> {
+                MemberInterest memberInterest = MemberInterest.builder()
+                    .member(member)
+                    .interestCategory(InterestCategory.TYPE)
+                    .interestCode(type.getCode())
+                    .build();
+                memberInterestRepository.save(memberInterest);
+            });
         }
 
         if (memberInterestRequest.getGenre() != null) {
-            for (PerformanceGenre genre : memberInterestRequest.getGenre()) {
-                memberInterests.add(MemberInterest.of(member, InterestCategory.GENRE, genre.getCode()));
-            }
+            memberInterestRequest.getGenre().forEach(genre -> {
+                MemberInterest memberInterest = MemberInterest.builder()
+                    .member(member)
+                    .interestCategory(InterestCategory.GENRE)
+                    .interestCode(genre.getCode())
+                    .build();
+                memberInterestRepository.save(memberInterest);
+            });
         }
-        return memberInterests;
-    }
 
+        return member.getMemberId();
+    }
 }

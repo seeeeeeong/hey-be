@@ -117,6 +117,7 @@ public class OAuthClient {
         return oAuth2Util.getAccessToken(googleProperties.tokenUrl(), headers, body);
     }
 
+    // 구글 회원 정보 요청
     public SocialUserInfo getGoogleUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -161,6 +162,7 @@ public class OAuthClient {
         return idToken;
     }
 
+    // 애플 회원 정보 요청
     public SocialUserInfo getAppleUserInfo(String idToken) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(idToken);
