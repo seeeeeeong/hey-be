@@ -3,6 +3,7 @@ package hey.io.heybackend.domain.user.service;
 import hey.io.heybackend.common.config.component.AvailableRoleHierarchy;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
+import hey.io.heybackend.domain.auth.enums.AuthId;
 import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
@@ -53,8 +54,8 @@ public class UserService implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         // 사용자별 권한 조회
-        List<String> userAuthList = memberRepository.selectUserAuthList(Long.valueOf(userId));
-        userAuthList.forEach(authId -> authorities.add(new SimpleGrantedAuthority(authId)));
+        List<AuthId> userAuthList = memberRepository.selectUserAuthList(Long.valueOf(userId));
+        userAuthList.forEach(authId -> authorities.add(new SimpleGrantedAuthority(authId.getCode())));
 
         // 연결된 모든 하위 계층 권한 포함
         return availableRoleHierarchy.getReachableAuthorities(authorities);
@@ -71,7 +72,7 @@ public class UserService implements UserDetailsService {
         List<UserAuth> userAuthList = userAuthRepository.findByUserId(userId);
 
         return userAuthList.stream()
-            .map(userAuth -> new SimpleGrantedAuthority(userAuth.getAuth().getAuthId()))
+            .map(userAuth -> new SimpleGrantedAuthority(userAuth.getAuthId().getCode()))
             .collect(Collectors.toList());
     }
 

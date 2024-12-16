@@ -44,12 +44,4 @@ public class MemberPush {
         this.pushEnabled = pushEnabled;
     }
 
-    public static MemberPush of(Member member) {
-        return MemberPush.builder()
-                .member(member)
-                .pushType(PushType.PERFORMANCE)
-                .pushEnabled(true)
-                .build();
-    }
-
 }

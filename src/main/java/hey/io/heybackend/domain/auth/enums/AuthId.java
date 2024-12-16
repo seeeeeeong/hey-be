@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum AuthType implements EnumMapperType {
+public enum AuthId implements EnumMapperType {
 
     SUPER_ADMIN("슈퍼 관리자 권한"),
     PERFORMANCE_MANAGER("공연 담당자 권한"),

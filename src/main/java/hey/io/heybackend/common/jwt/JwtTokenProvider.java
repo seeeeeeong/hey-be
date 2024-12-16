@@ -104,7 +104,7 @@ public class JwtTokenProvider {
         // Access Token 생성
         String accessToken = Jwts.builder()
             .setHeaderParam("typ", "JWT")
-            .setSubject(member.getMemberId().toString())
+            .setSubject(String.valueOf(member.getMemberId()))
             .addClaims(getClaims(member))
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + accessTokenTime))

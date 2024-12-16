@@ -28,7 +28,12 @@ public class TokenService {
         TokenDto tokenDto = jwtTokenProvider.createToken(member);
         tokenRepository.deleteByMemberId(member.getMemberId());
 
-        tokenRepository.saveAndFlush(Token.of(member.getMemberId(), tokenDto.getRefreshToken()));
+        Token token = Token.builder()
+                .memberId(member.getMemberId())
+                .refreshToken(tokenDto.getRefreshToken())
+                .build();
+
+        tokenRepository.saveAndFlush(token);
         return tokenDto;
     }
 }

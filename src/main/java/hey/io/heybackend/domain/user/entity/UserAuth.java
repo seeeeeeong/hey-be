@@ -1,8 +1,11 @@
 package hey.io.heybackend.domain.user.entity;
 
 import hey.io.heybackend.domain.auth.entity.Auth;
+import hey.io.heybackend.domain.auth.enums.AuthId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,20 +36,14 @@ public class UserAuth {
     @Column(name = "user_id")
     private String userId; // 사용자 엔티티
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auth_id")
-    private Auth auth; // 권한 엔티티
+    @Enumerated(EnumType.STRING) // Enum 값을 문자열로 저장
+    @Column(name = "auth_id")
+    private AuthId authId;
 
     @Builder
-    private UserAuth(String userId, Auth auth) {
+    public UserAuth(String userId, AuthId authId) {
         this.userId = userId;
-        this.auth = auth;
+        this.authId = authId;
     }
 
-    public static UserAuth of(String userId, Auth auth) {
-        return UserAuth.builder()
-                .userId(userId)
-                .auth(auth)
-                .build();
-    }
 }

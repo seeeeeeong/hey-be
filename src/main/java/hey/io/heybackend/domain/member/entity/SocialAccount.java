@@ -47,14 +47,6 @@ public class SocialAccount extends BaseTimeEntity {
         this.providerUid = providerUid;
     }
 
-    public static SocialAccount of(Member member, Provider provider, String providerUid) {
-        return SocialAccount.builder()
-                .member(member)
-                .provider(provider)
-                .providerUid(providerUid)
-                .build();
-    }
-
     public void updateSocialAccount(Provider provider, String providerUid) {
         this.provider = provider;
         this.providerUid = providerUid;

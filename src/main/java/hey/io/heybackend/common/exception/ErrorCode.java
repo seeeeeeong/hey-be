@@ -50,6 +50,7 @@ public enum ErrorCode {
     AUTH_NOT_FOUND(HttpStatus.NOT_FOUND, "권한 정보를 찾을 수 없습니다."),
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 정보를 찾을 수 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."),
+    SOCIAL_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "소셜 계정 정보를 찾을 수 없습니다."),
 
 
     // Follow
@@ -61,7 +62,6 @@ public enum ErrorCode {
     // MEMBER
     DUPLICATED_NICKNAME(HttpStatus.CONFLICT, "중복된 닉네임입니다."),
     INCORRECT_USER(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
-
 
     ;
 

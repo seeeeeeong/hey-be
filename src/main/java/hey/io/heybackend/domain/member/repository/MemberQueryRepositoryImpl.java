@@ -8,6 +8,7 @@ import static hey.io.heybackend.domain.user.entity.QToken.token;
 import static hey.io.heybackend.domain.user.entity.QUserAuth.userAuth;
 
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
+import hey.io.heybackend.domain.auth.enums.AuthId;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
 import hey.io.heybackend.domain.mypage.dto.MyPageDto.MemberDetailResponse;
@@ -79,8 +80,8 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
      * @return 사용자 권한 목록
      */
     @Override
-    public List<String> selectUserAuthList(Long memberId) {
-        return select(userAuth.auth.authId)
+    public List<AuthId> selectUserAuthList(Long memberId) {
+        return select(userAuth.authId)
             .from(userAuth)
             .where(userAuth.userId.eq(String.valueOf(memberId)))
             .fetch();

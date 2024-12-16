@@ -44,48 +44,39 @@ public class Member extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "member_status", nullable = false)
-    private MemberStatus memberStatus = MemberStatus.ACTIVE;
+    private MemberStatus memberStatus;
 
-    @Column(name = "optional_terms_agreed")
-    private Boolean optionalTermsAgreed = true;
+    @Column(name = "basic_terms_agreed")
+    private Boolean basicTermsAgreed;
 
     @Column(name = "accessed_at")
     private LocalDateTime accessedAt;
 
 
     @Builder
-    private Member(String email, String name, String nickname,
-                   MemberStatus memberStatus, boolean optionalTermsAgreed, LocalDateTime accessedAt) {
+    public Member(String email, String name, String nickname,
+                   MemberStatus memberStatus, boolean basicTermsAgreed, LocalDateTime accessedAt) {
         this.email = email;
-        this.name = name;
+        this.name = (name != null) ? name : nickname;
         this.nickname = nickname;
         this.memberStatus = memberStatus;
-        this.optionalTermsAgreed = optionalTermsAgreed;
+        this.basicTermsAgreed = basicTermsAgreed;
         this.accessedAt = accessedAt;
     }
 
-    public static Member of(String email, String name, String nickname) {
-        return Member.builder()
-                .email(email)
-                .name(name != null ? name : nickname)
-                .nickname(nickname)
-                .memberStatus(MemberStatus.INIT)
-                .optionalTermsAgreed(false)
-                .build();
-    }
-
     // 회원 정보 업데이트
-    public void updateMember(String email, String name) {
+    public Member updateMember(String email, String name, MemberStatus memberStatus, Boolean basicTermsAgreed, LocalDateTime accessedAt) {
         this.email = email;
         this.name = name;
-        this.memberStatus = MemberStatus.ACTIVE;
-        this.optionalTermsAgreed = true;
-        this.accessedAt = LocalDateTime.now();
+        this.memberStatus = memberStatus;
+        this.basicTermsAgreed = basicTermsAgreed;
+        this.accessedAt = accessedAt;
+        return this;
     }
 
     // 약관 동의 정보 업데이트
     public void updateOptionalTermsAgreed(Boolean optionalTermsAgreed) {
-        this.optionalTermsAgreed = optionalTermsAgreed;
+        this.basicTermsAgreed = optionalTermsAgreed;
     }
 
     // 닉네임 업데이트
@@ -95,7 +86,7 @@ public class Member extends BaseTimeEntity {
 
     // 회원 상태 업데이트
     public void updateMemberStatus() {
-        if (this.optionalTermsAgreed) { // 약관 동의 정보가 true일 경우
+        if (this.basicTermsAgreed) { // 약관 동의 정보가 true일 경우
             this.memberStatus = MemberStatus.ACTIVE;
         } else { // 약관 동의 정보가 false일 경우
             this.memberStatus = MemberStatus.INIT;

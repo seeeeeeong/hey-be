@@ -36,11 +36,4 @@ public class Token extends BaseTimeEntity {
         this.refreshToken = refreshToken;
     }
 
-    public static Token of(Long memberId, String refreshToken) {
-        return Token.builder()
-                .memberId(memberId)
-                .refreshToken(refreshToken)
-                .build();
-    }
-
 }
