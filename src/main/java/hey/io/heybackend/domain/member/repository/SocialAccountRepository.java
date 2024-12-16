@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long> {
-    Optional<SocialAccount> findByProviderUid(String providerUid);
+    SocialAccount findByProviderUid(String providerUid);
 }

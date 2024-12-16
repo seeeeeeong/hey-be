@@ -49,10 +49,11 @@ public class LoginService {
      *
      * @param provider kakao, google, apple
      * @param code Authorization Code
-     * @return 발급 받은 토큰 정보
+     * @return 발급 토큰 정보
      */
     @Transactional
     public TokenDto login(Provider provider, String code) throws ParseException, IOException, JOSEException {
+
         String token = getAccessTokenOrIdToken(provider, code);
         SocialUserInfo socialUserInfo = getSocialUserInfo(provider, token);
 
@@ -67,6 +68,7 @@ public class LoginService {
         }
 
         return tokenService.insertToken(member);
+
     }
 
     private Member createMember(SocialUserInfo socialUserInfo) {
@@ -121,8 +123,7 @@ public class LoginService {
 
         memberRepository.saveAndFlush(member);
 
-        SocialAccount socialAccount = socialAccountRepository.findByProviderUid(socialUserInfo.providerUid())
-            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.SOCIAL_ACCOUNT_NOT_FOUND));
+        SocialAccount socialAccount = socialAccountRepository.findByProviderUid(socialUserInfo.providerUid());
         socialAccount.updateSocialAccount(socialUserInfo.provider(), socialUserInfo.providerUid());
         socialAccountRepository.saveAndFlush(socialAccount);
 

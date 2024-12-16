@@ -9,6 +9,7 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
+@Schema(description = "관심 정보 목록")
 public class MemberInterestRequest {
 
   @Parameter(description = "관심 유형", array = @ArraySchema(schema = @Schema(implementation = PerformanceType.class)))

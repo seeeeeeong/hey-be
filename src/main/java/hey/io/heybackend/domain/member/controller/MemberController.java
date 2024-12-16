@@ -30,15 +30,15 @@ public class MemberController {
   private final MemberService memberService;
 
   /**
-   * <p>약관 동의 수정</p>
+   * <p>약관 동의</p>
    *
    * @param authenticatedMember 인증 회원 정보
-   * @param memberTermsRequest  약관 동의 정보
+   * @param memberTermsRequest  약관 동의 여부
    * @return 회원 ID
    */
   @PutMapping("/member/terms")
   @ApiErrorCode(ErrorCode.MEMBER_NOT_FOUND)
-  @Operation(summary = "약관 동의", description = "약관 동의 정보를 수정합니다.")
+  @Operation(summary = "약관 동의", description = "약관 동의를 수정합니다.")
   public ApiResponse<Long> modifyMemberTerms(
       @AuthUser @Parameter(hidden = true) AuthenticatedMember authenticatedMember,
       @RequestBody @Valid MemberTermsRequest memberTermsRequest) {
@@ -50,12 +50,12 @@ public class MemberController {
    * <p>관심 정보 등록</p>
    *
    * @param authenticatedMember   인증 회원 정보
-   * @param memberInterestRequest 관심 정보
+   * @param memberInterestRequest 관심 정보 목록
    * @return 회원 ID
    */
   @PostMapping("/member/interests")
   @ApiErrorCode(ErrorCode.MEMBER_NOT_FOUND)
-  @Operation(summary = "관심 정보", description = "관심 정보를 생성합니다.")
+  @Operation(summary = "관심 정보", description = "관심 정보를 등록합니다.")
   public ApiResponse<Long> createMemberInterest(
       @AuthUser @Parameter(hidden = true) AuthenticatedMember authenticatedMember,
       @RequestBody @Valid MemberInterestRequest memberInterestRequest) {

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
+@Schema(description = "약관 동의 여부")
 public class MemberTermsRequest {
 
   @NotNull

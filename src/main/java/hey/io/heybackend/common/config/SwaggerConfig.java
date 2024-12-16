@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
 
-@OpenAPIDefinition(info = @Info(title = "hey-scheduler API 문서",
+@OpenAPIDefinition(info = @Info(title = "hey API 문서",
         description = "Hey! 프로젝트 관련 API 문서입니다.", version = "v1")
 )
 @SecurityScheme(

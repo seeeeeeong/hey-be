@@ -27,18 +27,18 @@ public class MemberService {
     private final MemberInterestRepository memberInterestRepository;
 
     /**
-     * <p>약관 동의 수정</p>
+     * <p>약관 동의</p>
      *
      * @param authenticatedMember 인증 회원 정보
-     * @param memberTermsRequest 약관 동의 정보
+     * @param memberTermsRequest  약관 동의 여부
      * @return 회원 ID
      */
     @Transactional
-    public Long modifyMemberTerms(AuthenticatedMember authenticatedMember, MemberTermsRequest memberTermsRequest) {
+    public Long modifyMemberTerms(AuthenticatedMember authenticatedMember,
+        MemberTermsRequest memberTermsRequest) {
 
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-
         member.setBasicTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
 
         if (memberTermsRequest.getBasicTermsAgreed()) {
@@ -52,12 +52,13 @@ public class MemberService {
     /**
      * <p>관심 정보 등록</p>
      *
-     * @param authenticatedMember 인증 회원 정보
-     * @param memberInterestRequest 관심 정보
+     * @param authenticatedMember   인증 회원 정보
+     * @param memberInterestRequest 관심 정보 목록
      * @return 회원 ID
      */
     @Transactional
-    public Long createMemberInterest(AuthenticatedMember authenticatedMember, MemberInterestRequest memberInterestRequest) {
+    public Long createMemberInterest(AuthenticatedMember authenticatedMember,
+        MemberInterestRequest memberInterestRequest) {
 
         // 1. 회원 조회
         Member member = memberRepository.findById(authenticatedMember.getMemberId())
@@ -67,6 +68,15 @@ public class MemberService {
         memberInterestRepository.deleteByMember(member);
 
         // 3. 관심 정보 등록
+        insertMemberInterests(member, memberInterestRequest);
+
+        return member.getMemberId();
+    }
+
+    // 관심 정보 등록
+    private void insertMemberInterests(Member member, MemberInterestRequest memberInterestRequest) {
+
+        // 관심 유형 저장
         if (memberInterestRequest.getType() != null) {
             memberInterestRequest.getType().forEach(type -> {
                 MemberInterest memberInterest = MemberInterest.builder()
@@ -78,6 +88,7 @@ public class MemberService {
             });
         }
 
+        // 관심 장르 저장
         if (memberInterestRequest.getGenre() != null) {
             memberInterestRequest.getGenre().forEach(genre -> {
                 MemberInterest memberInterest = MemberInterest.builder()
@@ -88,7 +99,5 @@ public class MemberService {
                 memberInterestRepository.save(memberInterest);
             });
         }
-
-        return member.getMemberId();
     }
 }

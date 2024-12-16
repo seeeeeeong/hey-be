@@ -86,7 +86,6 @@ public class OAuthClient {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        // id, email 추출
         try {
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
