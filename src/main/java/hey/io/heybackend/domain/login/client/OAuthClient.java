@@ -11,12 +11,15 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.util.OAuth2Util;
+import hey.io.heybackend.domain.login.dto.SocialUserInfo;
 import hey.io.heybackend.domain.login.properties.AppleProperties;
 import hey.io.heybackend.domain.login.properties.GoogleProperties;
 import hey.io.heybackend.domain.login.properties.KakaoProperties;
+import hey.io.heybackend.domain.member.enums.Provider;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.IOException;
@@ -67,7 +70,7 @@ public class OAuthClient {
     }
 
     // 카카오 회원 정보 요청
-    public Map getKakaoUserInfo(String accessToken)  {
+    public SocialUserInfo getKakaoUserInfo(String accessToken)  {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -87,11 +90,13 @@ public class OAuthClient {
         try {
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("id", jsonNode.get("id").asText());
-            userInfo.put("email", jsonNode.get("kakao_account").get("email").asText());
+            return SocialUserInfo.of(
+                jsonNode.get("kakao_account").get("email").asText(),
+                jsonNode.has("name") ? jsonNode.get("name").asText() : null,
+                Provider.KAKAO,
+                jsonNode.get("id").asText()
+            );
 
-            return userInfo;
         } catch (JsonProcessingException e) {
             throw new BusinessException(PARSING_ERROR);
         }
@@ -112,7 +117,7 @@ public class OAuthClient {
         return oAuth2Util.getAccessToken(googleProperties.getTokenUrl(), headers, body);
     }
 
-    public Map getGoogleUserInfo(String accessToken) {
+    public SocialUserInfo getGoogleUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
@@ -121,7 +126,13 @@ public class OAuthClient {
                 httpEntity, String.class);
 
         try {
-            return objectMapper.readValue(userInfoResponse.getBody(), Map.class);
+            JsonNode jsonNode = objectMapper.readTree(userInfoResponse.getBody());
+
+            String email = jsonNode.get("email").asText();
+            String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
+            String sub = jsonNode.get("sub").asText();
+
+            return new SocialUserInfo(email, name, Provider.GOOGLE, sub);
         } catch (JsonProcessingException e) {
             throw new BusinessException(PARSING_ERROR);
         }
@@ -148,6 +159,22 @@ public class OAuthClient {
         }
 
         return idToken;
+    }
+
+    public SocialUserInfo getAppleUserInfo(String idToken) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(idToken);
+            JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+            return SocialUserInfo.of(
+                claims.getStringClaim("email"),
+                claims.getStringClaim("name"),
+                Provider.APPLE,
+                claims.getSubject()
+            );
+        } catch (ParseException e) {
+            throw new BusinessException(PARSING_ERROR);
+        }
     }
 
     // 유효성 검사

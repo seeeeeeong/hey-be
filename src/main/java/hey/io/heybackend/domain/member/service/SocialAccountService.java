@@ -39,16 +39,16 @@ public class SocialAccountService {
   // 회원 저장/업데이트
   private Member mergeMember(SocialUserInfo socialUserInfo) {
     // 회원 정보 조회
-    Optional<Member> existingMember = memberRepository.selectMemberByProviderUid(socialUserInfo.getProviderUid());
+    Optional<Member> existingMember = memberRepository.selectMemberByProviderUid(socialUserInfo.providerUid());
 
     if (existingMember.isPresent()) {
       // 회원 업데이트
       Member member = existingMember.get();
-      member.updateMember(socialUserInfo.getEmail(), socialUserInfo.getName());
+      member.updateMember(socialUserInfo.email(), socialUserInfo.name());
       return member;
     } else {
       // 회원 저장
-      Member newMember = Member.of(socialUserInfo.getEmail(), socialUserInfo.getName(), generateNickname());
+      Member newMember = Member.of(socialUserInfo.email(), socialUserInfo.name(), generateNickname());
       memberRepository.save(newMember);
 
       // 푸시 알림 저장
@@ -65,15 +65,15 @@ public class SocialAccountService {
   // 소셜 계정 저장/업데이트
   private void mergeSocialAccount(Member member, SocialUserInfo socialUserInfo) {
     // 소설 계정 정보 조회
-    Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderUid(socialUserInfo.getProviderUid());
+    Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderUid(socialUserInfo.providerUid());
 
     if (existingSocialAccount.isPresent()) {
       // 소셜 정보 업데이트
       SocialAccount socialAccount = existingSocialAccount.get();
-      socialAccount.updateSocialAccount(socialAccount.getProvider(), socialUserInfo.getProviderUid());
+      socialAccount.updateSocialAccount(socialAccount.getProvider(), socialUserInfo.providerUid());
     } else {
       // 소셜 정보 저장
-      SocialAccount socialAccount = SocialAccount.of(member, socialUserInfo.getProvider(), socialUserInfo.getProviderUid());
+      SocialAccount socialAccount = SocialAccount.of(member, socialUserInfo.provider(), socialUserInfo.providerUid());
       socialAccountRepository.save(socialAccount);
     }
   }

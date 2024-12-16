@@ -3,6 +3,7 @@ package hey.io.heybackend.domain.login.controller;
 import com.nimbusds.jose.JOSEException;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.domain.login.service.LoginService;
+import hey.io.heybackend.domain.member.enums.Provider;
 import hey.io.heybackend.domain.user.dto.TokenDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +33,7 @@ public class LoginController {
      */
     @GetMapping("/login/oauth2/code/{provider}")
     @Operation(summary = "소셜 로그인", description = "소셜 로그인을 진행합니다.")
-    public ApiResponse<TokenDto> login(@PathVariable(name = "provider") String provider,
+    public ApiResponse<TokenDto> login(@PathVariable(name = "provider") Provider provider,
                                        @RequestParam(name = "code") String code)
         throws ParseException, IOException, JOSEException {
         return ApiResponse.success(loginService.login(provider, code));

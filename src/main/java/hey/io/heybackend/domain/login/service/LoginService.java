@@ -36,27 +36,19 @@ public class LoginService {
      * @return 토큰 정보
      */
     @Transactional
-    public TokenDto login(String provider, String code) throws ParseException, IOException, JOSEException {
-        return switch (provider.toLowerCase()) {
-            case "kakao" -> kakaoLogin(oAuthClient.getKakaoAccessToken(code));
-            case "google" -> googleLogin(oAuthClient.getGoogleAccessToken(code));
-            case "apple" -> appleLogin(oAuthClient.getAppleIdToken(code));
-            default -> throw new BusinessException(ErrorCode.UNSUPPORTED_LOGIN_TYPE);
+    public TokenDto login(Provider provider, String code) throws ParseException, IOException, JOSEException {
+        return switch (provider) {
+            case KAKAO -> kakaoLogin(code);
+            case GOOGLE -> googleLogin(code);
+            case APPLE -> appleLogin(code);
         };
     }
 
     // 카카오 로그인
-    private TokenDto kakaoLogin(String accessToken) {
-        // accessToken으로 사용자 정보 조회
-        Map<String, Object> userInfo = oAuthClient.getKakaoUserInfo(accessToken);
+    private TokenDto kakaoLogin(String code) {
 
-        // 사용자 정보 SocialUserInfo 변환
-        SocialUserInfo socialUserInfo = SocialUserInfo.of(
-            (String) userInfo.get("email"),
-            (String) userInfo.get("name"),
-            Provider.KAKAO,
-            (String) userInfo.get("id")
-        );
+        String accessToken = oAuthClient.getKakaoAccessToken(code);
+        SocialUserInfo socialUserInfo = oAuthClient.getKakaoUserInfo(accessToken);
 
         // 회원 및 소설 계정 저장/업데이트
         Member member = socialAccountService.mergeMemberAndSocialAccount(socialUserInfo);
@@ -66,17 +58,9 @@ public class LoginService {
     }
 
     // 구글 로그인
-    private TokenDto googleLogin(String accessToken) {
-        // accessToken으로 사용자 정보 조회
-        Map<String, Object> userInfo = oAuthClient.getGoogleUserInfo(accessToken);
-
-        // 사용자 정보 SocialUserInfo 변환
-        SocialUserInfo socialUserInfo = SocialUserInfo.of(
-            (String) userInfo.get("email"),
-            (String) userInfo.get("name"),
-            Provider.GOOGLE,
-            (String) userInfo.get("sub")
-        );
+    private TokenDto googleLogin(String code) {
+        String accessToken = oAuthClient.getGoogleAccessToken(code);
+        SocialUserInfo socialUserInfo = oAuthClient.getGoogleUserInfo(accessToken);
 
         // 회원 및 소설 계정 저장/업데이트
         Member member = socialAccountService.mergeMemberAndSocialAccount(socialUserInfo);
@@ -86,19 +70,9 @@ public class LoginService {
     }
 
     // 애플 로그인
-    private TokenDto appleLogin(String idToken) throws ParseException {
-        // idToken으로 사용자 정보 조회
-        Map<String, Object> userInfo = Map.of("id_token", idToken);
-        SignedJWT signedJWT = SignedJWT.parse((String) userInfo.get("id_token"));
-        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-
-        // 사용자 정보 SocialUserInfo 변환
-        SocialUserInfo socialUserInfo =  SocialUserInfo.of(
-            claims.getStringClaim("email"),
-            claims.getStringClaim("name"),
-            Provider.APPLE,
-            claims.getSubject()
-        );
+    private TokenDto appleLogin(String code) throws ParseException, IOException, JOSEException {
+        String idToken = oAuthClient.getAppleIdToken(code);
+        SocialUserInfo socialUserInfo = oAuthClient.getAppleUserInfo(idToken);
 
         // 회원 및 소설 계정 저장/업데이트
         Member member = socialAccountService.mergeMemberAndSocialAccount(socialUserInfo);
