@@ -60,13 +60,13 @@ public class OAuthClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> body = new HashMap<>();
-        body.put("client_id", kakaoProperties.getClientId());
-        body.put("client_secret", kakaoProperties.getClientSecret());
+        body.put("client_id", kakaoProperties.clientId());
+        body.put("client_secret", kakaoProperties.clientSecret());
         body.put("code", code);
         body.put("grant_type", "authorization_code");
-        body.put("redirect_uri", kakaoProperties.getRedirectUri());
+        body.put("redirect_uri", kakaoProperties.redirectUri());
 
-        return oAuth2Util.getAccessToken(kakaoProperties.getTokenUrl(), headers, body);
+        return oAuth2Util.getAccessToken(kakaoProperties.tokenUrl(), headers, body);
     }
 
     // 카카오 회원 정보 요청
@@ -78,7 +78,7 @@ public class OAuthClient {
         HttpEntity<String> request = new HttpEntity<>(headers);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.exchange(
-                kakaoProperties.getUserInfoUrl(),
+                kakaoProperties.userInfoUrl(),
                 HttpMethod.POST,
                 request,
                 String.class
@@ -108,13 +108,13 @@ public class OAuthClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> body = new HashMap<>();
-        body.put("client_id", googleProperties.getClientId());
-        body.put("client_secret", googleProperties.getClientSecret());
+        body.put("client_id", googleProperties.clientId());
+        body.put("client_secret", googleProperties.clientSecret());
         body.put("code", code);
         body.put("grant_type", "authorization_code");
-        body.put("redirect_uri", googleProperties.getRedirectUri());
+        body.put("redirect_uri", googleProperties.redirectUri());
 
-        return oAuth2Util.getAccessToken(googleProperties.getTokenUrl(), headers, body);
+        return oAuth2Util.getAccessToken(googleProperties.tokenUrl(), headers, body);
     }
 
     public SocialUserInfo getGoogleUserInfo(String accessToken) {
@@ -122,7 +122,7 @@ public class OAuthClient {
         headers.setBearerAuth(accessToken);
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> userInfoResponse = restTemplate.exchange(googleProperties.getUserInfoUrl(), HttpMethod.GET,
+        ResponseEntity<String> userInfoResponse = restTemplate.exchange(googleProperties.userInfoUrl(), HttpMethod.GET,
                 httpEntity, String.class);
 
         try {
@@ -145,13 +145,13 @@ public class OAuthClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> body = new HashMap<>();
-        body.put("client_id", appleProperties.getClientId());
+        body.put("client_id", appleProperties.clientId());
         body.put("client_secret", clientSecret);
         body.put("code", code);
         body.put("grant_type", "authorization_code");
-        body.put("redirect_uri", appleProperties.getRedirectUri());
+        body.put("redirect_uri", appleProperties.redirectUri());
 
-        String idToken = oAuth2Util.getIdentityToken(appleProperties.getTokenUrl(), headers, body);
+        String idToken = oAuth2Util.getIdentityToken(appleProperties.tokenUrl(), headers, body);
 
         // 유효성 검사
         if (!validateAppleIdToken(idToken)) {
@@ -182,7 +182,7 @@ public class OAuthClient {
         SignedJWT signedJWT = SignedJWT.parse(idToken);
 
         // 공개 키 조회
-        JWKSet jwkSet = JWKSet.load(new URL(appleProperties.getPublicKeyUrl()));
+        JWKSet jwkSet = JWKSet.load(new URL(appleProperties.publicKeyUrl()));
         JWK jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());
 
         // 검증을 위한 RSA 공개 키 생성
@@ -201,12 +201,12 @@ public class OAuthClient {
         Date now = new Date(nowMillis);
 
         return Jwts.builder()
-                .setHeaderParam("kid", appleProperties.getKeyId())
-                .setIssuer(appleProperties.getTeamId())
+                .setHeaderParam("kid", appleProperties.keyId())
+                .setIssuer(appleProperties.teamId())
                 .setIssuedAt(now)
                 .setExpiration(new Date(nowMillis + 86400000))// 1일
                 .setAudience("https://appleid.apple.com")
-                .setSubject(appleProperties.getClientId())
+                .setSubject(appleProperties.clientId())
                 .signWith(privateKey, SignatureAlgorithm.ES256)
                 .compact();
     }
@@ -216,7 +216,7 @@ public class OAuthClient {
         JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
 
         try {
-            byte[] privateKeyBytes = Base64.getDecoder().decode(appleProperties.getPrivateKey());
+            byte[] privateKeyBytes = Base64.getDecoder().decode(appleProperties.privateKey());
 
             PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(privateKeyBytes);
             return converter.getPrivateKey(privateKeyInfo);
