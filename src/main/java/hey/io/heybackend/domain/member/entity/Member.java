@@ -80,12 +80,12 @@ public class Member extends BaseTimeEntity {
     }
 
     // 회원 상태 업데이트
-    public void updateMemberStatus(MemberStatus memberStatus) {
+    public void setMemberStatus(MemberStatus memberStatus) {
         this.memberStatus = memberStatus;
     }
 
     // 닉네임 업데이트
-    public void updateNickname(String nickname) {
+    public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 

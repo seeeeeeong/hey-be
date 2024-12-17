@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
-@Tag(name = "6. MyPage", description = "회원 정보 관련 API")
+@Tag(name = "6. MyPage", description = "마이페이지 관련 API")
 @SecurityRequirement(name = "Bearer Authentication")
 public class MyPageController {
 

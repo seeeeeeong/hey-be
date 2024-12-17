@@ -11,10 +11,6 @@ import hey.io.heybackend.domain.member.enums.InterestCategory;
 import hey.io.heybackend.domain.member.enums.MemberStatus;
 import hey.io.heybackend.domain.member.repository.MemberInterestRepository;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
-import hey.io.heybackend.domain.performance.enums.PerformanceGenre;
-import hey.io.heybackend.domain.performance.enums.PerformanceType;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +38,7 @@ public class MemberService {
         member.setBasicTermsAgreed(memberTermsRequest.getBasicTermsAgreed());
 
         if (memberTermsRequest.getBasicTermsAgreed()) {
-            member.updateMemberStatus(MemberStatus.ACTIVE);
+            member.setMemberStatus(MemberStatus.ACTIVE);
         }
 
         return member.getMemberId();
