@@ -75,14 +75,13 @@ public class MyPageService {
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 닉네임 수정
-        member.setNickname(modifyMemberRequest.getNickname());
+        member.updateNickname(modifyMemberRequest.getNickname());
 
         // 3. 관심 정보 삭제
         memberInterestRepository.deleteByMember(member);
 
         // 4. 관심 정보 등록
         insertMemberInterests(member, modifyMemberRequest);
-
 
         return member.getMemberId();
     }

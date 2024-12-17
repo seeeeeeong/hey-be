@@ -74,6 +74,15 @@ public class Member extends BaseTimeEntity {
         return this;
     }
 
+    // 닉네임 업데이트
+    public void updateNickname(String newNickname) {
+        if (this.name.equals(this.nickname)) {
+            this.name = newNickname;
+        }
+        this.nickname = newNickname;
+    }
+
+
     // 약관 동의 정보 업데이트
     public void setBasicTermsAgreed(Boolean basicTermsAgreed) {
         this.basicTermsAgreed = basicTermsAgreed;
@@ -82,11 +91,6 @@ public class Member extends BaseTimeEntity {
     // 회원 상태 업데이트
     public void setMemberStatus(MemberStatus memberStatus) {
         this.memberStatus = memberStatus;
-    }
-
-    // 닉네임 업데이트
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
     }
 
 }
