@@ -24,35 +24,44 @@ repositories {
 }
 
 dependencies {
+	// Spring
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+	implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// PostgreSQL
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
-	implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
-	implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+	implementation 'com.nimbusds:nimbus-jose-jwt:9.47'
 
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+	// QueryDsl
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-	annotationProcessor 'org.projectlombok:lombok'
 
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.postgresql:postgresql'
+	// Redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-//	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
