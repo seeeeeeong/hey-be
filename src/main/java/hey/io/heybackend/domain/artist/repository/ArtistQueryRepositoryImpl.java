@@ -2,7 +2,7 @@ package hey.io.heybackend.domain.artist.repository;
 
 import static hey.io.heybackend.domain.artist.entity.QArtist.artist;
 import static hey.io.heybackend.domain.artist.entity.QArtistGenres.artistGenres;
-import static hey.io.heybackend.domain.follow.entity.QFollow.follow;
+import static hey.io.heybackend.domain.member.entity.QFollow.follow;
 import static hey.io.heybackend.domain.performance.entity.QPerformanceArtist.performanceArtist;
 
 import com.querydsl.core.types.Order;
@@ -23,7 +23,7 @@ import hey.io.heybackend.domain.artist.enums.ArtistGenre;
 import hey.io.heybackend.domain.artist.enums.ArtistSortType;
 import hey.io.heybackend.domain.artist.enums.ArtistStatus;
 import hey.io.heybackend.domain.artist.enums.ArtistType;
-import hey.io.heybackend.domain.follow.enums.FollowType;
+import hey.io.heybackend.domain.member.enums.FollowType;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;

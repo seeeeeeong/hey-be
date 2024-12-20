@@ -1,13 +1,12 @@
 package hey.io.heybackend.domain.auth.repository;
 
+import static hey.io.heybackend.domain.auth.entity.QAuth.auth;
+
 import com.querydsl.core.types.Projections;
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
 import hey.io.heybackend.domain.auth.dto.AuthDto;
 import hey.io.heybackend.domain.auth.entity.Auth;
-
 import java.util.List;
-
-import static hey.io.heybackend.domain.auth.entity.QAuth.auth;
 
 public class AuthQueryRepositoryImpl extends Querydsl5RepositorySupport implements AuthQueryRepository {
 

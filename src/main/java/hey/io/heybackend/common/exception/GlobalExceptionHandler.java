@@ -2,6 +2,9 @@ package hey.io.heybackend.common.exception;
 
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.common.response.ApiResponse.ValidationError;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -15,10 +18,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j

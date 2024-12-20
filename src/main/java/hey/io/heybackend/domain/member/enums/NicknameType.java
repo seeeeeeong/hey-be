@@ -73,6 +73,8 @@ public enum NicknameType {
     private static final Random RANDOM = new Random();
 
     public static String getRandomNickname() {
-        return VALUES.get(RANDOM.nextInt(SIZE)).getNickname();
+        String nicknameBase = VALUES.get(RANDOM.nextInt(SIZE)).getNickname();
+        int randomNumber = RANDOM.nextInt(100000);
+        return String.format("%s_%05d", nicknameBase, randomNumber);
     }
 }

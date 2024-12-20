@@ -1,11 +1,10 @@
 package hey.io.heybackend.domain.member.repository;
 
 
-import hey.io.heybackend.domain.member.dto.MemberDto;
-import hey.io.heybackend.domain.member.dto.MemberDto.MemberDetailResponse;
+import hey.io.heybackend.domain.auth.enums.AuthId;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.enums.InterestCategory;
-
+import hey.io.heybackend.domain.mypage.dto.MyPageDto.MemberDetailResponse;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +41,7 @@ public interface MemberQueryRepository {
      * @param memberId 사용자 ID
      * @return 사용자 권한 목록
      */
-    List<String> selectUserAuthList(Long memberId);
+    List<AuthId> selectUserAuthList(Long memberId);
 
 
     /**

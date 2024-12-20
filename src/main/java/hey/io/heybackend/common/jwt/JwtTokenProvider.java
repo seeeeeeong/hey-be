@@ -2,16 +2,28 @@ package hey.io.heybackend.common.jwt;
 
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
-import hey.io.heybackend.common.jwt.dto.TokenDto;
-import hey.io.heybackend.domain.auth.dto.AuthenticatedMember;
+import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.entity.Member;
-import hey.io.heybackend.domain.auth.service.CustomUserDetailService;
-import io.jsonwebtoken.*;
+import hey.io.heybackend.domain.user.dto.TokenDto;
+import hey.io.heybackend.domain.user.service.UserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.security.Key;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +34,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-
-import java.security.Key;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @Slf4j
 @Getter
@@ -49,7 +57,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
 
-    private final CustomUserDetailService customUserDetailService;
+    private final UserService userService;
 
     // 토큰에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
@@ -57,7 +65,7 @@ public class JwtTokenProvider {
 
         // 사용자 정보 조회
         String memberId = claims.getSubject();
-        AuthenticatedMember authenticatedMember = customUserDetailService.loadUserByUsername(memberId);
+        AuthenticatedMember authenticatedMember = userService.loadUserByUsername(memberId);
 
         // 권한 정보 조회 및 변환
         @SuppressWarnings("unchecked")
@@ -96,7 +104,7 @@ public class JwtTokenProvider {
         // Access Token 생성
         String accessToken = Jwts.builder()
             .setHeaderParam("typ", "JWT")
-            .setSubject(member.getMemberId().toString())
+            .setSubject(String.valueOf(member.getMemberId()))
             .addClaims(getClaims(member))
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + accessTokenTime))
@@ -123,7 +131,7 @@ public class JwtTokenProvider {
 
     // 인증 정보로 claims 생성
     private Claims getClaims(Member member) {
-        List<SimpleGrantedAuthority> authorities = customUserDetailService.getAuthorities(member);
+        List<SimpleGrantedAuthority> authorities = userService.getAuthorities(member);
 
         Claims claims = Jwts.claims();
         claims.put("userInfo", AuthenticatedMember.of(member, authorities));
