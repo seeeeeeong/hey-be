@@ -3,8 +3,6 @@ package hey.io.heybackend.domain.user.service;
 import hey.io.heybackend.common.jwt.JwtTokenProvider;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.user.dto.TokenDto;
-import hey.io.heybackend.domain.user.entity.Token;
-import hey.io.heybackend.domain.user.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +13,6 @@ public class TokenService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-
-    private final TokenRepository tokenRepository;
 
     /**
      * <p>토큰 저장</p>

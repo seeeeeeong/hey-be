@@ -1,7 +1,6 @@
 package hey.io.heybackend.domain.user.dto;
 
 import hey.io.heybackend.domain.member.enums.MemberStatus;
-import hey.io.heybackend.domain.user.entity.Token;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,10 +28,4 @@ public class TokenDto {
     @Schema(description = "회원 상태", example = "ACTIVE")
     private MemberStatus memberStatus;
 
-    public Token toToken() {
-        return Token.builder()
-            .memberId(this.memberId)
-            .refreshToken(this.refreshToken)
-            .build();
-    }
 }

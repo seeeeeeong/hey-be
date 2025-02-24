@@ -15,7 +15,7 @@ import org.springframework.util.ObjectUtils;
 public class RedisService {
 
     @Value("${jwt.access.expiration}")
-    private Long refreshDuration;
+    private Long refreshTokenDuration;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -44,10 +44,14 @@ public class RedisService {
         return jsonValue;
     }
 
+    public Long getMemberIdByRefreshToken(String refreshToken) {
+        String key = "refreshToken:" + refreshToken;
+        return (Long) redisTemplate.opsForValue().get(key);
+    }
+
     public void setRefreshToken(Long memberId, String refreshToken) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        String key = memberId.toString();
-        values.set(key, refreshToken, Duration.ofMinutes(refreshDuration));
+        String key = "refreshToken:" + refreshToken;
+        redisTemplate.opsForValue().set(key, memberId, Duration.ofMillis(refreshTokenDuration));
     }
 
 }

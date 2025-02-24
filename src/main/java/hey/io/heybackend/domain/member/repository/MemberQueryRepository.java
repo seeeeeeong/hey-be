@@ -19,13 +19,6 @@ public interface MemberQueryRepository {
      */
     Optional<Member> selectMemberByProviderUid(String providerUid);
 
-    /**
-     * <p>회원 정보</p>
-     *
-     * @param refreshToken refresh 토큰
-     * @return 회원 정보
-     */
-    Optional<Member> selectMemberByRefreshToken(String refreshToken);
 
     /**
      * <p>회원 상세</p>
