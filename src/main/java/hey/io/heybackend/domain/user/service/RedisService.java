@@ -2,6 +2,7 @@ package hey.io.heybackend.domain.user.service;
 
 import hey.io.heybackend.domain.login.dto.SocialUserInfo;
 import java.time.Duration;
+import java.util.Date;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,8 @@ public class RedisService {
     private Long refreshTokenDuration;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisBlackListTemplate;
+
 
     public String generateKey() {
         String uuid = UUID.randomUUID().toString();
@@ -52,6 +55,18 @@ public class RedisService {
     public void setRefreshToken(Long memberId, String refreshToken) {
         String key = "refreshToken:" + refreshToken;
         redisTemplate.opsForValue().set(key, memberId, Duration.ofMillis(refreshTokenDuration));
+    }
+
+    public void addToBlackList(String token, Date expirationTime) {
+        redisBlackListTemplate.opsForValue().set(token, "blacklisted", Duration.ofMillis(expirationTime.getTime()));
+    }
+
+    public boolean isBlacklisted(String token) {
+        return redisBlackListTemplate.hasKey(token);
+    }
+
+    public void removeFromBlackList(String token) {
+        redisBlackListTemplate.delete(token);
     }
 
 }

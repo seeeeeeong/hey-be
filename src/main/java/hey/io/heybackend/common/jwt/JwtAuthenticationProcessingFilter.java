@@ -15,6 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,19 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
+            if ("/logout".equals(request.getRequestURI())) {
+                String refreshToken = jwtTokenProvider.extractRefreshToken(request)
+                    .filter(jwtTokenProvider::validateToken)
+                    .orElse(null);
+
+                if (refreshToken != null) {
+                    logout(refreshToken);
+                }
+
+                response.setStatus(HttpStatus.OK.value());
+                return;
+            }
+
             // refreshToken 토큰 추출, 유효성 검사
             String refreshToken = jwtTokenProvider.extractRefreshToken(request)
                     .filter(jwtTokenProvider::validateToken)
@@ -104,6 +118,19 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         response.setCharacterEncoding("utf-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(jsonErrorResponse);
+    }
+
+    private void logout(String refreshToken) {
+        Long memberId = redisService.getMemberIdByRefreshToken(refreshToken);
+
+        if (memberId == null) {
+            throw new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        Date expirationTime = jwtTokenProvider.getExpirationTime(refreshToken);
+        redisService.addToBlackList(refreshToken, expirationTime);
+
+        redisService.deleteKey("refreshToken:" + refreshToken);
     }
 
 }

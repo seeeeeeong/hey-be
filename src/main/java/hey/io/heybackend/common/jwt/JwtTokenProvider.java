@@ -1,10 +1,12 @@
 package hey.io.heybackend.common.jwt;
 
+import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
 import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
 import hey.io.heybackend.domain.member.dto.AuthenticatedMember;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.user.dto.TokenDto;
+import hey.io.heybackend.domain.user.service.RedisService;
 import hey.io.heybackend.domain.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -58,6 +60,7 @@ public class JwtTokenProvider {
     private String refreshHeader;
 
     private final UserService userService;
+    private final RedisService redisService;
 
     // 토큰에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
@@ -81,6 +84,10 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             parseClaim(token);
+            if (redisService.isBlacklisted(token)) {
+                throw new UnAuthorizedException(ErrorCode.EXPIRED_JWT);
+            }
+
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
@@ -140,7 +147,7 @@ public class JwtTokenProvider {
     }
 
     // 토큰 만료 시간 반환
-    private Date getExpirationTime(String token) {
+    public Date getExpirationTime(String token) {
         Claims claims = parseClaim(token);
         return claims.getExpiration();
     }
