@@ -4,7 +4,6 @@ package hey.io.heybackend.domain.member.repository;
 import static hey.io.heybackend.domain.member.entity.QMember.member;
 import static hey.io.heybackend.domain.member.entity.QMemberInterest.memberInterest;
 import static hey.io.heybackend.domain.member.entity.QSocialAccount.socialAccount;
-import static hey.io.heybackend.domain.user.entity.QToken.token;
 import static hey.io.heybackend.domain.user.entity.QUserAuth.userAuth;
 
 import hey.io.heybackend.common.repository.Querydsl5RepositorySupport;
@@ -39,22 +38,6 @@ public class MemberQueryRepositoryImpl extends Querydsl5RepositorySupport implem
         );
     }
 
-    /**
-     * <p>회원 정보</p>
-     *
-     * @param refreshToken refresh 토큰
-     * @return 회원 정보
-     */
-    @Override
-    public Optional<Member> selectMemberByRefreshToken(String refreshToken) {
-        Member optionalMember = select(member)
-                .from(member)
-                .join(token).on(member.memberId.eq(token.memberId)).fetchJoin()
-                .where(token.refreshToken.eq(refreshToken))
-                .fetchFirst();
-
-        return Optional.ofNullable(optionalMember);
-    }
 
     /**
      * <p>회원 상세</p>

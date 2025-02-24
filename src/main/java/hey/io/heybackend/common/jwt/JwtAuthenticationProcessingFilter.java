@@ -7,8 +7,8 @@ import hey.io.heybackend.common.exception.unauthorized.UnAuthorizedException;
 import hey.io.heybackend.common.response.ApiResponse;
 import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
-import hey.io.heybackend.domain.member.service.MemberService;
 import hey.io.heybackend.domain.user.dto.TokenDto;
+import hey.io.heybackend.domain.user.service.RedisService;
 import hey.io.heybackend.domain.user.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,6 +31,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisService redisService;
     private final TokenService tokenService;
 
     private final MemberRepository memberRepository;
@@ -64,12 +65,19 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     // accessToken 재발급
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-        Member member = memberRepository.selectMemberByRefreshToken(refreshToken)
+        Long memberId = redisService.getMemberIdByRefreshToken(refreshToken);
+
+        if (memberId == null) {
+            throw new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         TokenDto tokenDto = tokenService.insertToken(member);
         jwtTokenProvider.sendAccessAndRefreshToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
+
 
     // accessToken 인증
     private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,

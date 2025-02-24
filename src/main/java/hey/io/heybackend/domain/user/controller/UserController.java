@@ -10,7 +10,7 @@ import hey.io.heybackend.domain.member.entity.Member;
 import hey.io.heybackend.domain.member.repository.MemberRepository;
 import hey.io.heybackend.domain.user.dto.TokenDto;
 import hey.io.heybackend.domain.user.dto.UserRequest;
-import hey.io.heybackend.domain.user.repository.TokenRepository;
+import hey.io.heybackend.domain.user.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final MemberRepository memberRepository;
-  private final TokenRepository tokenRepository;
   private final JwtTokenProvider jwtTokenProvider;
   private final PasswordEncoder passwordEncoder;
+  private final TokenService tokenService;
 
   /**
    * <p>JWT 토큰 발급</p>
@@ -54,8 +54,7 @@ public class UserController {
       throw new UnAuthorizedException(ErrorCode.INCORRECT_USER);
     }
 
-    TokenDto tokenDTO = jwtTokenProvider.createToken(member);
-    tokenRepository.save(tokenDTO.toToken());
+    TokenDto tokenDTO = tokenService.insertToken(member);
 
     return ApiResponse.success(tokenDTO);
   }
