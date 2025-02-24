@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TokenService {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisService redisService;
 
     private final TokenRepository tokenRepository;
 
@@ -26,14 +27,8 @@ public class TokenService {
     @Transactional
     public TokenDto insertToken(Member member) {
         TokenDto tokenDto = jwtTokenProvider.createToken(member);
-        tokenRepository.deleteByMemberId(member.getMemberId());
 
-        Token token = Token.builder()
-                .memberId(member.getMemberId())
-                .refreshToken(tokenDto.getRefreshToken())
-                .build();
-
-        tokenRepository.saveAndFlush(token);
+        redisService.setRefreshToken(member.getMemberId(), tokenDto.getRefreshToken());
         return tokenDto;
     }
 }

@@ -4,6 +4,7 @@ import hey.io.heybackend.domain.login.dto.SocialUserInfo;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ import org.springframework.util.ObjectUtils;
 @Service
 @RequiredArgsConstructor
 public class RedisService {
+
+    @Value("${jwt.access.expiration}")
+    private Long refreshDuration;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -38,6 +42,12 @@ public class RedisService {
         }
 
         return jsonValue;
+    }
+
+    public void setRefreshToken(Long memberId, String refreshToken) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        String key = memberId.toString();
+        values.set(key, refreshToken, Duration.ofMinutes(refreshDuration));
     }
 
 }
