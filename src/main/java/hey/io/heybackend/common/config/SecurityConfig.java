@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health_check").permitAll() // Swagger 경로 허용
                         .requestMatchers("/access").permitAll() // 토큰 발급 기능 허용
                         .requestMatchers("/login/**").permitAll() // 로그인
+                        .requestMatchers("/register/**").permitAll() // 회원 가입
                         .requestMatchers("/performances/**").permitAll() // 공연 조회 기능 허용
                         .requestMatchers("/artists/**").permitAll() // 아티스트 조회 기능 허용
                         .requestMatchers("/main").permitAll() // 메인
@@ -120,4 +121,3 @@ public class SecurityConfig {
     }
 
 }
-

@@ -1,8 +1,8 @@
 package hey.io.heybackend.domain.login.service;
 
 import com.nimbusds.jose.JOSEException;
+import hey.io.heybackend.common.exception.BusinessException;
 import hey.io.heybackend.common.exception.ErrorCode;
-import hey.io.heybackend.common.exception.notfound.EntityNotFoundException;
 import hey.io.heybackend.domain.auth.enums.AuthId;
 import hey.io.heybackend.domain.login.client.OAuthClient;
 import hey.io.heybackend.domain.login.dto.SocialUserInfo;
@@ -19,9 +19,11 @@ import hey.io.heybackend.domain.member.repository.SocialAccountRepository;
 import hey.io.heybackend.domain.user.dto.TokenDto;
 import hey.io.heybackend.domain.user.entity.UserAuth;
 import hey.io.heybackend.domain.user.repository.UserAuthRepository;
+import hey.io.heybackend.domain.user.service.RedisService;
 import hey.io.heybackend.domain.user.service.TokenService;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +45,7 @@ public class LoginService {
     private final SocialAccountRepository socialAccountRepository;
 
     private final TokenService tokenService;
+    private final RedisService redisService;
 
     /**
      * <p>로그인</p>
@@ -52,7 +55,7 @@ public class LoginService {
      * @return 발급 토큰 정보
      */
     @Transactional
-    public TokenDto login(Provider provider, String code) throws ParseException, IOException, JOSEException {
+    public TokenDto login(Provider provider, String code, String key) throws ParseException, IOException, JOSEException {
 
         String token = getAccessTokenOrIdToken(provider, code);
         SocialUserInfo socialUserInfo = getSocialUserInfo(provider, token);
@@ -64,11 +67,25 @@ public class LoginService {
         if (optionalMember.isPresent()) {
             member = updateMember(optionalMember.get(), socialUserInfo);
         } else {
-            member = createMember(socialUserInfo);
+            redisService.setSocialUserInfo(key, socialUserInfo, Duration.ofMinutes(15));
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
         return tokenService.insertToken(member);
 
+    }
+
+    @Transactional
+    public TokenDto register(String key) {
+        SocialUserInfo socialUserInfo = redisService.getSocialUserInfo(key);
+        if (socialUserInfo == null) {
+            throw new BusinessException(ErrorCode.INVALID_KEY);
+        }
+
+        Member member = createMember(socialUserInfo);
+        redisService.deleteKey(key);
+
+        return tokenService.insertToken(member);
     }
 
     private Member createMember(SocialUserInfo socialUserInfo) {
