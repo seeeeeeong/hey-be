@@ -39,8 +39,6 @@ public class LoginController {
         return ApiResponse.success(redisService.generateKey());
     }
 
-
-
     /**
      * <p>로그인</p>
      *
