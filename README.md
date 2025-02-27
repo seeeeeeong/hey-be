@@ -35,7 +35,7 @@
 
 ## ERD
 
-![ERD](https://github.com/user-attachments/assets/72b49d84-54a5-4f16-895c-ef0bf2a341c1)
+![ERD](https://github.com/user-attachments/assets/85c11e1c-832a-43b1-9bf6-b5b043a97ff1)
 
 ## 프로젝트 wiki
 
